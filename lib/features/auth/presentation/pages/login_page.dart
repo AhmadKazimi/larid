@@ -26,14 +26,16 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _onLoginPressed() {
-    if (_formKey.currentState?.validate() ?? false) {
-      context.read<AuthBloc>().add(
-            LoginEvent(
-              email: _emailController.text,
-              password: _passwordController.text,
-            ),
-          );
-    }
+    // if (_formKey.currentState?.validate() ?? false) {
+    //   context.read<AuthBloc>().add(
+    //         LoginEvent(
+    //           email: _emailController.text,
+    //           password: _passwordController.text,
+    //         ),
+    //       );
+    // }
+
+    NavigationService.push(context, RouteConstants.map);
   }
 
   @override

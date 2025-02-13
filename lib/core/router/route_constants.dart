@@ -7,6 +7,7 @@ class RouteConstants {
   static const String home = '/home';
   static const String profile = '/profile';
   static const String settings = '/settings';
+  static const String map = '/map';
   
   // Add more routes as needed for your features
 }

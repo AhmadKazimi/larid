@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/map/presentation/pages/map_page.dart';
 import 'route_constants.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -34,6 +35,12 @@ class AppRouter {
         path: RouteConstants.home,
         name: 'home',
         builder: (context, state) => const HomePage(),
+      ),
+      // Map Route
+      GoRoute(
+        path: RouteConstants.map,
+        name: 'map',
+        builder: (context, state) => const MapPage(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
