@@ -1,0 +1,58 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../domain/entities/user_entity.dart';
+import '../../domain/repositories/auth_repository.dart';
+
+class AuthRepositoryImpl implements AuthRepository {
+  final DioClient _dioClient;
+  final SharedPreferences _sharedPreferences;
+  static const String _userKey = 'user_key';
+
+  AuthRepositoryImpl({
+    required DioClient dioClient,
+    required SharedPreferences sharedPreferences,
+  })  : _dioClient = dioClient,
+        _sharedPreferences = sharedPreferences;
+
+  @override
+  Future<UserEntity> login(String email, String password) async {
+    try {
+      final response = await _dioClient.post(
+        '/auth/login',
+        data: {
+          'email': email,
+          'password': password,
+        },
+      );
+
+      final user = UserEntity.fromJson(response.data);
+      await saveUser(user);
+      _dioClient.addAuthToken(user.token ?? '');
+      return user;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> logout() async {
+    await _sharedPreferences.remove(_userKey);
+    _dioClient.removeAuthToken();
+  }
+
+  @override
+  Future<UserEntity?> getCurrentUser() async {
+    final userJson = _sharedPreferences.getString(_userKey);
+    if (userJson == null) return null;
+    
+    final user = UserEntity.fromJson(json.decode(userJson));
+    _dioClient.addAuthToken(user.token ?? '');
+    return user;
+  }
+
+  @override
+  Future<void> saveUser(UserEntity user) async {
+    await _sharedPreferences.setString(_userKey, json.encode(user.toJson()));
+  }
+}
