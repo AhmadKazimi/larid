@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   static const Color primary = Color(0xFF0076F1);
@@ -25,7 +26,7 @@ class AppColors {
 
 class AppTheme {
   static ThemeData get lightTheme {
-    return ThemeData(
+    final baseTheme = ThemeData(
       useMaterial3: false,
       colorScheme: const ColorScheme(
         brightness: Brightness.light,
@@ -38,7 +39,15 @@ class AppTheme {
         onSecondary: AppColors.onSecondary,
         onError: AppColors.onError,
         onSurface: AppColors.onSurface,
+        background: AppColors.background,
+        onBackground: AppColors.onBackground,
       ),
+    );
+
+    return baseTheme.copyWith(
+      textTheme: GoogleFonts.notoSansArabicTextTheme(baseTheme.textTheme),
+      primaryTextTheme: GoogleFonts.notoSansArabicTextTheme(baseTheme.primaryTextTheme),
+      
       // Button themes
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -48,55 +57,51 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
+          textStyle: GoogleFonts.notoSansArabic(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
+
       // Input decoration theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: Colors.grey[100],
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.grey),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primary),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.error),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.error),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
-        labelStyle: const TextStyle(color: Colors.grey),
-        floatingLabelStyle: const TextStyle(color: AppColors.primary),
+        labelStyle: GoogleFonts.notoSansArabic(
+          color: Colors.grey[700],
+        ),
+        errorStyle: GoogleFonts.notoSansArabic(
+          color: AppColors.error,
+        ),
       ),
-      // AppBar theme
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
         elevation: 0,
       ),
-      // Scaffold background color
       scaffoldBackgroundColor: AppColors.background,
-      // Text theme
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(color: AppColors.onBackground),
-        headlineMedium: TextStyle(color: AppColors.onBackground),
-        headlineSmall: TextStyle(color: AppColors.onBackground),
-        titleLarge: TextStyle(color: AppColors.onBackground),
-        titleMedium: TextStyle(color: AppColors.onBackground),
-        titleSmall: TextStyle(color: AppColors.onBackground),
-        bodyLarge: TextStyle(color: AppColors.onBackground),
-        bodyMedium: TextStyle(color: AppColors.onBackground),
-        bodySmall: TextStyle(color: AppColors.onBackground),
-      ),
     );
   }
 }

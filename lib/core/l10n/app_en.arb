@@ -1,0 +1,11 @@
+{
+    "welcomeBack": "Welcome Back",
+    "signInToContinue": "Sign in to continue",
+    "email": "Email",
+    "password": "Password",
+    "login": "Login",
+    "pleaseEnterEmail": "Please enter your email",
+    "pleaseEnterValidEmail": "Please enter a valid email",
+    "pleaseEnterPassword": "Please enter your password",
+    "passwordMustBe6Chars": "Password must be at least 6 characters"
+}

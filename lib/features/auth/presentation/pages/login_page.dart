@@ -4,6 +4,7 @@ import 'package:larid/core/router/route_constants.dart';
 import '../../../../core/router/navigation_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -37,6 +38,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -63,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       const SizedBox(height: 48),
                       Text(
-                        'Welcome Back',
+                        l10n.welcomeBack,
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -71,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Sign in to continue',
+                        l10n.signInToContinue,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Colors.grey[600],
                         ),
@@ -79,17 +82,17 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 48),
                       TextFormField(
                         controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(Icons.email_outlined),
+                        decoration: InputDecoration(
+                          labelText: l10n.email,
+                          prefixIcon: const Icon(Icons.email_outlined),
                         ),
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value?.isEmpty ?? true) {
-                            return 'Please enter your email';
+                            return l10n.pleaseEnterEmail;
                           }
                           if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
-                            return 'Please enter a valid email';
+                            return l10n.pleaseEnterValidEmail;
                           }
                           return null;
                         },
@@ -97,17 +100,17 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _passwordController,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock_outline),
+                        decoration: InputDecoration(
+                          labelText: l10n.password,
+                          prefixIcon: const Icon(Icons.lock_outline),
                         ),
                         obscureText: true,
                         validator: (value) {
                           if (value?.isEmpty ?? true) {
-                            return 'Please enter your password';
+                            return l10n.pleaseEnterPassword;
                           }
                           if ((value?.length ?? 0) < 6) {
-                            return 'Password must be at least 6 characters';
+                            return l10n.passwordMustBe6Chars;
                           }
                           return null;
                         },
@@ -116,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () => NavigationService.pushReplacement(context, RouteConstants.home),
+                          onPressed: state is AuthLoading ? null : _onLoginPressed,
                           child: state is AuthLoading
                               ? const SizedBox(
                                   height: 20,
@@ -126,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
                                     valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                                   ),
                                 )
-                              : const Text('Login'),
+                              : Text(l10n.login),
                         ),
                       ),
                     ],

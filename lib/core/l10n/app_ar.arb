@@ -1,0 +1,11 @@
+{
+    "welcomeBack": "مرحباً بعودتك",
+    "signInToContinue": "سجل دخول للمتابعة",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "login": "تسجيل الدخول",
+    "pleaseEnterEmail": "الرجاء إدخال البريد الإلكتروني",
+    "pleaseEnterValidEmail": "الرجاء إدخال بريد إلكتروني صحيح",
+    "pleaseEnterPassword": "الرجاء إدخال كلمة المرور",
+    "passwordMustBe6Chars": "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+}
