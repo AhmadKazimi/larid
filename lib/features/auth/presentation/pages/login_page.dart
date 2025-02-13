@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:larid/core/router/route_constants.dart';
+import '../../../../core/router/navigation_service.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
 
@@ -46,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
           } else if (state is AuthAuthenticated) {
-            Navigator.of(context).pushReplacementNamed('/home');
+            NavigationService.pushReplacement(context, RouteConstants.home);
           }
         },
         builder: (context, state) {
@@ -114,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: state is AuthLoading ? null : _onLoginPressed,
+                          onPressed: () => NavigationService.pushReplacement(context, RouteConstants.home),
                           child: state is AuthLoading
                               ? const SizedBox(
                                   height: 20,

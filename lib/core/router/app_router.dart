@@ -10,7 +10,7 @@ final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(d
 class AppRouter {
   static final GoRouter router = GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: RouteConstants.home,
+    initialLocation: RouteConstants.login,
     debugLogDiagnostics: true,
     routes: [
       ShellRoute(
