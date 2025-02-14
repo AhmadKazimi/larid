@@ -11,7 +11,7 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   GoogleMapController? _mapController;
-  Location _location = Location();
+  final Location _location = Location();
   LatLng _currentPosition = const LatLng(0, 0);
   bool _isLoading = true;
 
