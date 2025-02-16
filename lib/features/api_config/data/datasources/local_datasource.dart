@@ -15,7 +15,7 @@ class ApiConfigLocalDataSource {
           'workspace': '',
           'password': '',
           'baseUrl': baseUrl,
-          'userid': '',  // Added this field as it's in the schema
+          'userid': '',  
         });
         
         if (result == -1) {

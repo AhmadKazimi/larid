@@ -1,19 +1,23 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/api_service.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final DioClient _dioClient;
+  final ApiService _apiService;
   final SharedPreferences _sharedPreferences;
   static const String _userKey = 'user_key';
 
   AuthRepositoryImpl({
     required DioClient dioClient,
     required SharedPreferences sharedPreferences,
+    required ApiService apiService,
   })  : _dioClient = dioClient,
-        _sharedPreferences = sharedPreferences;
+        _sharedPreferences = sharedPreferences,
+        _apiService = apiService;
 
   @override
   Future<UserEntity> login({
@@ -22,8 +26,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
   }) async {
     try {
-      // Configure base URL for API calls
+      // Call the checkUser API
+      final response = await _apiService.checkUser(
+        userid: userid,
+        workspace: workspace,
+        password: password,
+      );
 
+      // Create user entity from response
       final user = UserEntity(
         userid: userid,
         workspace: workspace,

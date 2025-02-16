@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'api_logger.dart';
 
 class DioClient {
   String baseUrl;
@@ -15,16 +16,13 @@ class DioClient {
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         responseType: ResponseType.json,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
       ),
     )..interceptors.addAll([
-        LogInterceptor(
-          request: true,
-          requestHeader: true,
-          requestBody: true,
-          responseHeader: true,
-          responseBody: true,
-          error: true,
-        ),
+        ApiLogger(),
       ]);
   }
 
