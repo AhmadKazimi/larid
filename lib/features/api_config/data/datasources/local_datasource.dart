@@ -1,67 +1,53 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:larid/database/database_helper.dart';
 
 class ApiConfigLocalDataSource {
   static final ApiConfigLocalDataSource instance = ApiConfigLocalDataSource._init();
-  static Database? _database;
+  final DatabaseHelper _dbHelper = DatabaseHelper();
 
   ApiConfigLocalDataSource._init();
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB('larid.db');
-    return _database!;
-  }
-
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
-  }
-
-  Future<void> _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        workspaceId TEXT NOT NULL,
-        password TEXT NOT NULL,
-        baseUrl TEXT NOT NULL,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    ''');
-  }
-
   Future<void> saveBaseUrl(String baseUrl) async {
-    final db = await database;
-    
-    final List<Map<String, dynamic>> users = await db.query('users');
-    
-    if (users.isEmpty) {
-      await db.insert('users', {
-        'workspaceId': '',
-        'password': '',
-        'baseUrl': baseUrl,
-      });
-    } else {
-      await db.update(
-        'users',
-        {'baseUrl': baseUrl},
-        where: 'id = ?',
-        whereArgs: [users.first['id']],
-      );
+    try {
+      final users = await _dbHelper.queryAll('users');
+      
+      if (users.isEmpty) {
+        final result = await _dbHelper.insert('users', {
+          'workspace': '',
+          'password': '',
+          'baseUrl': baseUrl,
+          'userid': '',  // Added this field as it's in the schema
+        });
+        
+        if (result == -1) {
+          throw Exception('Failed to insert base URL');
+        }
+      } else {
+        final result = await _dbHelper.update(
+          'users',
+          {'baseUrl': baseUrl},
+          'id = ?',
+          [users.first['id']],
+        );
+        
+        if (result == -1) {
+          throw Exception('Failed to update base URL');
+        }
+      }
+    } catch (e) {
+      print('Error in saveBaseUrl: $e');
+      rethrow;
     }
   }
 
   Future<String?> getBaseUrl() async {
-    final db = await database;
-    final List<Map<String, dynamic>> users = await db.query('users');
-    
-    if (users.isEmpty) return null;
-    return users.first['baseUrl'] as String;
+    try {
+      final users = await _dbHelper.queryAll('users');
+      
+      if (users.isEmpty) return null;
+      return users.first['baseUrl'] as String;
+    } catch (e) {
+      print('Error in getBaseUrl: $e');
+      return null;
+    }
   }
 }

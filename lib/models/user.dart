@@ -1,13 +1,13 @@
 class User {
   final int? id;
-  final String workspaceId;
+  final String workspace;
   final String password;
   final String baseUrl;
   final DateTime? createdAt;
 
   User({
     this.id,
-    required this.workspaceId,
+    required this.workspace,
     required this.password,
     required this.baseUrl,
     this.createdAt,
@@ -17,7 +17,7 @@ class User {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'workspaceId': workspaceId,
+      'workspace': workspace,
       'password': password,
       'baseUrl': baseUrl,
       'created_at': createdAt?.toIso8601String(),
@@ -28,7 +28,7 @@ class User {
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
       id: map['id'],
-      workspaceId: map['workspaceId'],
+      workspace: map['workspace'],
       password: map['password'],
       baseUrl: map['baseUrl'],
       createdAt: map['created_at'] != null 

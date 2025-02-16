@@ -34,11 +34,13 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     // Create your tables here
     await db.execute('''
-      CREATE TABLE users (
+      CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        userid TEXT,
+        workspace TEXT NOT NULL,
+        password TEXT NOT NULL,
+        baseUrl TEXT NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     ''');
 
@@ -47,34 +49,62 @@ class DatabaseHelper {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Handle database upgrades here
+    if (oldVersion < 1) {
+      await _onCreate(db, newVersion);
+    }
   }
 
   // Generic CRUD operations
   Future<int> insert(String table, Map<String, dynamic> row) async {
     Database db = await database;
-    return await db.insert(table, row);
+    try {
+      return await db.insert(table, row, conflictAlgorithm: ConflictAlgorithm.replace);
+    } catch (e) {
+      print('Error inserting into $table: $e');
+      return -1;
+    }
   }
 
   Future<List<Map<String, dynamic>>> queryAll(String table) async {
     Database db = await database;
-    return await db.query(table);
+    try {
+      return await db.query(table);
+    } catch (e) {
+      print('Error querying $table: $e');
+      return [];
+    }
   }
 
   Future<List<Map<String, dynamic>>> queryWhere(
       String table, String whereClause, List<dynamic> whereArgs) async {
     Database db = await database;
-    return await db.query(table, where: whereClause, whereArgs: whereArgs);
+    try {
+      return await db.query(table, where: whereClause, whereArgs: whereArgs);
+    } catch (e) {
+      print('Error querying $table with where clause: $e');
+      return [];
+    }
   }
 
   Future<int> update(
       String table, Map<String, dynamic> row, String whereClause, List<dynamic> whereArgs) async {
     Database db = await database;
-    return await db.update(table, row, where: whereClause, whereArgs: whereArgs);
+    try {
+      return await db.update(table, row, where: whereClause, whereArgs: whereArgs);
+    } catch (e) {
+      print('Error updating $table: $e');
+      return -1;
+    }
   }
 
   Future<int> delete(String table, String whereClause, List<dynamic> whereArgs) async {
     Database db = await database;
-    return await db.delete(table, where: whereClause, whereArgs: whereArgs);
+    try {
+      return await db.delete(table, where: whereClause, whereArgs: whereArgs);
+    } catch (e) {
+      print('Error deleting from $table: $e');
+      return -1;
+    }
   }
 
   // Close the database

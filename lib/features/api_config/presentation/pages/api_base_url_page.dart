@@ -4,7 +4,7 @@ import 'package:larid/features/api_config/presentation/bloc/api_config_bloc.dart
 import 'package:larid/features/auth/presentation/pages/login_page.dart';
 
 class ApiBaseUrlPage extends StatefulWidget {
-  const ApiBaseUrlPage({Key? key}) : super(key: key);
+  const ApiBaseUrlPage({super.key});
 
   @override
   State<ApiBaseUrlPage> createState() => _ApiBaseUrlPageState();

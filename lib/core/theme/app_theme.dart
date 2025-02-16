@@ -39,8 +39,6 @@ class AppTheme {
         onSecondary: AppColors.onSecondary,
         onError: AppColors.onError,
         onSurface: AppColors.onSurface,
-        background: AppColors.background,
-        onBackground: AppColors.onBackground,
       ),
     );
 
