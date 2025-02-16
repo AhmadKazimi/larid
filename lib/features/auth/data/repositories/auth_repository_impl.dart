@@ -16,19 +16,24 @@ class AuthRepositoryImpl implements AuthRepository {
         _sharedPreferences = sharedPreferences;
 
   @override
-  Future<UserEntity> login(String email, String password) async {
+  Future<UserEntity> login({
+    required String userid,
+    required String workspace,
+    required String password,
+    required String baseUrl,
+  }) async {
     try {
-      final response = await _dioClient.post(
-        '/auth/login',
-        data: {
-          'email': email,
-          'password': password,
-        },
-      );
+      // Configure base URL for API calls
+      _dioClient.setBaseUrl(baseUrl);
 
-      final user = UserEntity.fromJson(response.data);
+      final user = UserEntity(
+        userid: userid,
+        workspace: workspace,
+        password: password,
+        baseUrl: baseUrl,
+      );
+      
       await saveUser(user);
-      _dioClient.addAuthToken(user.token ?? '');
       return user;
     } catch (e) {
       rethrow;
@@ -47,7 +52,7 @@ class AuthRepositoryImpl implements AuthRepository {
     if (userJson == null) return null;
     
     final user = UserEntity.fromJson(json.decode(userJson));
-    _dioClient.addAuthToken(user.token ?? '');
+    _dioClient.setBaseUrl(user.baseUrl);
     return user;
   }
 

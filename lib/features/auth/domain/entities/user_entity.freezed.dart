@@ -21,11 +21,10 @@ UserEntity _$UserEntityFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$UserEntity {
-  String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  String get email => throw _privateConstructorUsedError;
-  String? get photoUrl => throw _privateConstructorUsedError;
-  String? get token => throw _privateConstructorUsedError;
+  String get userid => throw _privateConstructorUsedError;
+  String get workspace => throw _privateConstructorUsedError;
+  String get password => throw _privateConstructorUsedError;
+  String get baseUrl => throw _privateConstructorUsedError;
 
   /// Serializes this UserEntity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -44,13 +43,7 @@ abstract class $UserEntityCopyWith<$Res> {
     $Res Function(UserEntity) then,
   ) = _$UserEntityCopyWithImpl<$Res, UserEntity>;
   @useResult
-  $Res call({
-    String id,
-    String name,
-    String email,
-    String? photoUrl,
-    String? token,
-  });
+  $Res call({String userid, String workspace, String password, String baseUrl});
 }
 
 /// @nodoc
@@ -68,39 +61,33 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? email = null,
-    Object? photoUrl = freezed,
-    Object? token = freezed,
+    Object? userid = null,
+    Object? workspace = null,
+    Object? password = null,
+    Object? baseUrl = null,
   }) {
     return _then(
       _value.copyWith(
-            id:
-                null == id
-                    ? _value.id
-                    : id // ignore: cast_nullable_to_non_nullable
+            userid:
+                null == userid
+                    ? _value.userid
+                    : userid // ignore: cast_nullable_to_non_nullable
                         as String,
-            name:
-                null == name
-                    ? _value.name
-                    : name // ignore: cast_nullable_to_non_nullable
+            workspace:
+                null == workspace
+                    ? _value.workspace
+                    : workspace // ignore: cast_nullable_to_non_nullable
                         as String,
-            email:
-                null == email
-                    ? _value.email
-                    : email // ignore: cast_nullable_to_non_nullable
+            password:
+                null == password
+                    ? _value.password
+                    : password // ignore: cast_nullable_to_non_nullable
                         as String,
-            photoUrl:
-                freezed == photoUrl
-                    ? _value.photoUrl
-                    : photoUrl // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            token:
-                freezed == token
-                    ? _value.token
-                    : token // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            baseUrl:
+                null == baseUrl
+                    ? _value.baseUrl
+                    : baseUrl // ignore: cast_nullable_to_non_nullable
+                        as String,
           )
           as $Val,
     );
@@ -116,13 +103,7 @@ abstract class _$$UserEntityImplCopyWith<$Res>
   ) = __$$UserEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    String id,
-    String name,
-    String email,
-    String? photoUrl,
-    String? token,
-  });
+  $Res call({String userid, String workspace, String password, String baseUrl});
 }
 
 /// @nodoc
@@ -139,39 +120,33 @@ class __$$UserEntityImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? email = null,
-    Object? photoUrl = freezed,
-    Object? token = freezed,
+    Object? userid = null,
+    Object? workspace = null,
+    Object? password = null,
+    Object? baseUrl = null,
   }) {
     return _then(
       _$UserEntityImpl(
-        id:
-            null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
+        userid:
+            null == userid
+                ? _value.userid
+                : userid // ignore: cast_nullable_to_non_nullable
                     as String,
-        name:
-            null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
+        workspace:
+            null == workspace
+                ? _value.workspace
+                : workspace // ignore: cast_nullable_to_non_nullable
                     as String,
-        email:
-            null == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
+        password:
+            null == password
+                ? _value.password
+                : password // ignore: cast_nullable_to_non_nullable
                     as String,
-        photoUrl:
-            freezed == photoUrl
-                ? _value.photoUrl
-                : photoUrl // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        token:
-            freezed == token
-                ? _value.token
-                : token // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        baseUrl:
+            null == baseUrl
+                ? _value.baseUrl
+                : baseUrl // ignore: cast_nullable_to_non_nullable
+                    as String,
       ),
     );
   }
@@ -181,30 +156,27 @@ class __$$UserEntityImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UserEntityImpl implements _UserEntity {
   const _$UserEntityImpl({
-    required this.id,
-    required this.name,
-    required this.email,
-    this.photoUrl,
-    this.token,
+    required this.userid,
+    required this.workspace,
+    required this.password,
+    required this.baseUrl,
   });
 
   factory _$UserEntityImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserEntityImplFromJson(json);
 
   @override
-  final String id;
+  final String userid;
   @override
-  final String name;
+  final String workspace;
   @override
-  final String email;
+  final String password;
   @override
-  final String? photoUrl;
-  @override
-  final String? token;
+  final String baseUrl;
 
   @override
   String toString() {
-    return 'UserEntity(id: $id, name: $name, email: $email, photoUrl: $photoUrl, token: $token)';
+    return 'UserEntity(userid: $userid, workspace: $workspace, password: $password, baseUrl: $baseUrl)';
   }
 
   @override
@@ -212,18 +184,18 @@ class _$UserEntityImpl implements _UserEntity {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$UserEntityImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.name, name) || other.name == name) &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.photoUrl, photoUrl) ||
-                other.photoUrl == photoUrl) &&
-            (identical(other.token, token) || other.token == token));
+            (identical(other.userid, userid) || other.userid == userid) &&
+            (identical(other.workspace, workspace) ||
+                other.workspace == workspace) &&
+            (identical(other.password, password) ||
+                other.password == password) &&
+            (identical(other.baseUrl, baseUrl) || other.baseUrl == baseUrl));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, id, name, email, photoUrl, token);
+      Object.hash(runtimeType, userid, workspace, password, baseUrl);
 
   /// Create a copy of UserEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -241,26 +213,23 @@ class _$UserEntityImpl implements _UserEntity {
 
 abstract class _UserEntity implements UserEntity {
   const factory _UserEntity({
-    required final String id,
-    required final String name,
-    required final String email,
-    final String? photoUrl,
-    final String? token,
+    required final String userid,
+    required final String workspace,
+    required final String password,
+    required final String baseUrl,
   }) = _$UserEntityImpl;
 
   factory _UserEntity.fromJson(Map<String, dynamic> json) =
       _$UserEntityImpl.fromJson;
 
   @override
-  String get id;
+  String get userid;
   @override
-  String get name;
+  String get workspace;
   @override
-  String get email;
+  String get password;
   @override
-  String? get photoUrl;
-  @override
-  String? get token;
+  String get baseUrl;
 
   /// Create a copy of UserEntity
   /// with the given fields replaced by the non-null parameter values.

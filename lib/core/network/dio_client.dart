@@ -1,10 +1,14 @@
 import 'package:dio/dio.dart';
 
 class DioClient {
-  final String baseUrl;
+  String baseUrl;
   late Dio _dio;
 
   DioClient({required this.baseUrl}) {
+    _initializeDio();
+  }
+
+  void _initializeDio() {
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
@@ -22,6 +26,11 @@ class DioClient {
           error: true,
         ),
       ]);
+  }
+
+  void setBaseUrl(String newBaseUrl) {
+    baseUrl = newBaseUrl;
+    _dio.options.baseUrl = newBaseUrl;
   }
 
   Future<Response> get(

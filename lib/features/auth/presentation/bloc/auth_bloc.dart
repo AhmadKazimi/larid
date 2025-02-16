@@ -10,13 +10,20 @@ abstract class AuthEvent extends Equatable {
 }
 
 class LoginEvent extends AuthEvent {
-  final String email;
+  final String userid;
+  final String workspace;
   final String password;
+  final String baseUrl;
 
-  LoginEvent({required this.email, required this.password});
+  LoginEvent({
+    required this.userid,
+    required this.workspace,
+    required this.password,
+    required this.baseUrl,
+  });
 
   @override
-  List<Object?> get props => [email, password];
+  List<Object?> get props => [userid, workspace, password, baseUrl];
 }
 
 // States
@@ -60,7 +67,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      final user = await _loginUseCase(event.email, event.password);
+      final user = await _loginUseCase(
+        userid: event.userid,
+        workspace: event.workspace,
+        password: event.password,
+        baseUrl: event.baseUrl,
+      );
       emit(AuthAuthenticated(user));
     } catch (e) {
       emit(AuthError(e.toString()));

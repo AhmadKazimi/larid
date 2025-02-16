@@ -35,12 +35,10 @@ class DatabaseHelper {
     // Create your tables here
     await db.execute('''
       CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userid TEXT,
+        userid TEXT PRIMARY KEY,
         workspace TEXT NOT NULL,
         password TEXT NOT NULL,
-        baseUrl TEXT NOT NULL,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        baseUrl TEXT NOT NULL
       )
     ''');
 
