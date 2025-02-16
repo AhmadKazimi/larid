@@ -10,13 +10,11 @@ class LoginUseCase {
     required String userid,
     required String workspace,
     required String password,
-    required String baseUrl,
   }) {
     return _authRepository.login(
       userid: userid,
       workspace: workspace,
       password: password,
-      baseUrl: baseUrl,
     );
   }
 }

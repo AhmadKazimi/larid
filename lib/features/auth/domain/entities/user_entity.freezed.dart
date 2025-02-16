@@ -24,7 +24,6 @@ mixin _$UserEntity {
   String get userid => throw _privateConstructorUsedError;
   String get workspace => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
-  String get baseUrl => throw _privateConstructorUsedError;
 
   /// Serializes this UserEntity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -43,7 +42,7 @@ abstract class $UserEntityCopyWith<$Res> {
     $Res Function(UserEntity) then,
   ) = _$UserEntityCopyWithImpl<$Res, UserEntity>;
   @useResult
-  $Res call({String userid, String workspace, String password, String baseUrl});
+  $Res call({String userid, String workspace, String password});
 }
 
 /// @nodoc
@@ -64,7 +63,6 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
     Object? userid = null,
     Object? workspace = null,
     Object? password = null,
-    Object? baseUrl = null,
   }) {
     return _then(
       _value.copyWith(
@@ -83,11 +81,6 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
                     ? _value.password
                     : password // ignore: cast_nullable_to_non_nullable
                         as String,
-            baseUrl:
-                null == baseUrl
-                    ? _value.baseUrl
-                    : baseUrl // ignore: cast_nullable_to_non_nullable
-                        as String,
           )
           as $Val,
     );
@@ -103,7 +96,7 @@ abstract class _$$UserEntityImplCopyWith<$Res>
   ) = __$$UserEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String userid, String workspace, String password, String baseUrl});
+  $Res call({String userid, String workspace, String password});
 }
 
 /// @nodoc
@@ -123,7 +116,6 @@ class __$$UserEntityImplCopyWithImpl<$Res>
     Object? userid = null,
     Object? workspace = null,
     Object? password = null,
-    Object? baseUrl = null,
   }) {
     return _then(
       _$UserEntityImpl(
@@ -142,11 +134,6 @@ class __$$UserEntityImplCopyWithImpl<$Res>
                 ? _value.password
                 : password // ignore: cast_nullable_to_non_nullable
                     as String,
-        baseUrl:
-            null == baseUrl
-                ? _value.baseUrl
-                : baseUrl // ignore: cast_nullable_to_non_nullable
-                    as String,
       ),
     );
   }
@@ -159,7 +146,6 @@ class _$UserEntityImpl implements _UserEntity {
     required this.userid,
     required this.workspace,
     required this.password,
-    required this.baseUrl,
   });
 
   factory _$UserEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -171,12 +157,10 @@ class _$UserEntityImpl implements _UserEntity {
   final String workspace;
   @override
   final String password;
-  @override
-  final String baseUrl;
 
   @override
   String toString() {
-    return 'UserEntity(userid: $userid, workspace: $workspace, password: $password, baseUrl: $baseUrl)';
+    return 'UserEntity(userid: $userid, workspace: $workspace, password: $password)';
   }
 
   @override
@@ -188,14 +172,12 @@ class _$UserEntityImpl implements _UserEntity {
             (identical(other.workspace, workspace) ||
                 other.workspace == workspace) &&
             (identical(other.password, password) ||
-                other.password == password) &&
-            (identical(other.baseUrl, baseUrl) || other.baseUrl == baseUrl));
+                other.password == password));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, userid, workspace, password, baseUrl);
+  int get hashCode => Object.hash(runtimeType, userid, workspace, password);
 
   /// Create a copy of UserEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -216,7 +198,6 @@ abstract class _UserEntity implements UserEntity {
     required final String userid,
     required final String workspace,
     required final String password,
-    required final String baseUrl,
   }) = _$UserEntityImpl;
 
   factory _UserEntity.fromJson(Map<String, dynamic> json) =
@@ -228,8 +209,6 @@ abstract class _UserEntity implements UserEntity {
   String get workspace;
   @override
   String get password;
-  @override
-  String get baseUrl;
 
   /// Create a copy of UserEntity
   /// with the given fields replaced by the non-null parameter values.

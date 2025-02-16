@@ -11,7 +11,6 @@ _$UserEntityImpl _$$UserEntityImplFromJson(Map<String, dynamic> json) =>
       userid: json['userid'] as String,
       workspace: json['workspace'] as String,
       password: json['password'] as String,
-      baseUrl: json['baseUrl'] as String,
     );
 
 Map<String, dynamic> _$$UserEntityImplToJson(_$UserEntityImpl instance) =>
@@ -19,5 +18,4 @@ Map<String, dynamic> _$$UserEntityImplToJson(_$UserEntityImpl instance) =>
       'userid': instance.userid,
       'workspace': instance.workspace,
       'password': instance.password,
-      'baseUrl': instance.baseUrl,
     };

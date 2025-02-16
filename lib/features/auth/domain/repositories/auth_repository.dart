@@ -5,7 +5,6 @@ abstract class AuthRepository {
     required String userid,
     required String workspace,
     required String password,
-    required String baseUrl,
   });
   Future<void> logout();
   Future<UserEntity?> getCurrentUser();

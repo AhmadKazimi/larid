@@ -13,17 +13,15 @@ class LoginEvent extends AuthEvent {
   final String userid;
   final String workspace;
   final String password;
-  final String baseUrl;
 
   LoginEvent({
     required this.userid,
     required this.workspace,
     required this.password,
-    required this.baseUrl,
   });
 
   @override
-  List<Object?> get props => [userid, workspace, password, baseUrl];
+  List<Object?> get props => [userid, workspace, password];
 }
 
 // States
@@ -71,7 +69,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         userid: event.userid,
         workspace: event.workspace,
         password: event.password,
-        baseUrl: event.baseUrl,
       );
       emit(AuthAuthenticated(user));
     } catch (e) {

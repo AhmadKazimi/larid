@@ -20,17 +20,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String userid,
     required String workspace,
     required String password,
-    required String baseUrl,
   }) async {
     try {
       // Configure base URL for API calls
-      _dioClient.setBaseUrl(baseUrl);
 
       final user = UserEntity(
         userid: userid,
         workspace: workspace,
         password: password,
-        baseUrl: baseUrl,
       );
       
       await saveUser(user);
@@ -52,7 +49,6 @@ class AuthRepositoryImpl implements AuthRepository {
     if (userJson == null) return null;
     
     final user = UserEntity.fromJson(json.decode(userJson));
-    _dioClient.setBaseUrl(user.baseUrl);
     return user;
   }
 

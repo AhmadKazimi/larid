@@ -15,27 +15,28 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _workspaceController = TextEditingController();
+  final _useridController = TextEditingController();
   final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _workspaceController.dispose();
+    _useridController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _onLoginPressed() {
-    // if (_formKey.currentState?.validate() ?? false) {
-    //   context.read<AuthBloc>().add(
-    //         LoginEvent(
-    //           email: _emailController.text,
-    //           password: _passwordController.text,
-    //         ),
-    //       );
-    // }
-
-    NavigationService.push(context, RouteConstants.map);
+    if (_formKey.currentState?.validate() ?? false) {
+      context.read<AuthBloc>().add(
+            LoginEvent(
+              workspace: _workspaceController.text,
+              userid: _useridController.text,
+              password: _passwordController.text,
+            ),
+          );
+    }
   }
 
   @override
@@ -83,18 +84,28 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 48),
                       TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          labelText: l10n.email,
-                          prefixIcon: const Icon(Icons.email_outlined),
+                        controller: _workspaceController,
+                        decoration: const InputDecoration(
+                          labelText: 'Workspace',
+                          prefixIcon: Icon(Icons.business),
                         ),
-                        keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value?.isEmpty ?? true) {
-                            return l10n.pleaseEnterEmail;
+                            return 'Please enter workspace';
                           }
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
-                            return l10n.pleaseEnterValidEmail;
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _useridController,
+                        decoration: const InputDecoration(
+                          labelText: 'User ID',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                        validator: (value) {
+                          if (value?.isEmpty ?? true) {
+                            return 'Please enter user ID';
                           }
                           return null;
                         },
@@ -102,36 +113,29 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _passwordController,
-                        decoration: InputDecoration(
-                          labelText: l10n.password,
-                          prefixIcon: const Icon(Icons.lock_outline),
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: Icon(Icons.lock_outline),
                         ),
                         obscureText: true,
                         validator: (value) {
                           if (value?.isEmpty ?? true) {
-                            return l10n.pleaseEnterPassword;
-                          }
-                          if ((value?.length ?? 0) < 6) {
-                            return l10n.passwordMustBe6Chars;
+                            return 'Please enter password';
                           }
                           return null;
                         },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: state is AuthLoading ? null : _onLoginPressed,
-                          child: state is AuthLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
-                                  ),
-                                )
-                              : Text(l10n.login),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: state is AuthLoading
+                                ? const CircularProgressIndicator()
+                                : const Text('Login'),
+                          ),
                         ),
                       ),
                     ],

@@ -9,7 +9,6 @@ class UserEntity with _$UserEntity {
     required String userid,
     required String workspace,
     required String password,
-    required String baseUrl,
   }) = _UserEntity;
 
   factory UserEntity.fromJson(Map<String, dynamic> json) => _$UserEntityFromJson(json);
