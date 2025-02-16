@@ -1,13 +1,15 @@
 class User {
   final int? id;
-  final String name;
-  final String email;
+  final String workspaceId;
+  final String password;
+  final String baseUrl;
   final DateTime? createdAt;
 
   User({
     this.id,
-    required this.name,
-    required this.email,
+    required this.workspaceId,
+    required this.password,
+    required this.baseUrl,
     this.createdAt,
   });
 
@@ -15,8 +17,9 @@ class User {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'name': name,
-      'email': email,
+      'workspaceId': workspaceId,
+      'password': password,
+      'baseUrl': baseUrl,
       'created_at': createdAt?.toIso8601String(),
     };
   }
@@ -25,8 +28,9 @@ class User {
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
       id: map['id'],
-      name: map['name'],
-      email: map['email'],
+      workspaceId: map['workspaceId'],
+      password: map['password'],
+      baseUrl: map['baseUrl'],
       createdAt: map['created_at'] != null 
           ? DateTime.parse(map['created_at']) 
           : null,
