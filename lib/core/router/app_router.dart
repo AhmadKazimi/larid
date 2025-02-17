@@ -37,13 +37,13 @@ class AppRouter {
         final isLoggingIn = state.matchedLocation == RouteConstants.login;
 
         // If user is logged in and not on protected pages, go to map
-        if (isLoggedIn && !isLoggingIn) {
+        if (isLoggedIn) {
           return RouteConstants.map;
         }
 
         // If user is not logged in and trying to access protected pages,
         // redirect to login page
-        if (!isLoggedIn && !isLoggingIn) {
+        if (!isLoggingIn) {
           return RouteConstants.login;
         }
       }
