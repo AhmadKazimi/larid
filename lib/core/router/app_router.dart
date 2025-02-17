@@ -46,8 +46,8 @@ class AppRouter {
 
       // Use cached baseUrl if available and not in API config page
       // First check if base URL is configured
-      final apiConfigDataSource = getIt<ApiConfigLocalDataSource>();
-      final baseUrl = await apiConfigDataSource.getBaseUrl();
+      final userDB = getIt<UserDB>();
+      final baseUrl = await userDB.getBaseUrl();
 
       final isApiConfigPage = state.matchedLocation == RouteConstants.apiConfig;
 

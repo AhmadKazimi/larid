@@ -19,7 +19,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
     try {
       emit(const SyncState.loading());
       
-      event.when(
+      await event.when(
         syncCustomers: (userid, workspace, password) async {
           final customers = await _syncCustomersUseCase(
             userid: userid,

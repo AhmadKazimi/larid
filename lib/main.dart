@@ -33,12 +33,6 @@ class MyApp extends StatelessWidget {
                   userDB: getIt<UserDB>(),
                 ),
               )..add(const ApiConfigEvent.checkBaseUrl()),
-          create:
-              (context) => ApiConfigBloc(
-                repository: ApiConfigRepositoryImpl(
-                  userDB: getIt<UserDB>(),
-                ),
-              )..add(const ApiConfigEvent.checkBaseUrl()),
         ),
       ],
       child: MaterialApp.router(
