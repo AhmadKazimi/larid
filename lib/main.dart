@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:larid/core/theme/app_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:larid/core/router/app_router.dart';
+import 'package:larid/core/storage/shared_prefs.dart';
 import 'package:larid/features/api_config/data/datasources/local_datasource.dart';
 import 'package:larid/features/api_config/data/repositories/api_config_repository_impl.dart';
 import 'package:larid/features/api_config/presentation/bloc/api_config_bloc.dart';
-import 'package:larid/features/api_config/presentation/pages/api_base_url_page.dart';
-import 'package:larid/features/auth/presentation/pages/login_page.dart';
 import 'core/di/service_locator.dart';
 import 'core/l10n/l10n.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -15,6 +15,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupServiceLocator();
+  await SharedPrefs.init();
   runApp(const MyApp());
 }
 
@@ -31,12 +32,12 @@ class MyApp extends StatelessWidget {
         BlocProvider<ApiConfigBloc>(
           create: (context) => ApiConfigBloc(
             repository: ApiConfigRepositoryImpl(
-              localDataSource: ApiConfigLocalDataSource.instance,
+              localDataSource: getIt<ApiConfigLocalDataSource>(),
             ),
           )..add(const ApiConfigEvent.checkBaseUrl()),
         ),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'Larid',
         theme: AppTheme.lightTheme,
@@ -49,26 +50,13 @@ class MyApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        routerConfig: AppRouter.router,
         builder: (context, child) {
           return Directionality(
             textDirection: TextDirection.rtl,
             child: child!,
           );
         },
-        home: BlocBuilder<ApiConfigBloc, ApiConfigState>(
-          builder: (context, state) {
-            return state.maybeWhen(
-              loading: () => const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-              exists: (_) => const LoginPage(),
-              saved: () => const LoginPage(),
-              orElse: () => const ApiBaseUrlPage(),
-            );
-          },
-        ),
       ),
     );
   }

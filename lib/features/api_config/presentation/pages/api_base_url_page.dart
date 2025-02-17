@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:larid/core/router/route_constants.dart';
 import 'package:larid/features/api_config/presentation/bloc/api_config_bloc.dart';
-import 'package:larid/features/auth/presentation/pages/login_page.dart';
 
 class ApiBaseUrlPage extends StatefulWidget {
   const ApiBaseUrlPage({super.key});
@@ -48,9 +49,7 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
         listener: (context, state) {
           state.maybeWhen(
             saved: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-              );
+              context.go(RouteConstants.login);
             },
             error: (message) {
               ScaffoldMessenger.of(context).showSnackBar(

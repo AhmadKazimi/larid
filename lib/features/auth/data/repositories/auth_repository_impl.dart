@@ -10,6 +10,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final ApiService _apiService;
   final SharedPreferences _sharedPreferences;
   static const String _userKey = 'user_key';
+  static const String _isLoggedInKey = 'is_logged_in';
 
   AuthRepositoryImpl({
     required DioClient dioClient,
@@ -20,28 +21,33 @@ class AuthRepositoryImpl implements AuthRepository {
         _apiService = apiService;
 
   @override
-  Future<UserEntity> login({
+  Future<bool> login({
     required String userid,
     required String workspace,
     required String password,
   }) async {
     try {
-      // Call the checkUser API
-      final response = await _apiService.checkUser(
+      // Call the checkUser API and verify credentials
+      final isAuthenticated = await _apiService.checkUser(
         userid: userid,
         workspace: workspace,
         password: password,
       );
 
-      // Create user entity from response
-      final user = UserEntity(
-        userid: userid,
-        workspace: workspace,
-        password: password,
-      );
-      
-      await saveUser(user);
-      return user;
+      if (isAuthenticated) {
+        // Create user entity since authentication was successful
+        final user = UserEntity(
+          userid: userid,
+          workspace: workspace,
+          password: password,
+        );
+        
+        await saveUser(user);
+        await _sharedPreferences.setBool(_isLoggedInKey, true);
+        return true;
+      } else {
+        return false;
+      }
     } catch (e) {
       rethrow;
     }
@@ -50,6 +56,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     await _sharedPreferences.remove(_userKey);
+    await _sharedPreferences.remove(_isLoggedInKey);
     _dioClient.removeAuthToken();
   }
 
@@ -65,5 +72,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> saveUser(UserEntity user) async {
     await _sharedPreferences.setString(_userKey, json.encode(user.toJson()));
+  }
+
+  @override
+  bool isLoggedIn() {
+    return _sharedPreferences.getBool(_isLoggedInKey) ?? false;
   }
 }

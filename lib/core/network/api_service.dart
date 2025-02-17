@@ -9,8 +9,9 @@ class ApiService {
 
   /// Checks user credentials against the server
   /// 
-  /// Returns the response data if successful, throws an error otherwise
-  Future<Map<String, dynamic>> checkUser({
+  /// Returns true if authentication is successful (response is "1"),
+  /// throws an error otherwise
+  Future<bool> checkUser({
     required String userid,
     required String workspace,
     required String password,
@@ -26,7 +27,13 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        return response.data as Map<String, dynamic>;
+        // Convert response data to string to handle both string and int responses
+        final responseData = response.data.toString();
+        if (responseData == "1") {
+          return true;
+        } else {
+          throw 'Invalid credentials';
+        }
       } else {
         throw DioException(
           requestOptions: response.requestOptions,

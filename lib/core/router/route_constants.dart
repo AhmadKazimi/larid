@@ -1,4 +1,7 @@
 class RouteConstants {
+  // API Config Routes
+  static const String apiConfig = '/api-config';
+  
   // Auth Routes
   static const String login = '/login';
   static const String register = '/register';

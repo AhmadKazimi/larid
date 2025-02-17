@@ -2,51 +2,44 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/login_usecase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Events
 abstract class AuthEvent extends Equatable {
-  @override
-  List<Object?> get props => [];
+  const AuthEvent();
 }
 
 class LoginEvent extends AuthEvent {
-  final String userid;
-  final String workspace;
-  final String password;
+  final UserEntity userEntity;
 
-  LoginEvent({
-    required this.userid,
-    required this.workspace,
-    required this.password,
-  });
+  const LoginEvent({required this.userEntity});
 
   @override
-  List<Object?> get props => [userid, workspace, password];
+  List<Object?> get props => [userEntity];
 }
 
 // States
 abstract class AuthState extends Equatable {
+  const AuthState();
+
   @override
   List<Object?> get props => [];
 }
 
 class AuthInitial extends AuthState {}
 
-class AuthLoading extends AuthState {}
+class AuthLoading extends AuthState {
+  const AuthLoading();
+}
 
 class AuthAuthenticated extends AuthState {
-  final UserEntity user;
-
-  AuthAuthenticated(this.user);
-
-  @override
-  List<Object?> get props => [user];
+  const AuthAuthenticated();
 }
 
 class AuthError extends AuthState {
   final String message;
 
-  AuthError(this.message);
+  const AuthError(this.message);
 
   @override
   List<Object?> get props => [message];
@@ -54,25 +47,27 @@ class AuthError extends AuthState {
 
 // BLoC
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final LoginUseCase _loginUseCase;
+  final LoginUseCase loginUseCase;
+  final SharedPreferences _prefs;
 
-  AuthBloc({required LoginUseCase loginUseCase})
-      : _loginUseCase = loginUseCase,
+  AuthBloc({
+    required this.loginUseCase,
+    required SharedPreferences prefs,
+  })  : _prefs = prefs,
         super(AuthInitial()) {
-    on<LoginEvent>(_onLogin);
-  }
-
-  Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
-    emit(AuthLoading());
-    try {
-      final user = await _loginUseCase(
-        userid: event.userid,
-        workspace: event.workspace,
-        password: event.password,
-      );
-      emit(AuthAuthenticated(user));
-    } catch (e) {
-      emit(AuthError(e.toString()));
-    }
+    on<LoginEvent>((event, emit) async {
+      emit(const AuthLoading());
+      try {
+        final isAuthenticated = await loginUseCase(event.userEntity);
+        if (isAuthenticated) {
+          await _prefs.setBool('is_logged_in', true);
+          emit(const AuthAuthenticated());
+        } else {
+          emit(const AuthError('Invalid credentials'));
+        }
+      } catch (e) {
+        emit(AuthError(e.toString()));
+      }
+    });
   }
 }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:larid/core/router/route_constants.dart';
-import '../../../../core/router/navigation_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../domain/entities/user_entity.dart';
 import '../bloc/auth_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -29,12 +30,14 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onLoginPressed() {
     if (_formKey.currentState?.validate() ?? false) {
+      final userEntity = UserEntity(
+        userid: _useridController.text,
+        workspace: _workspaceController.text,
+        password: _passwordController.text,
+      );
+      
       context.read<AuthBloc>().add(
-            LoginEvent(
-              workspace: _workspaceController.text,
-              userid: _useridController.text,
-              password: _passwordController.text,
-            ),
+            LoginEvent(userEntity: userEntity),
           );
     }
   }
@@ -54,7 +57,8 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
           } else if (state is AuthAuthenticated) {
-            NavigationService.pushReplacement(context, RouteConstants.home);
+            // Navigate to map page using GoRouter
+            context.go(RouteConstants.map);
           }
         },
         builder: (context, state) {
