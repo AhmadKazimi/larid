@@ -12,6 +12,11 @@ import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../database/database_helper.dart';
 import '../../database/user_db.dart';
+import '../../database/customer_db.dart';
+import '../../features/sync/data/repositories/sync_repository_impl.dart';
+import '../../features/sync/domain/repositories/sync_repository.dart';
+import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
+import '../../features/sync/presentation/bloc/sync_bloc.dart';
 
 final getIt = GetIt.instance;
 final _logger = Logger('ServiceLocator');
@@ -61,11 +66,33 @@ Future<void> setupServiceLocator() async {
   // Use Cases
   getIt.registerFactory(() => LoginUseCase(getIt()));
 
+  // Database
+  getIt.registerSingleton<CustomerDB>(
+    CustomerDB(getIt()),
+  );
+
+  // Repositories
+  getIt.registerSingleton<SyncRepository>(
+    SyncRepositoryImpl(
+      apiService: getIt(),
+      customerDB: getIt(),
+    ),
+  );
+
+  // Use Cases
+  getIt.registerFactory(() => SyncCustomersUseCase(getIt()));
+
   // BLoCs
   getIt.registerFactory<AuthBloc>(
     () => AuthBloc(
       loginUseCase: getIt(),
       prefs: getIt(),
+    ),
+  );
+
+  getIt.registerFactory<SyncBloc>(
+    () => SyncBloc(
+      syncCustomersUseCase: getIt(),
     ),
   );
 }
