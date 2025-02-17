@@ -1,13 +1,17 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:logging/logging.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import '../network/dio_client.dart';
 import '../network/api_service.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/api_config/data/datasources/local_datasource.dart';
+import '../../database/database_helper.dart';
+import '../../database/user_db.dart';
 
 final getIt = GetIt.instance;
 final _logger = Logger('ServiceLocator');
@@ -18,14 +22,27 @@ Future<void> setupServiceLocator() async {
   // Core
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
-  
-  // ApiConfig
-  getIt.registerSingleton<ApiConfigLocalDataSource>(
-    ApiConfigLocalDataSource(),
+
+  // Database
+  final documentsDirectory = await getApplicationDocumentsDirectory();
+  final databasePath = join(documentsDirectory.path, 'larid.db');
+  _logger.info('Initializing database at path: $databasePath');
+
+  final database = await openDatabase(
+    databasePath,
+    version: 1,
+    onCreate: (db, version) async {
+      _logger.info('Creating database tables for version $version');
+      await db.execute(UserDB.createTableQuery);
+    },
   );
 
+  getIt.registerSingleton<Database>(database);
+  getIt.registerSingleton<UserDB>(UserDB(database));
+  getIt.registerSingleton<DatabaseHelper>(DatabaseHelper());
+  
   // Get baseUrl from database
-  final baseUrl = await getIt<ApiConfigLocalDataSource>().getBaseUrl();
+  final baseUrl = await getIt<UserDB>().getBaseUrl();
   _logger.info('Initial base URL from database: $baseUrl');
   
   // Initialize network components with base URL
@@ -37,6 +54,7 @@ Future<void> setupServiceLocator() async {
       dioClient: getIt(),
       sharedPreferences: getIt(),
       apiService: getIt(),
+      userDB: getIt(),
     ),
   );
 
@@ -97,10 +115,6 @@ Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
   _logger.info('Updating base URL to: $newBaseUrl');
   
   try {
-    // Save the new baseUrl to database first
-    await getIt<ApiConfigLocalDataSource>().saveBaseUrl(newBaseUrl);
-    _logger.info('Base URL saved to database');
-    
     // Reinitialize all network components with new base URL
     await _initializeNetworkComponents(newBaseUrl);
     
@@ -123,6 +137,7 @@ getIt.registerSingleton<AuthRepository>(
     dioClient: getIt<DioClient>(),
     sharedPreferences: getIt<SharedPreferences>(),
     apiService: getIt<ApiService>(),
+    userDB: getIt<UserDB>(),
   ),
 );
     _logger.info('Successfully updated base URL and reinitialized network components');

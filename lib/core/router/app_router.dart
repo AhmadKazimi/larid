@@ -1,29 +1,50 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/map/presentation/pages/map_page.dart';
 import '../../features/api_config/presentation/pages/api_base_url_page.dart';
-import '../../features/api_config/data/datasources/local_datasource.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../database/user_db.dart';
 import '../di/service_locator.dart';
 import 'route_constants.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
-
 class AppRouter {
-  static final GoRouter router = GoRouter(
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+  static final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
+  static String? _cachedBaseUrl;
+  static DateTime? _lastRedirectTime;
+
+  static GoRouter get router => _router;
+  
+  // Public method to clear the cached base URL
+  static void clearCachedBaseUrl() {
+    _cachedBaseUrl = null;
+  }
+
+  static final _router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: RouteConstants.login,
     debugLogDiagnostics: true,
     redirect: (context, state) async {
-      // First check if base URL is configured
-      final apiConfigDataSource = getIt<ApiConfigLocalDataSource>();
-      final baseUrl = await apiConfigDataSource.getBaseUrl();
-      
+      // Implement debouncing
+      final now = DateTime.now();
+      if (_lastRedirectTime != null && 
+          now.difference(_lastRedirectTime!) < const Duration(milliseconds: 300)) {
+        return null;
+      }
+      _lastRedirectTime = now;
+
+      // Use cached baseUrl if available and not in API config page
       final isApiConfigPage = state.matchedLocation == RouteConstants.apiConfig;
+      String? baseUrl;
+      
+      if (!isApiConfigPage && _cachedBaseUrl != null) {
+        baseUrl = _cachedBaseUrl;
+      } else {
+        baseUrl = await getIt<UserDB>().getBaseUrl();
+        _cachedBaseUrl = baseUrl;
+      }
       
       // If base URL is not set, redirect to API config page
       if ((baseUrl == null || baseUrl.isEmpty) && !isApiConfigPage) {

@@ -1,56 +1,30 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import 'package:logging/logging.dart';
+import '../core/di/service_locator.dart';
+import 'user_db.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
-  static Database? _database;
   final _logger = Logger('DatabaseHelper');
 
   // Private constructor
   DatabaseHelper._internal() {
     Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen((record) {
-      print('${record.level.name}: ${record.time}: ${record.message}');
+      _logger.info('${record.level.name}: ${record.time}: ${record.message}');
     });
   }
 
   // Singleton pattern
   factory DatabaseHelper() => _instance;
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDatabase();
-    return _database!;
-  }
-
-  Future<Database> _initDatabase() async {
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, 'larid.db');
-    _logger.info('Initializing database at path: $path');
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
-    );
-  }
+  // Get database instance from service locator
+  Future<Database> get database async => getIt<Database>();
 
   Future<void> _onCreate(Database db, int version) async {
     _logger.info('Creating database tables for version $version');
     // Create your tables here
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS users (
-        userid TEXT PRIMARY KEY,
-        workspace TEXT NOT NULL,
-        password TEXT NOT NULL,
-        baseUrl TEXT NOT NULL
-      )
-    ''');
-    _logger.info('Database tables created successfully');
+    await db.execute(UserDB.createTableQuery);
     // Add more tables as needed
   }
 
@@ -139,14 +113,6 @@ class DatabaseHelper {
     } catch (e) {
       _logger.severe('Error deleting from $table: $e');
       return -1;
-    }
-  }
-
-  // Close the database
-  Future<void> close() async {
-    if (_database != null) {
-      await _database!.close();
-      _database = null;
     }
   }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/network/api_service.dart';
+import '../../../../database/user_db.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -9,6 +10,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final DioClient _dioClient;
   final ApiService _apiService;
   final SharedPreferences _sharedPreferences;
+  final UserDB _userDB;
   static const String _userKey = 'user_key';
   static const String _isLoggedInKey = 'is_logged_in';
 
@@ -16,9 +18,11 @@ class AuthRepositoryImpl implements AuthRepository {
     required DioClient dioClient,
     required SharedPreferences sharedPreferences,
     required ApiService apiService,
+    required UserDB userDB,
   })  : _dioClient = dioClient,
         _sharedPreferences = sharedPreferences,
-        _apiService = apiService;
+        _apiService = apiService,
+        _userDB = userDB;
 
   @override
   Future<bool> login({
@@ -41,7 +45,7 @@ class AuthRepositoryImpl implements AuthRepository {
           workspace: workspace,
           password: password,
         );
-        
+
         await saveUser(user);
         await _sharedPreferences.setBool(_isLoggedInKey, true);
         return true;
@@ -62,16 +66,23 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<UserEntity?> getCurrentUser() async {
+    // First try to get from SharedPreferences for active session
     final userJson = _sharedPreferences.getString(_userKey);
-    if (userJson == null) return null;
+    if (userJson != null) {
+      return UserEntity.fromJson(json.decode(userJson));
+    }
     
-    final user = UserEntity.fromJson(json.decode(userJson));
-    return user;
+    // If not in SharedPreferences, try to get from database
+    return await _userDB.getCurrentUser();
   }
 
   @override
   Future<void> saveUser(UserEntity user) async {
+    // Save to SharedPreferences for session management
     await _sharedPreferences.setString(_userKey, json.encode(user.toJson()));
+    
+    // Save to database for persistence
+    await _userDB.updateCurrentUser(user, _dioClient.baseUrl);
   }
 
   @override

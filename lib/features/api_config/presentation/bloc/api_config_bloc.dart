@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:larid/core/di/service_locator.dart';
 import 'package:larid/features/api_config/domain/repositories/api_config_repository.dart';
 import 'package:logging/logging.dart';
+import '../../../../core/router/app_router.dart';
 
 part 'api_config_event.dart';
 part 'api_config_state.dart';
@@ -22,8 +23,14 @@ class ApiConfigBloc extends Bloc<ApiConfigEvent, ApiConfigState> {
     try {
       _logger.info('Saving base URL: ${event.baseUrl}');
       
-      // Update base URL in service locator (this will also save to database)
+      // Save base URL to database
+      await repository.saveBaseUrl(event.baseUrl);
+      
+      // Update network components
       await updateDioClientBaseUrl(event.baseUrl);
+      
+      // Clear the router's cached baseUrl
+      AppRouter.clearCachedBaseUrl();
       
       _logger.info('Base URL saved successfully');
       emit(const ApiConfigState.saved());
