@@ -18,7 +18,7 @@ class UserDB {
 
   UserDB(this._db);
 
-  Future<void> updateCurrentUser(UserEntity user, String baseUrl) async {
+  Future<void> updateCurrentUser(UserEntity user, String? baseUrl) async {
     final users = await _db.query(tableName);
     
     if (users.isEmpty) {

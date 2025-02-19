@@ -6,16 +6,8 @@ class SyncCustomersUseCase {
 
   SyncCustomersUseCase(this._repository);
 
-  Future<List<CustomerEntity>> call({
-    required String userid,
-    required String workspace,
-    required String password,
-  }) async {
-    final customers = await _repository.getCustomers(
-      userid: userid,
-      workspace: workspace,
-      password: password,
-    );
+  Future<List<CustomerEntity>> call() async {
+    final customers = await _repository.getCustomers();
     
     await _repository.saveCustomers(customers);
     return customers;

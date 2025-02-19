@@ -2,17 +2,19 @@ import 'package:dio/dio.dart';
 import 'api_logger.dart';
 
 class DioClient {
-  String baseUrl;
+  String? baseUrl;
   late Dio _dio;
 
-  DioClient({required this.baseUrl}) {
+  DioClient() {
     _initializeDio();
   }
+
+  bool get isBaseUrlSet => baseUrl != null && baseUrl!.isNotEmpty;
 
   void _initializeDio() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: baseUrl ?? '',
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         responseType: ResponseType.json,
@@ -24,6 +26,23 @@ class DioClient {
     )..interceptors.addAll([
         ApiLogger(),
       ]);
+
+    // Add request interceptor to check base URL
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (!isBaseUrlSet) {
+            return handler.reject(
+              DioException(
+                requestOptions: options,
+                error: 'Base URL is not set',
+              ),
+            );
+          }
+          return handler.next(options);
+        },
+      ),
+    );
   }
 
   void setBaseUrl(String newBaseUrl) {

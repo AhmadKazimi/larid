@@ -5,16 +5,7 @@ import '../bloc/sync_event.dart';
 import '../bloc/sync_state.dart';
 
 class SyncPage extends StatelessWidget {
-  final String userid;
-  final String workspace;
-  final String password;
-
-  const SyncPage({
-    super.key,
-    required this.userid,
-    required this.workspace,
-    required this.password,
-  });
+  const SyncPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -46,11 +37,7 @@ class SyncPage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       context.read<SyncBloc>().add(
-                        SyncEvent.syncCustomers(
-                          userid: userid,
-                          workspace: workspace,
-                          password: password,
-                        ),
+                        const SyncEvent.syncCustomers(),
                       );
                     },
                     child: const Text('Start Sync'),
@@ -83,11 +70,7 @@ class SyncPage extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () {
                           context.read<SyncBloc>().add(
-                            SyncEvent.syncCustomers(
-                              userid: userid,
-                              workspace: workspace,
-                              password: password,
-                            ),
+                            const SyncEvent.syncCustomers(),
                           );
                         },
                         child: const Text('Sync Again'),
@@ -107,11 +90,7 @@ class SyncPage extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () {
                           context.read<SyncBloc>().add(
-                            SyncEvent.syncCustomers(
-                              userid: userid,
-                              workspace: workspace,
-                              password: password,
-                            ),
+                            SyncEvent.syncCustomers(),
                           );
                         },
                         child: const Text('Try Again'),

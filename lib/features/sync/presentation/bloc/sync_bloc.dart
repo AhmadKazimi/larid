@@ -9,29 +9,15 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
   SyncBloc({required SyncCustomersUseCase syncCustomersUseCase})
     : _syncCustomersUseCase = syncCustomersUseCase,
       super(const SyncState.initial()) {
-    on<SyncEvent>(_onSyncCustomers);
-  }
-
-  Future<void> _onSyncCustomers(
-    SyncEvent event,
-    Emitter<SyncState> emit,
-  ) async {
-    try {
-      emit(const SyncState.loading());
-      
-      await event.when(
-        syncCustomers: (userid, workspace, password) async {
-          final customers = await _syncCustomersUseCase(
-            userid: userid,
-            workspace: workspace,
-            password: password,
-          );
-          
-          emit(SyncState.success(customers));
-        },
-      );
-    } catch (e) {
-      emit(SyncState.error(e.toString()));
-    }
+    on<SyncEvent>((event, emit) async {
+      try {
+        emit(const SyncState.loading());
+        
+        final customers = await _syncCustomersUseCase();
+        emit(SyncState.success(customers));
+      } catch (e) {
+        emit(SyncState.error(e.toString()));
+      }
+    });
   }
 }

@@ -4,8 +4,11 @@ import 'package:larid/core/theme/app_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:larid/core/router/app_router.dart';
 import 'package:larid/core/storage/shared_prefs.dart';
+import 'package:larid/database/customer_db.dart';
 import 'package:larid/features/api_config/data/repositories/api_config_repository_impl.dart';
 import 'package:larid/features/api_config/presentation/bloc/api_config_bloc.dart';
+import 'package:larid/features/sync/domain/usecases/sync_customers_usecase.dart';
+import 'package:larid/features/sync/presentation/bloc/sync_bloc.dart';
 import 'core/di/service_locator.dart';
 import 'core/l10n/l10n.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -33,6 +36,11 @@ class MyApp extends StatelessWidget {
                   userDB: getIt<UserDB>(),
                 ),
               )..add(const ApiConfigEvent.checkBaseUrl()),
+        ),
+        BlocProvider<SyncBloc>(
+          create: (context) => SyncBloc(
+            syncCustomersUseCase: getIt<SyncCustomersUseCase>(),
+          ),
         ),
       ],
       child: MaterialApp.router(

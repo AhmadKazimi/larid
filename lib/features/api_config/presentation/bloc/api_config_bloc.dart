@@ -28,9 +28,7 @@ class ApiConfigBloc extends Bloc<ApiConfigEvent, ApiConfigState> {
       
       // Update network components
       await updateDioClientBaseUrl(event.baseUrl);
-      
-      // Clear the router's cached baseUrl
-      AppRouter.clearCachedBaseUrl();
+  
       
       _logger.info('Base URL saved successfully');
       emit(const ApiConfigState.saved());
