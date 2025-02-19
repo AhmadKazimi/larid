@@ -7,5 +7,22 @@
     "pleaseEnterEmail": "Please enter your email",
     "pleaseEnterValidEmail": "Please enter a valid email",
     "pleaseEnterPassword": "Please enter your password",
-    "passwordMustBe6Chars": "Password must be at least 6 characters"
+    "passwordMustBe6Chars": "Password must be at least 6 characters",
+    
+    "apiConfiguration": "API Configuration",
+    "enterApiBaseUrl": "Enter API Base URL",
+    "baseUrl": "Base URL",
+    "baseUrlHint": "https://api.example.com",
+    "pleaseEnterUrl": "Please enter a URL",
+    "pleaseEnterValidUrl": "Please enter a valid URL starting with http:// or https://",
+    "saveAndContinue": "Save and Continue",
+
+    "home": "Home",
+    "welcomeToLarid": "Welcome to Larid",
+    "goToLogin": "Go to Login",
+
+    "workspace": "Workspace",
+    "pleaseEnterWorkspace": "Please enter workspace",
+    "userId": "User ID",
+    "pleaseEnterUserId": "Please enter user ID"
 }

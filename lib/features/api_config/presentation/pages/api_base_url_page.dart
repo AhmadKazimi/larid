@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:larid/core/router/route_constants.dart';
 import 'package:larid/features/api_config/presentation/bloc/api_config_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../../core/widgets/gradient_page_layout.dart';
 
 class ApiBaseUrlPage extends StatefulWidget {
   const ApiBaseUrlPage({super.key});
@@ -40,11 +42,9 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('API Configuration'),
-        automaticallyImplyLeading: false,
-      ),
       body: BlocListener<ApiConfigBloc, ApiConfigState>(
         listener: (context, state) {
           state.maybeWhen(
@@ -59,62 +59,91 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
             orElse: () {},
           );
         },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Enter API Base URL',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+        child: GradientPageLayout(
+          child: Column(
+            children: [
+              const SizedBox(height: 32),
+              GradientFormCard(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.apiConfiguration,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.enterApiBaseUrl,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      TextFormField(
+                        controller: _urlController,
+                        decoration: InputDecoration(
+                          labelText: l10n.baseUrl,
+                          hintText: l10n.baseUrlHint,
+                          prefixIcon: const Icon(Icons.link),
+                        ),
+                        keyboardType: TextInputType.url,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return l10n.pleaseEnterUrl;
+                          }
+                          if (!_isValidUrl(value)) {
+                            return l10n.pleaseEnterValidUrl;
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      BlocBuilder<ApiConfigBloc, ApiConfigState>(
+                        builder: (context, state) {
+                          return SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: state.maybeWhen(
+                                loading: () => null,
+                                orElse: () => _saveBaseUrl,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.all(16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: state.maybeWhen(
+                                loading: () => const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                ),
+                                orElse: () => Text(
+                                  l10n.saveAndContinue,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _urlController,
-                  decoration: const InputDecoration(
-                    labelText: 'Base URL',
-                    hintText: 'https://api.example.com',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.link),
-                  ),
-                  keyboardType: TextInputType.url,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a URL';
-                    }
-                    if (!_isValidUrl(value)) {
-                      return 'Please enter a valid URL starting with http:// or https://';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                BlocBuilder<ApiConfigBloc, ApiConfigState>(
-                  builder: (context, state) {
-                    return ElevatedButton(
-                      onPressed: state.maybeWhen(
-                        loading: () => null,
-                        orElse: () => _saveBaseUrl,
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: state.maybeWhen(
-                        loading: () => const CircularProgressIndicator(),
-                        orElse: () => const Text('Save and Continue'),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

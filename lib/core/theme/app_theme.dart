@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const Color primary = Color(0xFF0076F1);
+  static const Color primary = Color(0xFF4A90E2);
   static const Color secondary = Color(0xFF3EAE30);
   static const Color accent = Color(0xFFFBCD00);
   
+  // Gradient colors
+  static const Color gradientStart = Color(0xFF4A90E2);
+  static const Color gradientEnd = Color(0xFFE3F2FD);
+  
   // Derived colors
-  static const Color primaryLight = Color(0xFF3391F3);
-  static const Color primaryDark = Color(0xFF005BBE);
+  static const Color primaryLight = Color(0xFF64A5E8);
+  static const Color primaryDark = Color(0xFF2F7FDB);
   static const Color secondaryLight = Color(0xFF5FC551);
   static const Color secondaryDark = Color(0xFF2E8222);
   

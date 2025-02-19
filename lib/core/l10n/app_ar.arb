@@ -7,5 +7,22 @@
     "pleaseEnterEmail": "الرجاء إدخال البريد الإلكتروني",
     "pleaseEnterValidEmail": "الرجاء إدخال بريد إلكتروني صحيح",
     "pleaseEnterPassword": "الرجاء إدخال كلمة المرور",
-    "passwordMustBe6Chars": "كلمة المرور يجب أن تكون 6 أحرف على الأقل"
+    "passwordMustBe6Chars": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+    
+    "apiConfiguration": "إعدادات API",
+    "enterApiBaseUrl": "أدخل عنوان API الأساسي",
+    "baseUrl": "العنوان الأساسي",
+    "baseUrlHint": "https://api.example.com",
+    "pleaseEnterUrl": "الرجاء إدخال عنوان URL",
+    "pleaseEnterValidUrl": "الرجاء إدخال عنوان URL صحيح يبدأ بـ http:// أو https://",
+    "saveAndContinue": "حفظ ومتابعة",
+
+    "home": "الرئيسية",
+    "welcomeToLarid": "مرحباً بك في لاريد",
+    "goToLogin": "الذهاب لتسجيل الدخول",
+
+    "workspace": "مساحة العمل",
+    "pleaseEnterWorkspace": "الرجاء إدخال مساحة العمل",
+    "userId": "معرف المستخدم",
+    "pleaseEnterUserId": "الرجاء إدخال معرف المستخدم"
 }
