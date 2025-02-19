@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../database/user_db.dart';
 import '../../domain/entities/user_entity.dart';

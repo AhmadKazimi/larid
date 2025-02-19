@@ -2,11 +2,23 @@ import 'package:dio/dio.dart';
 import 'api_logger.dart';
 
 class DioClient {
+  static DioClient? _instance;
   String? baseUrl;
   late Dio _dio;
 
-  DioClient() {
-    _initializeDio();
+  DioClient._(); // private constructor
+
+  static DioClient get instance {
+    _instance ??= DioClient._();
+    return _instance!;
+  }
+
+  static Future<void> initialize(String? initialBaseUrl) async {
+    final client = DioClient.instance;
+    if (initialBaseUrl != null && initialBaseUrl.isNotEmpty) {
+      client.baseUrl = initialBaseUrl;
+    }
+    client._initializeDio();
   }
 
   bool get isBaseUrlSet => baseUrl != null && baseUrl!.isNotEmpty;

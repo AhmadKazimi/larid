@@ -4,7 +4,7 @@ import 'package:logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import '../network/dio_client.dart';
+import '../network/api_client.dart';
 import '../network/api_service.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
@@ -65,7 +65,7 @@ Future<void> setupServiceLocator() async {
   // Repositories
   getIt.registerSingleton<AuthRepository>(
     AuthRepositoryImpl(
-      dioClient: getIt(),
+      dioClient: DioClient.instance,
       sharedPreferences: getIt(),
       apiService: getIt(),
       userDB: getIt(),
@@ -98,44 +98,25 @@ Future<void> setupServiceLocator() async {
 Future<void> _initializeNetworkComponents(String? baseUrl) async {
   _logger.info('Initializing network components with base URL: $baseUrl');
 
-  // Ensure base URL is not null or empty
-  if (baseUrl == null || baseUrl.isEmpty) {
-    _logger.warning('Base URL is null or empty');
-    baseUrl = '';
-  }
-
-  // Unregister existing instances if they exist
-  if (getIt.isRegistered<DioClient>()) {
-    _logger.info('Unregistering existing DioClient');
-    getIt.unregister<DioClient>();
-  }
-
-  if (getIt.isRegistered<ApiService>()) {
-    _logger.info('Unregistering existing ApiService');
-    getIt.unregister<ApiService>();
-  }
-
   try {
-    // Create and register DioClient if not already registered
+    // Initialize DioClient singleton with base URL
+    await DioClient.initialize(baseUrl);
+    
+    // Register the singleton instance
     if (!getIt.isRegistered<DioClient>()) {
-      final dioClient = DioClient();
-      getIt.registerSingleton<DioClient>(dioClient);
+      getIt.registerSingleton<DioClient>(DioClient.instance);
       _logger.info('DioClient registered');
     }
 
-    // Set the base URL on the existing DioClient
-    if (baseUrl != null && baseUrl.isNotEmpty) {
-      getIt<DioClient>().setBaseUrl(baseUrl);
-      _logger.info('DioClient base URL set to: $baseUrl');
+    // Create and register ApiService if not already registered
+    if (!getIt.isRegistered<ApiService>()) {
+      final apiService = ApiService(DioClient.instance);
+      getIt.registerSingleton<ApiService>(apiService);
+      _logger.info('ApiService registered with DioClient');
     }
 
-    // Create and register ApiService
-    final apiService = ApiService(getIt<DioClient>());
-    getIt.registerSingleton<ApiService>(apiService);
-    _logger.info('ApiService registered with DioClient');
-
     // Verify registrations
-    final registeredBaseUrl = getIt<DioClient>().baseUrl;
+    final registeredBaseUrl = DioClient.instance.baseUrl;
     _logger.info('Verified DioClient base URL: $registeredBaseUrl');
   } catch (e) {
     _logger.severe('Error initializing network components: $e');
@@ -148,11 +129,11 @@ Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
   _logger.info('Updating base URL to: $newBaseUrl');
 
   try {
-    // Reinitialize all network components with new base URL
-    await _initializeNetworkComponents(newBaseUrl);
-
+    // Update the base URL in the singleton instance
+    DioClient.instance.setBaseUrl(newBaseUrl);
+    
     // Verify the update
-    final updatedBaseUrl = getIt<DioClient>().baseUrl;
+    final updatedBaseUrl = DioClient.instance.baseUrl;
     _logger.info('Verified updated base URL: $updatedBaseUrl');
 
     if (updatedBaseUrl != newBaseUrl) {
@@ -162,24 +143,22 @@ Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
       throw Exception('Base URL update verification failed');
     }
 
-    // Unregister and re-register AuthRepository so it uses the updated network components
-    if (getIt.isRegistered<AuthRepository>()) {
-      _logger.info(
-        'Unregistering existing AuthRepository to update dependencies',
-      );
-      getIt.unregister<AuthRepository>();
-    }
+    // Create new ApiService instance with updated DioClient
+    getIt.unregister<ApiService>();
+    getIt.registerSingleton<ApiService>(ApiService(DioClient.instance));
+
+    // Update AuthRepository with new dependencies
+    getIt.unregister<AuthRepository>();
     getIt.registerSingleton<AuthRepository>(
       AuthRepositoryImpl(
-        dioClient: getIt<DioClient>(),
-        sharedPreferences: getIt<SharedPreferences>(),
-        apiService: getIt<ApiService>(),
-        userDB: getIt<UserDB>(),
+        dioClient: DioClient.instance,
+        sharedPreferences: getIt(),
+        apiService: getIt(),
+        userDB: getIt(),
       ),
     );
-    _logger.info(
-      'Successfully updated base URL and reinitialized network components',
-    );
+    
+    _logger.info('Successfully updated base URL and reinitialized network components');
   } catch (e) {
     _logger.severe('Error updating base URL: $e');
     rethrow;

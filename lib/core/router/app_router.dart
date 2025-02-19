@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import 'package:larid/core/network/dio_client.dart';
 import 'package:logging/logging.dart';
 import 'package:larid/features/sync/presentation/pages/sync_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'dio_client.dart';
+import 'api_client.dart';
 import 'api_endpoints.dart';
 
 class ApiService {

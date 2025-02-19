@@ -4,7 +4,6 @@ import 'package:larid/core/theme/app_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:larid/core/router/app_router.dart';
 import 'package:larid/core/storage/shared_prefs.dart';
-import 'package:larid/database/customer_db.dart';
 import 'package:larid/features/api_config/data/repositories/api_config_repository_impl.dart';
 import 'package:larid/features/api_config/presentation/bloc/api_config_bloc.dart';
 import 'package:larid/features/sync/domain/usecases/sync_customers_usecase.dart';

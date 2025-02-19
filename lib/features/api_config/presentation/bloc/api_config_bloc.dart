@@ -3,7 +3,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:larid/core/di/service_locator.dart';
 import 'package:larid/features/api_config/domain/repositories/api_config_repository.dart';
 import 'package:logging/logging.dart';
-import '../../../../core/router/app_router.dart';
 
 part 'api_config_event.dart';
 part 'api_config_state.dart';
