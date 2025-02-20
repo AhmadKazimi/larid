@@ -10,7 +10,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final DioClient _dioClient;
   final ApiService _apiService;
   final SharedPreferences _sharedPreferences;
-  final UserTable _userDB;
+  final UserTable _userTable;
   static const String _userKey = 'user_key';
   static const String _isLoggedInKey = 'is_logged_in';
 
@@ -18,11 +18,11 @@ class AuthRepositoryImpl implements AuthRepository {
     required DioClient dioClient,
     required SharedPreferences sharedPreferences,
     required ApiService apiService,
-    required UserTable userDB,
+    required UserTable userTable,
   })  : _dioClient = dioClient,
         _sharedPreferences = sharedPreferences,
         _apiService = apiService,
-        _userDB = userDB;
+        _userTable = userTable;
 
   @override
   Future<bool> login({
@@ -73,7 +73,7 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     
     // If not in SharedPreferences, try to get from database
-    return await _userDB.getCurrentUser();
+    return await _userTable.getCurrentUser();
   }
 
   @override
@@ -82,7 +82,7 @@ class AuthRepositoryImpl implements AuthRepository {
     await _sharedPreferences.setString(_userKey, json.encode(user.toJson()));
     
     // Save to database for persistence
-    await _userDB.updateCurrentUser(user, _dioClient.baseUrl);
+    await _userTable.updateCurrentUser(user, _dioClient.baseUrl);
   }
 
   @override

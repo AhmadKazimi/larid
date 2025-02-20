@@ -6,4 +6,5 @@ part 'sync_event.freezed.dart';
 class SyncEvent with _$SyncEvent {
   const factory SyncEvent.syncCustomers() = _SyncCustomers;
   const factory SyncEvent.syncSalesRepCustomers() = _SyncSalesRepCustomers;
+  const factory SyncEvent.syncPrices() = _SyncPrices;
 }

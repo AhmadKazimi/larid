@@ -34,35 +34,59 @@ class ApiService {
     }
   }
 
-Future<List<Map<String, dynamic>>> getSalesrepRouteCustomers({
-  required String userid,
-  required String workspace,
-  required String password,
-}) async {
-  try {
-    final response = await _dioClient.get(
-      ApiEndpoints.buildUrl(ApiEndpoints.getSalesrepRouteCustomers),
-      queryParameters: {
-        ApiParameters.userid: userid,
-        ApiParameters.workspace: workspace,
-        ApiParameters.password: password,
-      },
-    );
+  Future<List<Map<String, dynamic>>> getSalesrepRouteCustomers({
+    required String userid,
+    required String workspace,
+    required String password,
+  }) async {
+    try {
+      final response = await _dioClient.get(
+        ApiEndpoints.buildUrl(ApiEndpoints.getSalesrepRouteCustomers),
+        queryParameters: {
+          ApiParameters.userid: userid,
+          ApiParameters.workspace: workspace,
+          ApiParameters.password: password,
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = response.data;
-      return data.cast<Map<String, dynamic>>();
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.cast<Map<String, dynamic>>();
+      }
+      throw Exception('Failed to get salesrep route customers');
+    } on DioException catch (e) {
+      throw Exception('Network error: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
     }
-    throw Exception('Failed to get salesrep route customers');
-  } on DioException catch (e) {
-    throw Exception('Network error: ${e.message}');
-  } catch (e) {
-    throw Exception('Unexpected error: $e');
   }
-}
 
+  Future<List<Map<String, dynamic>>> getCustomersPriceList({
+    required String userid,
+    required String workspace,
+    required String password,
+  }) async {
+    try {
+      final response = await _dioClient.get(
+        ApiEndpoints.buildUrl(ApiEndpoints.getCustomersPriceList),
+        queryParameters: {
+          ApiParameters.userid: userid,
+          ApiParameters.workspace: workspace,
+          ApiParameters.password: password,
+        },
+      );
 
-
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        return data.cast<Map<String, dynamic>>();
+      }
+      throw Exception('Failed to get prices');
+    } on DioException catch (e) {
+      throw Exception('Network error: ${e.message}');
+    } catch (e) {
+      throw Exception('Unexpected error: $e');
+    }
+  }
 
   /// Checks user credentials against the server
   /// Returns true if authentication is successful (response is "1"),

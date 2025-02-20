@@ -45,6 +45,15 @@ class SyncPage extends StatelessWidget {
                           state.salesRepState,
                         ),
                       ],
+                      if (state.pricesState.isLoading ||
+                          state.pricesState.isSuccess ||
+                          state.pricesState.errorCode != null) ...[
+                        const Divider(height: 24, thickness: 1),
+                        _buildApiLogSection(
+                          'Prices',
+                          state.pricesState,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -73,6 +82,7 @@ class SyncPage extends StatelessWidget {
             : () {
                 context.read<SyncBloc>().add(const SyncEvent.syncCustomers());
                 context.read<SyncBloc>().add(const SyncEvent.syncSalesRepCustomers());
+                context.read<SyncBloc>().add(const SyncEvent.syncPrices());
               },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(16),

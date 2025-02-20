@@ -12,11 +12,13 @@ import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../database/user_table.dart';
 import '../../database/customer_table.dart';
+import '../../database/prices_table.dart';
 import '../../features/sync/data/repositories/sync_repository_impl.dart';
 import '../../features/sync/domain/repositories/sync_repository.dart';
 import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
 import '../../features/sync/presentation/bloc/sync_bloc.dart';
 import '../../features/sync/domain/usecases/sync_sales_rep_customers_usecase.dart';
+import '../../features/sync/domain/usecases/sync_prices_usecase.dart';
 
 final getIt = GetIt.instance;
 final _logger = Logger('ServiceLocator');
@@ -50,13 +52,14 @@ Future<void> setupServiceLocator() async {
       await db.execute(UserTable.createTableQuery);
       await db.execute(CustomerTable.createTableQuery);
       await db.execute(CustomerTable.createSalesrepCustomerTableQuery);
-
+      await db.execute(PricesTable.createTableQuery);
     },
   );
 
   getIt.registerSingleton<Database>(database);
   getIt.registerSingleton<UserTable>(UserTable(database));
   getIt.registerSingleton<CustomerTable>(CustomerTable(getIt()));
+  getIt.registerSingleton<PricesTable>(PricesTable(getIt()));
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();
@@ -71,7 +74,7 @@ Future<void> setupServiceLocator() async {
       dioClient: DioClient.instance,
       sharedPreferences: getIt(),
       apiService: getIt(),
-      userDB: getIt(),
+      userTable: getIt(),
     ),
   );
 
@@ -79,13 +82,15 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(() => LoginUseCase(getIt()));
   getIt.registerFactory(() => SyncCustomersUseCase(getIt()));
   getIt.registerFactory(() => SyncSalesRepCustomersUseCase(getIt()));
+  getIt.registerFactory(() => SyncPricesUseCase(getIt()));
 
   // Repositories
   getIt.registerSingleton<SyncRepository>(
     SyncRepositoryImpl(
       apiService: getIt(),
-      customerDB: getIt(),
-      userDB: getIt(),
+      customerTable: getIt(),
+      userTable: getIt(),
+      pricesTable: getIt(),
     ),
   );
 
@@ -95,7 +100,10 @@ Future<void> setupServiceLocator() async {
   );
 
   getIt.registerFactory<SyncBloc>(
-    () => SyncBloc(syncCustomersUseCase: getIt(), syncSalesRepCustomersUseCase: getIt()),
+    () => SyncBloc(
+      syncCustomersUseCase: getIt(),
+      syncSalesRepCustomersUseCase: getIt(),
+      syncPricesUseCase: getIt(),),
   );
 }
 
@@ -158,7 +166,7 @@ Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
         dioClient: DioClient.instance,
         sharedPreferences: getIt(),
         apiService: getIt(),
-        userDB: getIt(),
+        userTable: getIt(),
       ),
     );
     

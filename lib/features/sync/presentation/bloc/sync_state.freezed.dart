@@ -16,39 +16,39 @@ final _privateConstructorUsedError = UnsupportedError(
 );
 
 /// @nodoc
-mixin _$ApiCallState {
+mixin _$ApiCallState<T> {
   bool get isLoading => throw _privateConstructorUsedError;
   bool get isSuccess => throw _privateConstructorUsedError;
   String? get errorCode => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
-  List<CustomerEntity>? get data => throw _privateConstructorUsedError;
+  List<T>? get data => throw _privateConstructorUsedError;
 
   /// Create a copy of ApiCallState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ApiCallStateCopyWith<ApiCallState> get copyWith =>
+  $ApiCallStateCopyWith<T, ApiCallState<T>> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ApiCallStateCopyWith<$Res> {
+abstract class $ApiCallStateCopyWith<T, $Res> {
   factory $ApiCallStateCopyWith(
-    ApiCallState value,
-    $Res Function(ApiCallState) then,
-  ) = _$ApiCallStateCopyWithImpl<$Res, ApiCallState>;
+    ApiCallState<T> value,
+    $Res Function(ApiCallState<T>) then,
+  ) = _$ApiCallStateCopyWithImpl<T, $Res, ApiCallState<T>>;
   @useResult
   $Res call({
     bool isLoading,
     bool isSuccess,
     String? errorCode,
     String? errorMessage,
-    List<CustomerEntity>? data,
+    List<T>? data,
   });
 }
 
 /// @nodoc
-class _$ApiCallStateCopyWithImpl<$Res, $Val extends ApiCallState>
-    implements $ApiCallStateCopyWith<$Res> {
+class _$ApiCallStateCopyWithImpl<T, $Res, $Val extends ApiCallState<T>>
+    implements $ApiCallStateCopyWith<T, $Res> {
   _$ApiCallStateCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
@@ -93,7 +93,7 @@ class _$ApiCallStateCopyWithImpl<$Res, $Val extends ApiCallState>
                 freezed == data
                     ? _value.data
                     : data // ignore: cast_nullable_to_non_nullable
-                        as List<CustomerEntity>?,
+                        as List<T>?,
           )
           as $Val,
     );
@@ -101,12 +101,12 @@ class _$ApiCallStateCopyWithImpl<$Res, $Val extends ApiCallState>
 }
 
 /// @nodoc
-abstract class _$$ApiCallStateImplCopyWith<$Res>
-    implements $ApiCallStateCopyWith<$Res> {
+abstract class _$$ApiCallStateImplCopyWith<T, $Res>
+    implements $ApiCallStateCopyWith<T, $Res> {
   factory _$$ApiCallStateImplCopyWith(
-    _$ApiCallStateImpl value,
-    $Res Function(_$ApiCallStateImpl) then,
-  ) = __$$ApiCallStateImplCopyWithImpl<$Res>;
+    _$ApiCallStateImpl<T> value,
+    $Res Function(_$ApiCallStateImpl<T>) then,
+  ) = __$$ApiCallStateImplCopyWithImpl<T, $Res>;
   @override
   @useResult
   $Res call({
@@ -114,17 +114,17 @@ abstract class _$$ApiCallStateImplCopyWith<$Res>
     bool isSuccess,
     String? errorCode,
     String? errorMessage,
-    List<CustomerEntity>? data,
+    List<T>? data,
   });
 }
 
 /// @nodoc
-class __$$ApiCallStateImplCopyWithImpl<$Res>
-    extends _$ApiCallStateCopyWithImpl<$Res, _$ApiCallStateImpl>
-    implements _$$ApiCallStateImplCopyWith<$Res> {
+class __$$ApiCallStateImplCopyWithImpl<T, $Res>
+    extends _$ApiCallStateCopyWithImpl<T, $Res, _$ApiCallStateImpl<T>>
+    implements _$$ApiCallStateImplCopyWith<T, $Res> {
   __$$ApiCallStateImplCopyWithImpl(
-    _$ApiCallStateImpl _value,
-    $Res Function(_$ApiCallStateImpl) _then,
+    _$ApiCallStateImpl<T> _value,
+    $Res Function(_$ApiCallStateImpl<T>) _then,
   ) : super(_value, _then);
 
   /// Create a copy of ApiCallState
@@ -139,7 +139,7 @@ class __$$ApiCallStateImplCopyWithImpl<$Res>
     Object? data = freezed,
   }) {
     return _then(
-      _$ApiCallStateImpl(
+      _$ApiCallStateImpl<T>(
         isLoading:
             null == isLoading
                 ? _value.isLoading
@@ -164,7 +164,7 @@ class __$$ApiCallStateImplCopyWithImpl<$Res>
             freezed == data
                 ? _value._data
                 : data // ignore: cast_nullable_to_non_nullable
-                    as List<CustomerEntity>?,
+                    as List<T>?,
       ),
     );
   }
@@ -172,13 +172,13 @@ class __$$ApiCallStateImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$ApiCallStateImpl implements _ApiCallState {
+class _$ApiCallStateImpl<T> implements _ApiCallState<T> {
   const _$ApiCallStateImpl({
     this.isLoading = false,
     this.isSuccess = false,
     this.errorCode,
     this.errorMessage,
-    final List<CustomerEntity>? data,
+    final List<T>? data,
   }) : _data = data;
 
   @override
@@ -191,9 +191,9 @@ class _$ApiCallStateImpl implements _ApiCallState {
   final String? errorCode;
   @override
   final String? errorMessage;
-  final List<CustomerEntity>? _data;
+  final List<T>? _data;
   @override
-  List<CustomerEntity>? get data {
+  List<T>? get data {
     final value = _data;
     if (value == null) return null;
     if (_data is EqualUnmodifiableListView) return _data;
@@ -203,14 +203,14 @@ class _$ApiCallStateImpl implements _ApiCallState {
 
   @override
   String toString() {
-    return 'ApiCallState(isLoading: $isLoading, isSuccess: $isSuccess, errorCode: $errorCode, errorMessage: $errorMessage, data: $data)';
+    return 'ApiCallState<$T>(isLoading: $isLoading, isSuccess: $isSuccess, errorCode: $errorCode, errorMessage: $errorMessage, data: $data)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ApiCallStateImpl &&
+            other is _$ApiCallStateImpl<T> &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
             (identical(other.isSuccess, isSuccess) ||
@@ -237,18 +237,21 @@ class _$ApiCallStateImpl implements _ApiCallState {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ApiCallStateImplCopyWith<_$ApiCallStateImpl> get copyWith =>
-      __$$ApiCallStateImplCopyWithImpl<_$ApiCallStateImpl>(this, _$identity);
+  _$$ApiCallStateImplCopyWith<T, _$ApiCallStateImpl<T>> get copyWith =>
+      __$$ApiCallStateImplCopyWithImpl<T, _$ApiCallStateImpl<T>>(
+        this,
+        _$identity,
+      );
 }
 
-abstract class _ApiCallState implements ApiCallState {
+abstract class _ApiCallState<T> implements ApiCallState<T> {
   const factory _ApiCallState({
     final bool isLoading,
     final bool isSuccess,
     final String? errorCode,
     final String? errorMessage,
-    final List<CustomerEntity>? data,
-  }) = _$ApiCallStateImpl;
+    final List<T>? data,
+  }) = _$ApiCallStateImpl<T>;
 
   @override
   bool get isLoading;
@@ -259,20 +262,24 @@ abstract class _ApiCallState implements ApiCallState {
   @override
   String? get errorMessage;
   @override
-  List<CustomerEntity>? get data;
+  List<T>? get data;
 
   /// Create a copy of ApiCallState
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ApiCallStateImplCopyWith<_$ApiCallStateImpl> get copyWith =>
+  _$$ApiCallStateImplCopyWith<T, _$ApiCallStateImpl<T>> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 mixin _$SyncState {
-  ApiCallState get customersState => throw _privateConstructorUsedError;
-  ApiCallState get salesRepState => throw _privateConstructorUsedError;
+  ApiCallState<CustomerEntity> get customersState =>
+      throw _privateConstructorUsedError;
+  ApiCallState<CustomerEntity> get salesRepState =>
+      throw _privateConstructorUsedError;
+  ApiCallState<PriceEntity> get pricesState =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of SyncState
   /// with the given fields replaced by the non-null parameter values.
@@ -286,10 +293,15 @@ abstract class $SyncStateCopyWith<$Res> {
   factory $SyncStateCopyWith(SyncState value, $Res Function(SyncState) then) =
       _$SyncStateCopyWithImpl<$Res, SyncState>;
   @useResult
-  $Res call({ApiCallState customersState, ApiCallState salesRepState});
+  $Res call({
+    ApiCallState<CustomerEntity> customersState,
+    ApiCallState<CustomerEntity> salesRepState,
+    ApiCallState<PriceEntity> pricesState,
+  });
 
-  $ApiCallStateCopyWith<$Res> get customersState;
-  $ApiCallStateCopyWith<$Res> get salesRepState;
+  $ApiCallStateCopyWith<CustomerEntity, $Res> get customersState;
+  $ApiCallStateCopyWith<CustomerEntity, $Res> get salesRepState;
+  $ApiCallStateCopyWith<PriceEntity, $Res> get pricesState;
 }
 
 /// @nodoc
@@ -306,19 +318,28 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? customersState = null, Object? salesRepState = null}) {
+  $Res call({
+    Object? customersState = null,
+    Object? salesRepState = null,
+    Object? pricesState = null,
+  }) {
     return _then(
       _value.copyWith(
             customersState:
                 null == customersState
                     ? _value.customersState
                     : customersState // ignore: cast_nullable_to_non_nullable
-                        as ApiCallState,
+                        as ApiCallState<CustomerEntity>,
             salesRepState:
                 null == salesRepState
                     ? _value.salesRepState
                     : salesRepState // ignore: cast_nullable_to_non_nullable
-                        as ApiCallState,
+                        as ApiCallState<CustomerEntity>,
+            pricesState:
+                null == pricesState
+                    ? _value.pricesState
+                    : pricesState // ignore: cast_nullable_to_non_nullable
+                        as ApiCallState<PriceEntity>,
           )
           as $Val,
     );
@@ -328,8 +349,10 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $ApiCallStateCopyWith<$Res> get customersState {
-    return $ApiCallStateCopyWith<$Res>(_value.customersState, (value) {
+  $ApiCallStateCopyWith<CustomerEntity, $Res> get customersState {
+    return $ApiCallStateCopyWith<CustomerEntity, $Res>(_value.customersState, (
+      value,
+    ) {
       return _then(_value.copyWith(customersState: value) as $Val);
     });
   }
@@ -338,9 +361,23 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $ApiCallStateCopyWith<$Res> get salesRepState {
-    return $ApiCallStateCopyWith<$Res>(_value.salesRepState, (value) {
+  $ApiCallStateCopyWith<CustomerEntity, $Res> get salesRepState {
+    return $ApiCallStateCopyWith<CustomerEntity, $Res>(_value.salesRepState, (
+      value,
+    ) {
       return _then(_value.copyWith(salesRepState: value) as $Val);
+    });
+  }
+
+  /// Create a copy of SyncState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ApiCallStateCopyWith<PriceEntity, $Res> get pricesState {
+    return $ApiCallStateCopyWith<PriceEntity, $Res>(_value.pricesState, (
+      value,
+    ) {
+      return _then(_value.copyWith(pricesState: value) as $Val);
     });
   }
 }
@@ -354,12 +391,18 @@ abstract class _$$SyncStateImplCopyWith<$Res>
   ) = __$$SyncStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({ApiCallState customersState, ApiCallState salesRepState});
+  $Res call({
+    ApiCallState<CustomerEntity> customersState,
+    ApiCallState<CustomerEntity> salesRepState,
+    ApiCallState<PriceEntity> pricesState,
+  });
 
   @override
-  $ApiCallStateCopyWith<$Res> get customersState;
+  $ApiCallStateCopyWith<CustomerEntity, $Res> get customersState;
   @override
-  $ApiCallStateCopyWith<$Res> get salesRepState;
+  $ApiCallStateCopyWith<CustomerEntity, $Res> get salesRepState;
+  @override
+  $ApiCallStateCopyWith<PriceEntity, $Res> get pricesState;
 }
 
 /// @nodoc
@@ -375,19 +418,28 @@ class __$$SyncStateImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? customersState = null, Object? salesRepState = null}) {
+  $Res call({
+    Object? customersState = null,
+    Object? salesRepState = null,
+    Object? pricesState = null,
+  }) {
     return _then(
       _$SyncStateImpl(
         customersState:
             null == customersState
                 ? _value.customersState
                 : customersState // ignore: cast_nullable_to_non_nullable
-                    as ApiCallState,
+                    as ApiCallState<CustomerEntity>,
         salesRepState:
             null == salesRepState
                 ? _value.salesRepState
                 : salesRepState // ignore: cast_nullable_to_non_nullable
-                    as ApiCallState,
+                    as ApiCallState<CustomerEntity>,
+        pricesState:
+            null == pricesState
+                ? _value.pricesState
+                : pricesState // ignore: cast_nullable_to_non_nullable
+                    as ApiCallState<PriceEntity>,
       ),
     );
   }
@@ -397,20 +449,24 @@ class __$$SyncStateImplCopyWithImpl<$Res>
 
 class _$SyncStateImpl implements _SyncState {
   const _$SyncStateImpl({
-    this.customersState = const ApiCallState(),
-    this.salesRepState = const ApiCallState(),
+    this.customersState = const ApiCallState<CustomerEntity>(),
+    this.salesRepState = const ApiCallState<CustomerEntity>(),
+    this.pricesState = const ApiCallState<PriceEntity>(),
   });
 
   @override
   @JsonKey()
-  final ApiCallState customersState;
+  final ApiCallState<CustomerEntity> customersState;
   @override
   @JsonKey()
-  final ApiCallState salesRepState;
+  final ApiCallState<CustomerEntity> salesRepState;
+  @override
+  @JsonKey()
+  final ApiCallState<PriceEntity> pricesState;
 
   @override
   String toString() {
-    return 'SyncState(customersState: $customersState, salesRepState: $salesRepState)';
+    return 'SyncState(customersState: $customersState, salesRepState: $salesRepState, pricesState: $pricesState)';
   }
 
   @override
@@ -421,11 +477,14 @@ class _$SyncStateImpl implements _SyncState {
             (identical(other.customersState, customersState) ||
                 other.customersState == customersState) &&
             (identical(other.salesRepState, salesRepState) ||
-                other.salesRepState == salesRepState));
+                other.salesRepState == salesRepState) &&
+            (identical(other.pricesState, pricesState) ||
+                other.pricesState == pricesState));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, customersState, salesRepState);
+  int get hashCode =>
+      Object.hash(runtimeType, customersState, salesRepState, pricesState);
 
   /// Create a copy of SyncState
   /// with the given fields replaced by the non-null parameter values.
@@ -438,14 +497,17 @@ class _$SyncStateImpl implements _SyncState {
 
 abstract class _SyncState implements SyncState {
   const factory _SyncState({
-    final ApiCallState customersState,
-    final ApiCallState salesRepState,
+    final ApiCallState<CustomerEntity> customersState,
+    final ApiCallState<CustomerEntity> salesRepState,
+    final ApiCallState<PriceEntity> pricesState,
   }) = _$SyncStateImpl;
 
   @override
-  ApiCallState get customersState;
+  ApiCallState<CustomerEntity> get customersState;
   @override
-  ApiCallState get salesRepState;
+  ApiCallState<CustomerEntity> get salesRepState;
+  @override
+  ApiCallState<PriceEntity> get pricesState;
 
   /// Create a copy of SyncState
   /// with the given fields replaced by the non-null parameter values.

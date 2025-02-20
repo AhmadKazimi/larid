@@ -14,7 +14,8 @@ enum ApiErrorCode {
   userNotExist(-1, 'User Does Not Exist'),
   userExist(1, 'User Already Exists'),
   noDefaultLocation(-603, 'No Default Location'),
-  noSalesTax(-604, 'No Sales Tax Found');
+  noSalesTax(-604, 'No Sales Tax Found'),
+  unknown(-999, 'Unknown Error');
 
   final int code;
   final String message;
