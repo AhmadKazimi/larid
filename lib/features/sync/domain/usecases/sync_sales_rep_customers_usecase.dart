@@ -2,19 +2,19 @@ import '../../../../core/models/api_response.dart';
 import '../repositories/sync_repository.dart';
 import '../entities/customer_entity.dart';
 
-class SyncCustomersUseCase {
+class SyncSalesRepCustomersUseCase {
   final SyncRepository repository;
 
-  SyncCustomersUseCase(this.repository);
+  SyncSalesRepCustomersUseCase(this.repository);
 
   Future<ApiResponse<List<CustomerEntity>>> call() async {
     try {
-      // Get customers from API
-      final response = await repository.getCustomers();
+      // Get sales rep customers from API
+      final response = await repository.getSalesrepRouteCustomers();
       
       // If successful, save customers to local database
       if (response.isSuccess && response.data != null) {
-        await repository.saveCustomers(response.data!);
+        await repository.saveSalesrepRouteCustomers(response.data!);
       }
       
       return response;

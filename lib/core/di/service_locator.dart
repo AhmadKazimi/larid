@@ -16,6 +16,7 @@ import '../../features/sync/data/repositories/sync_repository_impl.dart';
 import '../../features/sync/domain/repositories/sync_repository.dart';
 import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
 import '../../features/sync/presentation/bloc/sync_bloc.dart';
+import '../../features/sync/domain/usecases/sync_sales_rep_customers_usecase.dart';
 
 final getIt = GetIt.instance;
 final _logger = Logger('ServiceLocator');
@@ -48,6 +49,8 @@ Future<void> setupServiceLocator() async {
       _logger.info('Creating database tables for version $version');
       await db.execute(UserDB.createTableQuery);
       await db.execute(CustomerDB.createTableQuery);
+      await db.execute(CustomerDB.createSalesrepCustomerTableQuery);
+
     },
   );
 
@@ -75,6 +78,7 @@ Future<void> setupServiceLocator() async {
   // Use Cases
   getIt.registerFactory(() => LoginUseCase(getIt()));
   getIt.registerFactory(() => SyncCustomersUseCase(getIt()));
+  getIt.registerFactory(() => SyncSalesRepCustomersUseCase(getIt()));
 
   // Repositories
   getIt.registerSingleton<SyncRepository>(
@@ -91,7 +95,7 @@ Future<void> setupServiceLocator() async {
   );
 
   getIt.registerFactory<SyncBloc>(
-    () => SyncBloc(syncCustomersUseCase: getIt()),
+    () => SyncBloc(syncCustomersUseCase: getIt(), syncSalesRepCustomersUseCase: getIt()),
   );
 }
 
