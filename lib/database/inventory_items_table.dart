@@ -26,6 +26,8 @@ class InventoryItemsTable {
     try {
       dev.log('Saving ${items.length} inventory items to database');
       final batch = db.batch();
+
+      batch.delete(tableName);
       
       for (final item in items) {
         batch.insert(

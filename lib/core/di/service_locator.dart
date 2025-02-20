@@ -14,12 +14,14 @@ import '../../database/user_table.dart';
 import '../../database/customer_table.dart';
 import '../../database/prices_table.dart';
 import '../../database/inventory_items_table.dart';
+import '../../database/inventory_units_table.dart';
 import '../../features/sync/data/repositories/sync_repository_impl.dart';
 import '../../features/sync/domain/repositories/sync_repository.dart';
 import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
 import '../../features/sync/domain/usecases/sync_sales_rep_customers_usecase.dart';
 import '../../features/sync/domain/usecases/sync_prices_usecase.dart';
 import '../../features/sync/domain/usecases/sync_inventory_items_usecase.dart';
+import '../../features/sync/domain/usecases/sync_inventory_units_usecase.dart';
 import '../../features/sync/presentation/bloc/sync_bloc.dart';
 
 final getIt = GetIt.instance;
@@ -48,7 +50,7 @@ Future<void> setupServiceLocator() async {
 
   final database = await openDatabase(
     databasePath,
-    version: 1,
+    version: 2,
     onCreate: (db, version) async {
       _logger.info('Creating database tables for version $version');
       await db.execute(UserTable.createTableQuery);
@@ -56,14 +58,22 @@ Future<void> setupServiceLocator() async {
       await db.execute(CustomerTable.createSalesrepCustomerTableQuery);
       await db.execute(PricesTable.createTableQuery);
       await db.execute(InventoryItemsTable.createTableQuery);
+      await db.execute(InventoryUnitsTable.createTableQuery);
     },
   );
 
-  getIt.registerSingleton<Database>(database);
-  getIt.registerSingleton<UserTable>(UserTable(database));
-  getIt.registerSingleton<CustomerTable>(CustomerTable(getIt()));
-  getIt.registerSingleton<PricesTable>(PricesTable(getIt()));
-  getIt.registerSingleton<InventoryItemsTable>(InventoryItemsTable(getIt()));
+  // Database tables
+  final userTable = UserTable(database);
+  final customerTable = CustomerTable(database);
+  final pricesTable = PricesTable(database);
+  final inventoryItemsTable = InventoryItemsTable(database);
+  final inventoryUnitsTable = InventoryUnitsTable(database);
+
+  getIt.registerSingleton<UserTable>(userTable);
+  getIt.registerSingleton<CustomerTable>(customerTable);
+  getIt.registerSingleton<PricesTable>(pricesTable);
+  getIt.registerSingleton<InventoryItemsTable>(inventoryItemsTable);
+  getIt.registerSingleton<InventoryUnitsTable>(inventoryUnitsTable);
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();
@@ -73,12 +83,23 @@ Future<void> setupServiceLocator() async {
   await _initializeNetworkComponents(baseUrl);
 
   // Repositories
-  getIt.registerSingleton<AuthRepository>(
-    AuthRepositoryImpl(
+  getIt.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
       dioClient: DioClient.instance,
       sharedPreferences: getIt(),
       apiService: getIt(),
       userTable: getIt(),
+    ),
+  );
+
+  getIt.registerLazySingleton<SyncRepository>(
+    () => SyncRepositoryImpl(
+      apiService: getIt(),
+      customerTable: getIt(),
+      userTable: getIt(),
+      pricesTable: getIt(),
+      inventoryItemsTable: getIt(),
+      inventoryUnitsTable: getIt(),
     ),
   );
 
@@ -88,17 +109,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(() => SyncSalesRepCustomersUseCase(getIt()));
   getIt.registerFactory(() => SyncPricesUseCase(getIt()));
   getIt.registerFactory(() => SyncInventoryItemsUseCase(getIt()));
-
-  // Repositories
-  getIt.registerSingleton<SyncRepository>(
-    SyncRepositoryImpl(
-      apiService: getIt(),
-      customerTable: getIt(),
-      userTable: getIt(),
-      pricesTable: getIt(),
-      inventoryItemsTable: getIt(),
-    ),
-  );
+  getIt.registerFactory(() => SyncInventoryUnitsUseCase(getIt()));
 
   // BLoCs
   getIt.registerFactory<AuthBloc>(
@@ -111,6 +122,7 @@ Future<void> setupServiceLocator() async {
       syncSalesRepCustomersUseCase: getIt(),
       syncPricesUseCase: getIt(),
       syncInventoryItemsUseCase: getIt(),
+      syncInventoryUnitsUseCase: getIt(),
     ),
   );
 }

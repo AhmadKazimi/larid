@@ -21,6 +21,8 @@ InventoryItemEntity _$InventoryItemEntityFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$InventoryItemEntity {
+  @JsonKey(name: 'id')
+  int? get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'sItem_cd')
   String get itemCode => throw _privateConstructorUsedError;
   @JsonKey(name: 'sDescription')
@@ -54,6 +56,7 @@ abstract class $InventoryItemEntityCopyWith<$Res> {
   ) = _$InventoryItemEntityCopyWithImpl<$Res, InventoryItemEntity>;
   @useResult
   $Res call({
+    @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'sItem_cd') String itemCode,
     @JsonKey(name: 'sDescription') String description,
     @JsonKey(name: 'iTaxable_fl') int taxableFlag,
@@ -79,6 +82,7 @@ class _$InventoryItemEntityCopyWithImpl<$Res, $Val extends InventoryItemEntity>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = freezed,
     Object? itemCode = null,
     Object? description = null,
     Object? taxableFlag = null,
@@ -89,6 +93,11 @@ class _$InventoryItemEntityCopyWithImpl<$Res, $Val extends InventoryItemEntity>
   }) {
     return _then(
       _value.copyWith(
+            id:
+                freezed == id
+                    ? _value.id
+                    : id // ignore: cast_nullable_to_non_nullable
+                        as int?,
             itemCode:
                 null == itemCode
                     ? _value.itemCode
@@ -140,6 +149,7 @@ abstract class _$$InventoryItemEntityImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
+    @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'sItem_cd') String itemCode,
     @JsonKey(name: 'sDescription') String description,
     @JsonKey(name: 'iTaxable_fl') int taxableFlag,
@@ -164,6 +174,7 @@ class __$$InventoryItemEntityImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = freezed,
     Object? itemCode = null,
     Object? description = null,
     Object? taxableFlag = null,
@@ -174,6 +185,11 @@ class __$$InventoryItemEntityImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$InventoryItemEntityImpl(
+        id:
+            freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                    as int?,
         itemCode:
             null == itemCode
                 ? _value.itemCode
@@ -218,6 +234,7 @@ class __$$InventoryItemEntityImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$InventoryItemEntityImpl implements _InventoryItemEntity {
   const _$InventoryItemEntityImpl({
+    @JsonKey(name: 'id') this.id,
     @JsonKey(name: 'sItem_cd') required this.itemCode,
     @JsonKey(name: 'sDescription') required this.description,
     @JsonKey(name: 'iTaxable_fl') required this.taxableFlag,
@@ -230,6 +247,9 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
   factory _$InventoryItemEntityImpl.fromJson(Map<String, dynamic> json) =>
       _$$InventoryItemEntityImplFromJson(json);
 
+  @override
+  @JsonKey(name: 'id')
+  final int? id;
   @override
   @JsonKey(name: 'sItem_cd')
   final String itemCode;
@@ -254,7 +274,7 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
 
   @override
   String toString() {
-    return 'InventoryItemEntity(itemCode: $itemCode, description: $description, taxableFlag: $taxableFlag, taxCode: $taxCode, sellUnitCode: $sellUnitCode, sellUnitPrice: $sellUnitPrice, createdAt: $createdAt)';
+    return 'InventoryItemEntity(id: $id, itemCode: $itemCode, description: $description, taxableFlag: $taxableFlag, taxCode: $taxCode, sellUnitCode: $sellUnitCode, sellUnitPrice: $sellUnitPrice, createdAt: $createdAt)';
   }
 
   @override
@@ -262,6 +282,7 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$InventoryItemEntityImpl &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.itemCode, itemCode) ||
                 other.itemCode == itemCode) &&
             (identical(other.description, description) ||
@@ -281,6 +302,7 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
   @override
   int get hashCode => Object.hash(
     runtimeType,
+    id,
     itemCode,
     description,
     taxableFlag,
@@ -309,6 +331,7 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
 
 abstract class _InventoryItemEntity implements InventoryItemEntity {
   const factory _InventoryItemEntity({
+    @JsonKey(name: 'id') final int? id,
     @JsonKey(name: 'sItem_cd') required final String itemCode,
     @JsonKey(name: 'sDescription') required final String description,
     @JsonKey(name: 'iTaxable_fl') required final int taxableFlag,
@@ -321,6 +344,9 @@ abstract class _InventoryItemEntity implements InventoryItemEntity {
   factory _InventoryItemEntity.fromJson(Map<String, dynamic> json) =
       _$InventoryItemEntityImpl.fromJson;
 
+  @override
+  @JsonKey(name: 'id')
+  int? get id;
   @override
   @JsonKey(name: 'sItem_cd')
   String get itemCode;

@@ -282,6 +282,8 @@ mixin _$SyncState {
       throw _privateConstructorUsedError;
   ApiCallState<InventoryItemEntity> get inventoryItemsState =>
       throw _privateConstructorUsedError;
+  ApiCallState<InventoryUnitEntity> get inventoryUnitsState =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of SyncState
   /// with the given fields replaced by the non-null parameter values.
@@ -300,12 +302,14 @@ abstract class $SyncStateCopyWith<$Res> {
     ApiCallState<CustomerEntity> salesRepState,
     ApiCallState<PriceEntity> pricesState,
     ApiCallState<InventoryItemEntity> inventoryItemsState,
+    ApiCallState<InventoryUnitEntity> inventoryUnitsState,
   });
 
   $ApiCallStateCopyWith<CustomerEntity, $Res> get customersState;
   $ApiCallStateCopyWith<CustomerEntity, $Res> get salesRepState;
   $ApiCallStateCopyWith<PriceEntity, $Res> get pricesState;
   $ApiCallStateCopyWith<InventoryItemEntity, $Res> get inventoryItemsState;
+  $ApiCallStateCopyWith<InventoryUnitEntity, $Res> get inventoryUnitsState;
 }
 
 /// @nodoc
@@ -327,6 +331,7 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
     Object? salesRepState = null,
     Object? pricesState = null,
     Object? inventoryItemsState = null,
+    Object? inventoryUnitsState = null,
   }) {
     return _then(
       _value.copyWith(
@@ -350,6 +355,11 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
                     ? _value.inventoryItemsState
                     : inventoryItemsState // ignore: cast_nullable_to_non_nullable
                         as ApiCallState<InventoryItemEntity>,
+            inventoryUnitsState:
+                null == inventoryUnitsState
+                    ? _value.inventoryUnitsState
+                    : inventoryUnitsState // ignore: cast_nullable_to_non_nullable
+                        as ApiCallState<InventoryUnitEntity>,
           )
           as $Val,
     );
@@ -403,6 +413,19 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
       },
     );
   }
+
+  /// Create a copy of SyncState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ApiCallStateCopyWith<InventoryUnitEntity, $Res> get inventoryUnitsState {
+    return $ApiCallStateCopyWith<InventoryUnitEntity, $Res>(
+      _value.inventoryUnitsState,
+      (value) {
+        return _then(_value.copyWith(inventoryUnitsState: value) as $Val);
+      },
+    );
+  }
 }
 
 /// @nodoc
@@ -419,6 +442,7 @@ abstract class _$$SyncStateImplCopyWith<$Res>
     ApiCallState<CustomerEntity> salesRepState,
     ApiCallState<PriceEntity> pricesState,
     ApiCallState<InventoryItemEntity> inventoryItemsState,
+    ApiCallState<InventoryUnitEntity> inventoryUnitsState,
   });
 
   @override
@@ -429,6 +453,8 @@ abstract class _$$SyncStateImplCopyWith<$Res>
   $ApiCallStateCopyWith<PriceEntity, $Res> get pricesState;
   @override
   $ApiCallStateCopyWith<InventoryItemEntity, $Res> get inventoryItemsState;
+  @override
+  $ApiCallStateCopyWith<InventoryUnitEntity, $Res> get inventoryUnitsState;
 }
 
 /// @nodoc
@@ -449,6 +475,7 @@ class __$$SyncStateImplCopyWithImpl<$Res>
     Object? salesRepState = null,
     Object? pricesState = null,
     Object? inventoryItemsState = null,
+    Object? inventoryUnitsState = null,
   }) {
     return _then(
       _$SyncStateImpl(
@@ -472,6 +499,11 @@ class __$$SyncStateImplCopyWithImpl<$Res>
                 ? _value.inventoryItemsState
                 : inventoryItemsState // ignore: cast_nullable_to_non_nullable
                     as ApiCallState<InventoryItemEntity>,
+        inventoryUnitsState:
+            null == inventoryUnitsState
+                ? _value.inventoryUnitsState
+                : inventoryUnitsState // ignore: cast_nullable_to_non_nullable
+                    as ApiCallState<InventoryUnitEntity>,
       ),
     );
   }
@@ -485,6 +517,7 @@ class _$SyncStateImpl implements _SyncState {
     this.salesRepState = const ApiCallState<CustomerEntity>(),
     this.pricesState = const ApiCallState<PriceEntity>(),
     this.inventoryItemsState = const ApiCallState<InventoryItemEntity>(),
+    this.inventoryUnitsState = const ApiCallState<InventoryUnitEntity>(),
   });
 
   @override
@@ -499,10 +532,13 @@ class _$SyncStateImpl implements _SyncState {
   @override
   @JsonKey()
   final ApiCallState<InventoryItemEntity> inventoryItemsState;
+  @override
+  @JsonKey()
+  final ApiCallState<InventoryUnitEntity> inventoryUnitsState;
 
   @override
   String toString() {
-    return 'SyncState(customersState: $customersState, salesRepState: $salesRepState, pricesState: $pricesState, inventoryItemsState: $inventoryItemsState)';
+    return 'SyncState(customersState: $customersState, salesRepState: $salesRepState, pricesState: $pricesState, inventoryItemsState: $inventoryItemsState, inventoryUnitsState: $inventoryUnitsState)';
   }
 
   @override
@@ -517,7 +553,9 @@ class _$SyncStateImpl implements _SyncState {
             (identical(other.pricesState, pricesState) ||
                 other.pricesState == pricesState) &&
             (identical(other.inventoryItemsState, inventoryItemsState) ||
-                other.inventoryItemsState == inventoryItemsState));
+                other.inventoryItemsState == inventoryItemsState) &&
+            (identical(other.inventoryUnitsState, inventoryUnitsState) ||
+                other.inventoryUnitsState == inventoryUnitsState));
   }
 
   @override
@@ -527,6 +565,7 @@ class _$SyncStateImpl implements _SyncState {
     salesRepState,
     pricesState,
     inventoryItemsState,
+    inventoryUnitsState,
   );
 
   /// Create a copy of SyncState
@@ -544,6 +583,7 @@ abstract class _SyncState implements SyncState {
     final ApiCallState<CustomerEntity> salesRepState,
     final ApiCallState<PriceEntity> pricesState,
     final ApiCallState<InventoryItemEntity> inventoryItemsState,
+    final ApiCallState<InventoryUnitEntity> inventoryUnitsState,
   }) = _$SyncStateImpl;
 
   @override
@@ -554,6 +594,8 @@ abstract class _SyncState implements SyncState {
   ApiCallState<PriceEntity> get pricesState;
   @override
   ApiCallState<InventoryItemEntity> get inventoryItemsState;
+  @override
+  ApiCallState<InventoryUnitEntity> get inventoryUnitsState;
 
   /// Create a copy of SyncState
   /// with the given fields replaced by the non-null parameter values.

@@ -6,6 +6,7 @@ part 'inventory_item_entity.g.dart';
 @freezed
 class InventoryItemEntity with _$InventoryItemEntity {
   const factory InventoryItemEntity({
+    @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'sItem_cd') required String itemCode,
     @JsonKey(name: 'sDescription') required String description,
     @JsonKey(name: 'iTaxable_fl') required int taxableFlag,

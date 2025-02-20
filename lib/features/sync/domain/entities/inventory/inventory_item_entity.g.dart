@@ -9,6 +9,7 @@ part of 'inventory_item_entity.dart';
 _$InventoryItemEntityImpl _$$InventoryItemEntityImplFromJson(
   Map<String, dynamic> json,
 ) => _$InventoryItemEntityImpl(
+  id: (json['id'] as num?)?.toInt(),
   itemCode: json['sItem_cd'] as String,
   description: json['sDescription'] as String,
   taxableFlag: (json['iTaxable_fl'] as num).toInt(),
@@ -21,6 +22,7 @@ _$InventoryItemEntityImpl _$$InventoryItemEntityImplFromJson(
 Map<String, dynamic> _$$InventoryItemEntityImplToJson(
   _$InventoryItemEntityImpl instance,
 ) => <String, dynamic>{
+  'id': instance.id,
   'sItem_cd': instance.itemCode,
   'sDescription': instance.description,
   'iTaxable_fl': instance.taxableFlag,

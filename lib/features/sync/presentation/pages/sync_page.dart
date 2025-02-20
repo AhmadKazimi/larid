@@ -52,6 +52,15 @@ class SyncPage extends StatelessWidget {
                           state.inventoryItemsState,
                         ),
                       ],
+                      if (state.inventoryUnitsState.isLoading ||
+                          state.inventoryUnitsState.isSuccess ||
+                          state.inventoryUnitsState.errorCode != null) ...[
+                        const Divider(height: 24, thickness: 1),
+                        _buildApiLogSection(
+                          'Inventory Units',
+                          state.inventoryUnitsState,
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -69,12 +78,17 @@ class SyncPage extends StatelessWidget {
 
   Widget _buildSyncButton(BuildContext context, SyncState state) {
     final bool isLoading =
-        state.customersState.isLoading || state.salesRepState.isLoading;
+        state.customersState.isLoading ||
+        state.salesRepState.isLoading ||
+        state.inventoryUnitsState.isLoading;
     final bool hasError =
         state.customersState.errorCode != null ||
-        state.salesRepState.errorCode != null;
+        state.salesRepState.errorCode != null ||
+        state.inventoryUnitsState.errorCode != null;
     final bool isSuccess =
-        state.customersState.isSuccess && state.salesRepState.isSuccess;
+        state.customersState.isSuccess &&
+        state.salesRepState.isSuccess &&
+        state.inventoryUnitsState.isSuccess;
 
     return SizedBox(
       width: double.infinity,
@@ -89,6 +103,7 @@ class SyncPage extends StatelessWidget {
                   );
                   context.read<SyncBloc>().add(const SyncEvent.syncPrices());
                   context.read<SyncBloc>().add(const SyncEvent.syncInventoryItems());
+                  context.read<SyncBloc>().add(const SyncEvent.syncInventoryUnits());
                 },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(16),

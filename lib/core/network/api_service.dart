@@ -93,6 +93,21 @@ class ApiService {
     return List<Map<String, dynamic>>.from(response.data);
   }
 
+  Future<List<Map<String, dynamic>>> getInventoryUnits({
+    required String userid,
+    required String workspace,
+    required String password,
+  }) async {
+    final response = await _dioClient.get(
+      ApiEndpoints.getInventoryUnits,
+       queryParameters: {
+          ApiParameters.userid: userid,
+          ApiParameters.workspace: workspace,
+          ApiParameters.password: password,
+        },
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
   /// Checks user credentials against the server
   /// Returns true if authentication is successful (response is "1"),
   /// throws an error otherwise

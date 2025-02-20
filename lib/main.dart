@@ -9,6 +9,7 @@ import 'package:larid/features/api_config/presentation/bloc/api_config_bloc.dart
 import 'package:larid/features/sync/domain/usecases/sync_customers_usecase.dart';
 import 'package:larid/features/sync/domain/usecases/sync_sales_rep_customers_usecase.dart';
 import 'package:larid/features/sync/domain/usecases/sync_inventory_items_usecase.dart';
+import 'package:larid/features/sync/domain/usecases/sync_inventory_units_usecase.dart';
 import 'package:larid/features/sync/domain/usecases/sync_prices_usecase.dart';
 import 'package:larid/features/sync/presentation/bloc/sync_bloc.dart';
 import 'core/di/service_locator.dart';
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
             syncSalesRepCustomersUseCase: getIt<SyncSalesRepCustomersUseCase>(),
             syncPricesUseCase: getIt<SyncPricesUseCase>(),
             syncInventoryItemsUseCase: getIt<SyncInventoryItemsUseCase>(),
+            syncInventoryUnitsUseCase: getIt<SyncInventoryUnitsUseCase>(),
           ),
         ),
       ],
