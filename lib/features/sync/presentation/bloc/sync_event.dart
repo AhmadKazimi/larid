@@ -7,4 +7,5 @@ class SyncEvent with _$SyncEvent {
   const factory SyncEvent.syncCustomers() = _SyncCustomers;
   const factory SyncEvent.syncSalesRepCustomers() = _SyncSalesRepCustomers;
   const factory SyncEvent.syncPrices() = _SyncPrices;
+  const factory SyncEvent.syncInventoryItems() = _SyncInventoryItems;
 }

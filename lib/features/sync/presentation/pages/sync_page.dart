@@ -11,9 +11,7 @@ class SyncPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sync'),
-      ),
+      appBar: AppBar(title: const Text('Sync')),
       body: BlocBuilder<SyncBloc, SyncState>(
         builder: (context, state) {
           return Column(
@@ -32,26 +30,26 @@ class SyncPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      _buildApiLogSection(
-                        'Customers',
-                        state.customersState,
-                      ),
+                      _buildApiLogSection('Customers', state.customersState),
                       if (state.salesRepState.isLoading ||
                           state.salesRepState.isSuccess ||
                           state.salesRepState.errorCode != null) ...[
                         const Divider(height: 24, thickness: 1),
-                        _buildApiLogSection(
-                          'Sales Rep',
-                          state.salesRepState,
-                        ),
+                        _buildApiLogSection('Sales Rep', state.salesRepState),
                       ],
                       if (state.pricesState.isLoading ||
                           state.pricesState.isSuccess ||
                           state.pricesState.errorCode != null) ...[
                         const Divider(height: 24, thickness: 1),
+                        _buildApiLogSection('Prices', state.pricesState),
+                      ],
+                      if (state.inventoryItemsState.isLoading ||
+                          state.inventoryItemsState.isSuccess ||
+                          state.inventoryItemsState.errorCode != null) ...[
+                        const Divider(height: 24, thickness: 1),
                         _buildApiLogSection(
-                          'Prices',
-                          state.pricesState,
+                          'Inventory Items',
+                          state.inventoryItemsState,
                         ),
                       ],
                     ],
@@ -70,53 +68,62 @@ class SyncPage extends StatelessWidget {
   }
 
   Widget _buildSyncButton(BuildContext context, SyncState state) {
-    final bool isLoading = state.customersState.isLoading || state.salesRepState.isLoading;
-    final bool hasError = state.customersState.errorCode != null || state.salesRepState.errorCode != null;
-    final bool isSuccess = state.customersState.isSuccess && state.salesRepState.isSuccess;
+    final bool isLoading =
+        state.customersState.isLoading || state.salesRepState.isLoading;
+    final bool hasError =
+        state.customersState.errorCode != null ||
+        state.salesRepState.errorCode != null;
+    final bool isSuccess =
+        state.customersState.isSuccess && state.salesRepState.isSuccess;
 
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: isLoading
-            ? null
-            : () {
-                context.read<SyncBloc>().add(const SyncEvent.syncCustomers());
-                context.read<SyncBloc>().add(const SyncEvent.syncSalesRepCustomers());
-                context.read<SyncBloc>().add(const SyncEvent.syncPrices());
-              },
+        onPressed:
+            isLoading
+                ? null
+                : () {
+                  context.read<SyncBloc>().add(const SyncEvent.syncCustomers());
+                  context.read<SyncBloc>().add(
+                    const SyncEvent.syncSalesRepCustomers(),
+                  );
+                  context.read<SyncBloc>().add(const SyncEvent.syncPrices());
+                  context.read<SyncBloc>().add(const SyncEvent.syncInventoryItems());
+                },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: isLoading
-            ? const SizedBox(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Sync All Data',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+        child:
+            isLoading
+                ? const SizedBox(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
-                  if (isSuccess || hasError) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      isSuccess ? Icons.check_circle : Icons.error,
-                      color: Colors.white,
-                      size: 20,
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Sync All Data',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    if (isSuccess || hasError) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        isSuccess ? Icons.check_circle : Icons.error,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ],
                   ],
-                ],
-              ),
+                ),
       ),
     );
   }
@@ -129,19 +136,14 @@ class SyncPage extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
             ),
             const SizedBox(width: 8),
             if (state.isLoading)
               const SizedBox(
                 width: 12,
                 height: 12,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
             else if (state.isSuccess)
               const Icon(Icons.check_circle, color: Colors.green, size: 16)
@@ -153,19 +155,13 @@ class SyncPage extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             ApiErrorCode.getErrorMessage(state.errorCode!),
-            style: const TextStyle(
-              color: Colors.red,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.red, fontSize: 12),
           ),
         ] else if (state.isSuccess && state.data != null) ...[
           const SizedBox(height: 4),
           Text(
             '${state.data!.length} records synced',
-            style: const TextStyle(
-              color: Colors.green,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.green, fontSize: 12),
           ),
         ],
       ],

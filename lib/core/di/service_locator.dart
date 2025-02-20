@@ -13,12 +13,14 @@ import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../database/user_table.dart';
 import '../../database/customer_table.dart';
 import '../../database/prices_table.dart';
+import '../../database/inventory_items_table.dart';
 import '../../features/sync/data/repositories/sync_repository_impl.dart';
 import '../../features/sync/domain/repositories/sync_repository.dart';
 import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
-import '../../features/sync/presentation/bloc/sync_bloc.dart';
 import '../../features/sync/domain/usecases/sync_sales_rep_customers_usecase.dart';
 import '../../features/sync/domain/usecases/sync_prices_usecase.dart';
+import '../../features/sync/domain/usecases/sync_inventory_items_usecase.dart';
+import '../../features/sync/presentation/bloc/sync_bloc.dart';
 
 final getIt = GetIt.instance;
 final _logger = Logger('ServiceLocator');
@@ -53,6 +55,7 @@ Future<void> setupServiceLocator() async {
       await db.execute(CustomerTable.createTableQuery);
       await db.execute(CustomerTable.createSalesrepCustomerTableQuery);
       await db.execute(PricesTable.createTableQuery);
+      await db.execute(InventoryItemsTable.createTableQuery);
     },
   );
 
@@ -60,6 +63,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerSingleton<UserTable>(UserTable(database));
   getIt.registerSingleton<CustomerTable>(CustomerTable(getIt()));
   getIt.registerSingleton<PricesTable>(PricesTable(getIt()));
+  getIt.registerSingleton<InventoryItemsTable>(InventoryItemsTable(getIt()));
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();
@@ -83,6 +87,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(() => SyncCustomersUseCase(getIt()));
   getIt.registerFactory(() => SyncSalesRepCustomersUseCase(getIt()));
   getIt.registerFactory(() => SyncPricesUseCase(getIt()));
+  getIt.registerFactory(() => SyncInventoryItemsUseCase(getIt()));
 
   // Repositories
   getIt.registerSingleton<SyncRepository>(
@@ -91,6 +96,7 @@ Future<void> setupServiceLocator() async {
       customerTable: getIt(),
       userTable: getIt(),
       pricesTable: getIt(),
+      inventoryItemsTable: getIt(),
     ),
   );
 
@@ -103,7 +109,9 @@ Future<void> setupServiceLocator() async {
     () => SyncBloc(
       syncCustomersUseCase: getIt(),
       syncSalesRepCustomersUseCase: getIt(),
-      syncPricesUseCase: getIt(),),
+      syncPricesUseCase: getIt(),
+      syncInventoryItemsUseCase: getIt(),
+    ),
   );
 }
 

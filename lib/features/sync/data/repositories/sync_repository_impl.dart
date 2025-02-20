@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:developer' as dev;
 import 'package:larid/core/network/api_service.dart';
 import 'package:larid/database/customer_table.dart';
+import 'package:larid/database/inventory_items_table.dart';
 import 'package:larid/database/prices_table.dart';
 import 'package:larid/database/user_table.dart';
 import 'package:larid/features/auth/domain/entities/user_entity.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
+import 'package:larid/features/sync/domain/entities/inventory/inventory_item_entity.dart';
 import 'package:larid/features/sync/domain/entities/prices/prices_entity.dart';
 import 'package:larid/core/models/api_response.dart';
 import '../../../sync/domain/repositories/sync_repository.dart';
@@ -15,6 +17,7 @@ class SyncRepositoryImpl implements SyncRepository {
   final CustomerTable _customerTable;
   final UserTable _userTable;
   final PricesTable _pricesTable;
+  final InventoryItemsTable _inventoryItemsTable;
   UserEntity? _user;
   Future<void>? _initUserFuture;
 
@@ -23,21 +26,23 @@ class SyncRepositoryImpl implements SyncRepository {
     required CustomerTable customerTable,
     required UserTable userTable,
     required PricesTable pricesTable,
-  })  : _apiService = apiService,
-        _customerTable = customerTable,
-        _userTable = userTable,
-        _pricesTable = pricesTable {
-    // Initialize user immediately and store the future
+    required InventoryItemsTable inventoryItemsTable,
+  }) : _apiService = apiService,
+       _customerTable = customerTable,
+       _userTable = userTable,
+       _pricesTable = pricesTable,
+       _inventoryItemsTable = inventoryItemsTable {
     _initUserFuture = _initUser();
   }
 
   Future<void> _initUser() async {
     try {
       _user = await _userTable.getCurrentUser();
-      dev.log('Initialized user: ${_user?.userid}');
     } catch (e) {
       dev.log('Error initializing user: $e');
     }
+
+    await _ensureUserInitialized();
   }
 
   Future<void> _ensureUserInitialized() async {
@@ -50,12 +55,8 @@ class SyncRepositoryImpl implements SyncRepository {
   @override
   Future<ApiResponse<List<CustomerEntity>>> getCustomers() async {
     try {
-      await _ensureUserInitialized();
       if (_user == null) {
-        return ApiResponse(
-          errorCode: '-1',
-          message: 'User not found',
-        );
+        return ApiResponse(errorCode: '-1', message: 'User not found');
       }
 
       final customersData = await _apiService.getCustomers(
@@ -74,17 +75,13 @@ class SyncRepositoryImpl implements SyncRepository {
           );
         }
       }
-      
-      final customers = customersData
-          .map((json) => CustomerEntity.fromJson(json))
-          .toList();
-      
+
+      final customers =
+          customersData.map((json) => CustomerEntity.fromJson(json)).toList();
+
       return ApiResponse(data: customers);
     } catch (e) {
-      return ApiResponse(
-        errorCode: '-1',
-        message: e.toString(),
-      );
+      return ApiResponse(errorCode: '-1', message: e.toString());
     }
   }
 
@@ -92,27 +89,25 @@ class SyncRepositoryImpl implements SyncRepository {
   Future<void> saveCustomers(List<CustomerEntity> customers) async {
     await _customerTable.createOrUpdateCustomers(customers);
   }
-  
+
   @override
   Future<ApiResponse<List<CustomerEntity>>> getSalesrepRouteCustomers() async {
     try {
-      await _ensureUserInitialized();
       if (_user == null) {
-        return ApiResponse(
-          errorCode: '-1',
-          message: 'User not found',
-        );
+        return ApiResponse(errorCode: '-1', message: 'User not found');
       }
 
-      final salesrepRouteCustomersData = await _apiService.getSalesrepRouteCustomers(
-        userid: _user!.userid,
-        workspace: _user!.workspace,
-        password: _user!.password,
-      );
+      final customersData = await _apiService
+          .getSalesrepRouteCustomers(
+            userid: _user!.userid,
+            workspace: _user!.workspace,
+            password: _user!.password,
+          );
 
       // Check if the response contains an error code
-      if (salesrepRouteCustomersData.isNotEmpty && salesrepRouteCustomersData[0] is Map) {
-        final firstItem = salesrepRouteCustomersData[0];
+      if (customersData.isNotEmpty &&
+          customersData[0] is Map) {
+        final firstItem = customersData[0];
         if (firstItem.containsKey('ERROR')) {
           return ApiResponse(
             errorCode: firstItem['ERROR']?.toString(),
@@ -120,45 +115,41 @@ class SyncRepositoryImpl implements SyncRepository {
           );
         }
       }
-      
-      final customers = salesrepRouteCustomersData
-          .map((json) => CustomerEntity.fromJson(json))
-          .toList();
-      
+
+      final customers =
+          customersData
+              .map((json) => CustomerEntity.fromJson(json))
+              .toList();
+
       return ApiResponse(data: customers);
     } catch (e) {
-      return ApiResponse(
-        errorCode: '-1',
-        message: e.toString(),
-      );
+      return ApiResponse(errorCode: '-1', message: e.toString());
     }
   }
-  
+
   @override
-  Future<void> saveSalesrepRouteCustomers(List<CustomerEntity> customers) async {
+  Future<void> saveSalesrepRouteCustomers(
+    List<CustomerEntity> customers,
+  ) async {
     await _customerTable.createOrUpdateSalesRepCustomers(customers);
   }
 
   @override
   Future<ApiResponse<List<PriceEntity>>> getPrices() async {
     try {
-      await _ensureUserInitialized();
       if (_user == null) {
-        return ApiResponse(
-          errorCode: '-1',
-          message: 'User not found',
-        );
+        return ApiResponse(errorCode: '-1', message: 'User not found');
       }
 
-      final pricesData = await _apiService.getCustomersPriceList(
+      final customersData = await _apiService.getCustomersPriceList(
         userid: _user!.userid,
         workspace: _user!.workspace,
         password: _user!.password,
       );
 
       // Check if the response contains an error code
-      if (pricesData.isNotEmpty && pricesData[0] is Map) {
-        final firstItem = pricesData[0];
+      if (customersData.isNotEmpty && customersData[0] is Map) {
+        final firstItem = customersData[0];
         if (firstItem.containsKey('ERROR')) {
           return ApiResponse(
             errorCode: firstItem['ERROR']?.toString(),
@@ -166,24 +157,56 @@ class SyncRepositoryImpl implements SyncRepository {
           );
         }
       }
-      
-      final prices = pricesData
-          .map((json) => PriceEntity.fromJson(json))
-          .toList();
 
-      return ApiResponse(
-        data: prices,
-      );
+      final prices =
+          customersData.map((json) => PriceEntity.fromJson(json)).toList();
+
+      return ApiResponse(data: prices);
     } catch (e) {
-      return ApiResponse(
-        errorCode: '-1',
-        message: e.toString(),
-      );
+      return ApiResponse(errorCode: '-1', message: e.toString());
     }
   }
 
   @override
   Future<void> savePrices(List<PriceEntity> prices) async {
     await _pricesTable.createOrUpdatePrices(prices);
+  }
+
+  @override
+  Future<ApiResponse<List<InventoryItemEntity>>> getInventoryItems() async {
+    try {
+      if (_user == null) {
+        return ApiResponse(errorCode: '-1', message: 'User not found');
+      }
+
+      final customersData = await _apiService.getInventoryItems(
+        userid: _user!.userid,
+        workspace: _user!.workspace,
+        password: _user!.password,
+      );
+
+      // Check if the response contains an error code
+      if (customersData.isNotEmpty && customersData[0] is Map) {
+        final firstItem = customersData[0];
+        if (firstItem.containsKey('ERROR')) {
+          return ApiResponse(
+            errorCode: firstItem['ERROR']?.toString(),
+            message: 'Error occurred during sync',
+          );
+        }
+      }
+
+      final items =
+          customersData.map((json) => InventoryItemEntity.fromJson(json)).toList();
+
+      return ApiResponse(data: items);
+    } catch (e) {
+      return ApiResponse(errorCode: '-1', message: e.toString());
+    }
+  }
+
+  @override
+  Future<void> saveInventoryItems(List<InventoryItemEntity> items) async {
+    await _inventoryItemsTable.createOrUpdateItems(items);
   }
 }

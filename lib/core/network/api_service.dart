@@ -66,26 +66,31 @@ class ApiService {
     required String workspace,
     required String password,
   }) async {
-    try {
-      final response = await _dioClient.get(
-        ApiEndpoints.buildUrl(ApiEndpoints.getCustomersPriceList),
-        queryParameters: {
+    final response = await _dioClient.get(
+      ApiEndpoints.getCustomersPriceList,
+   queryParameters: {
           ApiParameters.userid: userid,
           ApiParameters.workspace: workspace,
           ApiParameters.password: password,
         },
-      );
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  }
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        return data.cast<Map<String, dynamic>>();
-      }
-      throw Exception('Failed to get prices');
-    } on DioException catch (e) {
-      throw Exception('Network error: ${e.message}');
-    } catch (e) {
-      throw Exception('Unexpected error: $e');
-    }
+  Future<List<Map<String, dynamic>>> getInventoryItems({
+    required String userid,
+    required String workspace,
+    required String password,
+  }) async {
+    final response = await _dioClient.get(
+      ApiEndpoints.getInventoryItems,
+       queryParameters: {
+          ApiParameters.userid: userid,
+          ApiParameters.workspace: workspace,
+          ApiParameters.password: password,
+        },
+    );
+    return List<Map<String, dynamic>>.from(response.data);
   }
 
   /// Checks user credentials against the server

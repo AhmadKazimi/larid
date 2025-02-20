@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/customer_entity.dart';
+import '../../domain/entities/inventory/inventory_item_entity.dart';
 import '../../domain/entities/prices/prices_entity.dart';
 
 part 'sync_state.freezed.dart';
@@ -21,5 +22,6 @@ class SyncState with _$SyncState {
     @Default(ApiCallState<CustomerEntity>()) ApiCallState<CustomerEntity> customersState,
     @Default(ApiCallState<CustomerEntity>()) ApiCallState<CustomerEntity> salesRepState,
     @Default(ApiCallState<PriceEntity>()) ApiCallState<PriceEntity> pricesState,
+    @Default(ApiCallState<InventoryItemEntity>()) ApiCallState<InventoryItemEntity> inventoryItemsState,
   }) = _SyncState;
 }
