@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_service.dart';
-import '../../../../database/user_db.dart';
+import '../../../../database/user_table.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -10,7 +10,7 @@ class AuthRepositoryImpl implements AuthRepository {
   final DioClient _dioClient;
   final ApiService _apiService;
   final SharedPreferences _sharedPreferences;
-  final UserDB _userDB;
+  final UserTable _userDB;
   static const String _userKey = 'user_key';
   static const String _isLoggedInKey = 'is_logged_in';
 
@@ -18,7 +18,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required DioClient dioClient,
     required SharedPreferences sharedPreferences,
     required ApiService apiService,
-    required UserDB userDB,
+    required UserTable userDB,
   })  : _dioClient = dioClient,
         _sharedPreferences = sharedPreferences,
         _apiService = apiService,

@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import '../features/auth/domain/entities/user_entity.dart';
 
-class UserDB {
+class UserTable {
   static const String tableName = 'users';
   
   static const String createTableQuery = '''
@@ -16,7 +16,7 @@ class UserDB {
 
   final Database _db;
 
-  UserDB(this._db);
+  UserTable(this._db);
 
   Future<void> updateCurrentUser(UserEntity user, String? baseUrl) async {
     final users = await _db.query(tableName);

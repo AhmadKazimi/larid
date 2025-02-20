@@ -10,8 +10,8 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../database/user_db.dart';
-import '../../database/customer_db.dart';
+import '../../database/user_table.dart';
+import '../../database/customer_table.dart';
 import '../../features/sync/data/repositories/sync_repository_impl.dart';
 import '../../features/sync/domain/repositories/sync_repository.dart';
 import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
@@ -47,19 +47,19 @@ Future<void> setupServiceLocator() async {
     version: 1,
     onCreate: (db, version) async {
       _logger.info('Creating database tables for version $version');
-      await db.execute(UserDB.createTableQuery);
-      await db.execute(CustomerDB.createTableQuery);
-      await db.execute(CustomerDB.createSalesrepCustomerTableQuery);
+      await db.execute(UserTable.createTableQuery);
+      await db.execute(CustomerTable.createTableQuery);
+      await db.execute(CustomerTable.createSalesrepCustomerTableQuery);
 
     },
   );
 
   getIt.registerSingleton<Database>(database);
-  getIt.registerSingleton<UserDB>(UserDB(database));
-  getIt.registerSingleton<CustomerDB>(CustomerDB(getIt()));
+  getIt.registerSingleton<UserTable>(UserTable(database));
+  getIt.registerSingleton<CustomerTable>(CustomerTable(getIt()));
 
   // Get baseUrl from database
-  final baseUrl = await getIt<UserDB>().getBaseUrl();
+  final baseUrl = await getIt<UserTable>().getBaseUrl();
   _logger.info('Initial base URL from database: $baseUrl');
 
   // Initialize network components with base URL

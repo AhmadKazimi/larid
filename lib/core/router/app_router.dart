@@ -7,7 +7,7 @@ import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/map/presentation/pages/map_page.dart';
 import '../../features/api_config/presentation/pages/api_base_url_page.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
-import '../../database/user_db.dart';
+import '../../database/user_table.dart';
 import '../di/service_locator.dart';
 import 'route_constants.dart';
 
@@ -28,7 +28,7 @@ class AppRouter {
       try {
         _logger.info('Starting redirect for location: ${state.matchedLocation}');
         
-        final userDB = getIt<UserDB>();
+        final userDB = getIt<UserTable>();
         final baseUrl = await userDB.getBaseUrl();
         _logger.info('Got base URL: $baseUrl');
 

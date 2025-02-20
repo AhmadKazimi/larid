@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import '../features/sync/domain/entities/customer_entity.dart';
 
-class CustomerDB {
+class CustomerTable {
   static const String tableName = 'customers';
     static const String salesrepCustomerTableName = 'salesrepCustomer';
 
@@ -28,7 +28,7 @@ class CustomerDB {
 
   final Database db;
 
-  CustomerDB(this.db);
+  CustomerTable(this.db);
 
 
 

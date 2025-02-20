@@ -1,10 +1,10 @@
 import 'package:larid/features/api_config/domain/repositories/api_config_repository.dart';
-import '../../../../database/user_db.dart';
+import '../../../../database/user_table.dart';
 
 class ApiConfigRepositoryImpl implements ApiConfigRepository {
-  final UserDB _userDB;
+  final UserTable _userDB;
 
-  ApiConfigRepositoryImpl({required UserDB userDB}) : _userDB = userDB;
+  ApiConfigRepositoryImpl({required UserTable userDB}) : _userDB = userDB;
 
   @override
   Future<String?> getBaseUrl() async {

@@ -13,7 +13,7 @@ import 'core/di/service_locator.dart';
 import 'core/l10n/l10n.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'database/user_db.dart';
+import 'database/user_table.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupServiceLocator();
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
           create:
               (context) => ApiConfigBloc(
                 repository: ApiConfigRepositoryImpl(
-                  userDB: getIt<UserDB>(),
+                  userDB: getIt<UserTable>(),
                 ),
               )..add(const ApiConfigEvent.checkBaseUrl()),
         ),

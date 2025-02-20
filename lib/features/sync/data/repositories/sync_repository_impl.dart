@@ -1,20 +1,20 @@
 import 'dart:convert';
 import 'package:larid/core/network/api_service.dart';
-import 'package:larid/database/customer_db.dart';
-import 'package:larid/database/user_db.dart';
+import 'package:larid/database/customer_table.dart';
+import 'package:larid/database/user_table.dart';
 import '../../../../core/models/api_response.dart';
 import '../../domain/entities/customer_entity.dart';
 import '../../domain/repositories/sync_repository.dart';
 
 class SyncRepositoryImpl implements SyncRepository {
   final ApiService _apiService;
-  final CustomerDB _customerDB;
-  final UserDB _userDB;
+  final CustomerTable _customerDB;
+  final UserTable _userDB;
 
   SyncRepositoryImpl({
     required ApiService apiService,
-    required CustomerDB customerDB,
-    required UserDB userDB,
+    required CustomerTable customerDB,
+    required UserTable userDB,
   })  : _apiService = apiService,
         _customerDB = customerDB,
         _userDB = userDB;
