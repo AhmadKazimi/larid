@@ -11,6 +11,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:larid/core/storage/shared_prefs.dart';
 import '../../domain/usecases/check_active_session_usecase.dart';
 import '../../domain/usecases/start_session_usecase.dart';
+import 'package:larid/core/widgets/custom_dialog.dart';
+import 'package:larid/core/widgets/custom_button.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -351,31 +353,31 @@ class _MapPageState extends State<MapPage> {
 
   void _showStartSessionDialog() {
     final l10n = AppLocalizations.of(context);
-    showDialog(
+    showCustomDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.startSession),
-        content: Text(l10n.noActiveSessionMessage),
-        actions: [
-          TextButton(
-            onPressed: () {
+      title: l10n.startSession,
+      content: l10n.noActiveSessionMessage,
+      actions: [
+           CustomButton(
+          text: l10n.start,
+          onPressed: () async {
+            await _startSessionUseCase();
+            if (mounted) {
               Navigator.of(context).pop();
-              SystemNavigator.pop();
-            },
-            child: Text(l10n.cancel),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await _startSessionUseCase();
-              if (mounted) {
-                Navigator.of(context).pop();
-              }
-            },
-            child: Text(l10n.start),
-          ),
-        ],
-      ),
+            }
+          },
+          isPrimary: true,
+        ),
+        CustomButton(
+          text: l10n.cancel,
+          onPressed: () {
+            Navigator.of(context).pop();
+            SystemNavigator.pop();
+          },
+          isPrimary: false,
+        ),
+      ],
     );
   }
 

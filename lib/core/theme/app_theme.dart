@@ -26,6 +26,10 @@ class AppColors {
   static const Color onBackground = Colors.black;
   static const Color onSurface = Colors.black;
   static const Color onError = Colors.white;
+
+
+  static const Color textColor = Colors.black;
+  static const Color textColorException = Colors.red;
 }
 
 class AppTheme {
@@ -65,8 +69,35 @@ class AppTheme {
           ),
         ),
       ),
-
-      // Input decoration theme
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          textStyle: GoogleFonts.notoSansArabic(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+      dialogTheme: DialogTheme(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        titleTextStyle: GoogleFonts.notoSansArabic(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: AppColors.onBackground,
+        ),
+        contentTextStyle: GoogleFonts.notoSansArabic(
+          fontSize: 16,
+          color: AppColors.onBackground,
+        ),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.grey[100],
