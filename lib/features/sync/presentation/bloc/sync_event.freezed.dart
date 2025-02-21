@@ -24,6 +24,7 @@ mixin _$SyncEvent {
     required TResult Function() syncPrices,
     required TResult Function() syncInventoryItems,
     required TResult Function() syncInventoryUnits,
+    required TResult Function() syncSalesTaxes,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
@@ -32,6 +33,7 @@ mixin _$SyncEvent {
     TResult? Function()? syncPrices,
     TResult? Function()? syncInventoryItems,
     TResult? Function()? syncInventoryUnits,
+    TResult? Function()? syncSalesTaxes,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
@@ -40,6 +42,7 @@ mixin _$SyncEvent {
     TResult Function()? syncPrices,
     TResult Function()? syncInventoryItems,
     TResult Function()? syncInventoryUnits,
+    TResult Function()? syncSalesTaxes,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -50,6 +53,7 @@ mixin _$SyncEvent {
     required TResult Function(_SyncPrices value) syncPrices,
     required TResult Function(_SyncInventoryItems value) syncInventoryItems,
     required TResult Function(_SyncInventoryUnits value) syncInventoryUnits,
+    required TResult Function(_SyncSalesTaxes value) syncSalesTaxes,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
@@ -58,6 +62,7 @@ mixin _$SyncEvent {
     TResult? Function(_SyncPrices value)? syncPrices,
     TResult? Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult? Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult? Function(_SyncSalesTaxes value)? syncSalesTaxes,
   }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
@@ -66,6 +71,7 @@ mixin _$SyncEvent {
     TResult Function(_SyncPrices value)? syncPrices,
     TResult Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult Function(_SyncSalesTaxes value)? syncSalesTaxes,
     required TResult orElse(),
   }) => throw _privateConstructorUsedError;
 }
@@ -138,6 +144,7 @@ class _$SyncCustomersImpl implements _SyncCustomers {
     required TResult Function() syncPrices,
     required TResult Function() syncInventoryItems,
     required TResult Function() syncInventoryUnits,
+    required TResult Function() syncSalesTaxes,
   }) {
     return syncCustomers();
   }
@@ -150,6 +157,7 @@ class _$SyncCustomersImpl implements _SyncCustomers {
     TResult? Function()? syncPrices,
     TResult? Function()? syncInventoryItems,
     TResult? Function()? syncInventoryUnits,
+    TResult? Function()? syncSalesTaxes,
   }) {
     return syncCustomers?.call();
   }
@@ -162,6 +170,7 @@ class _$SyncCustomersImpl implements _SyncCustomers {
     TResult Function()? syncPrices,
     TResult Function()? syncInventoryItems,
     TResult Function()? syncInventoryUnits,
+    TResult Function()? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncCustomers != null) {
@@ -179,6 +188,7 @@ class _$SyncCustomersImpl implements _SyncCustomers {
     required TResult Function(_SyncPrices value) syncPrices,
     required TResult Function(_SyncInventoryItems value) syncInventoryItems,
     required TResult Function(_SyncInventoryUnits value) syncInventoryUnits,
+    required TResult Function(_SyncSalesTaxes value) syncSalesTaxes,
   }) {
     return syncCustomers(this);
   }
@@ -191,6 +201,7 @@ class _$SyncCustomersImpl implements _SyncCustomers {
     TResult? Function(_SyncPrices value)? syncPrices,
     TResult? Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult? Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult? Function(_SyncSalesTaxes value)? syncSalesTaxes,
   }) {
     return syncCustomers?.call(this);
   }
@@ -203,6 +214,7 @@ class _$SyncCustomersImpl implements _SyncCustomers {
     TResult Function(_SyncPrices value)? syncPrices,
     TResult Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult Function(_SyncSalesTaxes value)? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncCustomers != null) {
@@ -265,6 +277,7 @@ class _$SyncSalesRepCustomersImpl implements _SyncSalesRepCustomers {
     required TResult Function() syncPrices,
     required TResult Function() syncInventoryItems,
     required TResult Function() syncInventoryUnits,
+    required TResult Function() syncSalesTaxes,
   }) {
     return syncSalesRepCustomers();
   }
@@ -277,6 +290,7 @@ class _$SyncSalesRepCustomersImpl implements _SyncSalesRepCustomers {
     TResult? Function()? syncPrices,
     TResult? Function()? syncInventoryItems,
     TResult? Function()? syncInventoryUnits,
+    TResult? Function()? syncSalesTaxes,
   }) {
     return syncSalesRepCustomers?.call();
   }
@@ -289,6 +303,7 @@ class _$SyncSalesRepCustomersImpl implements _SyncSalesRepCustomers {
     TResult Function()? syncPrices,
     TResult Function()? syncInventoryItems,
     TResult Function()? syncInventoryUnits,
+    TResult Function()? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncSalesRepCustomers != null) {
@@ -306,6 +321,7 @@ class _$SyncSalesRepCustomersImpl implements _SyncSalesRepCustomers {
     required TResult Function(_SyncPrices value) syncPrices,
     required TResult Function(_SyncInventoryItems value) syncInventoryItems,
     required TResult Function(_SyncInventoryUnits value) syncInventoryUnits,
+    required TResult Function(_SyncSalesTaxes value) syncSalesTaxes,
   }) {
     return syncSalesRepCustomers(this);
   }
@@ -318,6 +334,7 @@ class _$SyncSalesRepCustomersImpl implements _SyncSalesRepCustomers {
     TResult? Function(_SyncPrices value)? syncPrices,
     TResult? Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult? Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult? Function(_SyncSalesTaxes value)? syncSalesTaxes,
   }) {
     return syncSalesRepCustomers?.call(this);
   }
@@ -330,6 +347,7 @@ class _$SyncSalesRepCustomersImpl implements _SyncSalesRepCustomers {
     TResult Function(_SyncPrices value)? syncPrices,
     TResult Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult Function(_SyncSalesTaxes value)? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncSalesRepCustomers != null) {
@@ -391,6 +409,7 @@ class _$SyncPricesImpl implements _SyncPrices {
     required TResult Function() syncPrices,
     required TResult Function() syncInventoryItems,
     required TResult Function() syncInventoryUnits,
+    required TResult Function() syncSalesTaxes,
   }) {
     return syncPrices();
   }
@@ -403,6 +422,7 @@ class _$SyncPricesImpl implements _SyncPrices {
     TResult? Function()? syncPrices,
     TResult? Function()? syncInventoryItems,
     TResult? Function()? syncInventoryUnits,
+    TResult? Function()? syncSalesTaxes,
   }) {
     return syncPrices?.call();
   }
@@ -415,6 +435,7 @@ class _$SyncPricesImpl implements _SyncPrices {
     TResult Function()? syncPrices,
     TResult Function()? syncInventoryItems,
     TResult Function()? syncInventoryUnits,
+    TResult Function()? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncPrices != null) {
@@ -432,6 +453,7 @@ class _$SyncPricesImpl implements _SyncPrices {
     required TResult Function(_SyncPrices value) syncPrices,
     required TResult Function(_SyncInventoryItems value) syncInventoryItems,
     required TResult Function(_SyncInventoryUnits value) syncInventoryUnits,
+    required TResult Function(_SyncSalesTaxes value) syncSalesTaxes,
   }) {
     return syncPrices(this);
   }
@@ -444,6 +466,7 @@ class _$SyncPricesImpl implements _SyncPrices {
     TResult? Function(_SyncPrices value)? syncPrices,
     TResult? Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult? Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult? Function(_SyncSalesTaxes value)? syncSalesTaxes,
   }) {
     return syncPrices?.call(this);
   }
@@ -456,6 +479,7 @@ class _$SyncPricesImpl implements _SyncPrices {
     TResult Function(_SyncPrices value)? syncPrices,
     TResult Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult Function(_SyncSalesTaxes value)? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncPrices != null) {
@@ -517,6 +541,7 @@ class _$SyncInventoryItemsImpl implements _SyncInventoryItems {
     required TResult Function() syncPrices,
     required TResult Function() syncInventoryItems,
     required TResult Function() syncInventoryUnits,
+    required TResult Function() syncSalesTaxes,
   }) {
     return syncInventoryItems();
   }
@@ -529,6 +554,7 @@ class _$SyncInventoryItemsImpl implements _SyncInventoryItems {
     TResult? Function()? syncPrices,
     TResult? Function()? syncInventoryItems,
     TResult? Function()? syncInventoryUnits,
+    TResult? Function()? syncSalesTaxes,
   }) {
     return syncInventoryItems?.call();
   }
@@ -541,6 +567,7 @@ class _$SyncInventoryItemsImpl implements _SyncInventoryItems {
     TResult Function()? syncPrices,
     TResult Function()? syncInventoryItems,
     TResult Function()? syncInventoryUnits,
+    TResult Function()? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncInventoryItems != null) {
@@ -558,6 +585,7 @@ class _$SyncInventoryItemsImpl implements _SyncInventoryItems {
     required TResult Function(_SyncPrices value) syncPrices,
     required TResult Function(_SyncInventoryItems value) syncInventoryItems,
     required TResult Function(_SyncInventoryUnits value) syncInventoryUnits,
+    required TResult Function(_SyncSalesTaxes value) syncSalesTaxes,
   }) {
     return syncInventoryItems(this);
   }
@@ -570,6 +598,7 @@ class _$SyncInventoryItemsImpl implements _SyncInventoryItems {
     TResult? Function(_SyncPrices value)? syncPrices,
     TResult? Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult? Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult? Function(_SyncSalesTaxes value)? syncSalesTaxes,
   }) {
     return syncInventoryItems?.call(this);
   }
@@ -582,6 +611,7 @@ class _$SyncInventoryItemsImpl implements _SyncInventoryItems {
     TResult Function(_SyncPrices value)? syncPrices,
     TResult Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult Function(_SyncSalesTaxes value)? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncInventoryItems != null) {
@@ -643,6 +673,7 @@ class _$SyncInventoryUnitsImpl implements _SyncInventoryUnits {
     required TResult Function() syncPrices,
     required TResult Function() syncInventoryItems,
     required TResult Function() syncInventoryUnits,
+    required TResult Function() syncSalesTaxes,
   }) {
     return syncInventoryUnits();
   }
@@ -655,6 +686,7 @@ class _$SyncInventoryUnitsImpl implements _SyncInventoryUnits {
     TResult? Function()? syncPrices,
     TResult? Function()? syncInventoryItems,
     TResult? Function()? syncInventoryUnits,
+    TResult? Function()? syncSalesTaxes,
   }) {
     return syncInventoryUnits?.call();
   }
@@ -667,6 +699,7 @@ class _$SyncInventoryUnitsImpl implements _SyncInventoryUnits {
     TResult Function()? syncPrices,
     TResult Function()? syncInventoryItems,
     TResult Function()? syncInventoryUnits,
+    TResult Function()? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncInventoryUnits != null) {
@@ -684,6 +717,7 @@ class _$SyncInventoryUnitsImpl implements _SyncInventoryUnits {
     required TResult Function(_SyncPrices value) syncPrices,
     required TResult Function(_SyncInventoryItems value) syncInventoryItems,
     required TResult Function(_SyncInventoryUnits value) syncInventoryUnits,
+    required TResult Function(_SyncSalesTaxes value) syncSalesTaxes,
   }) {
     return syncInventoryUnits(this);
   }
@@ -696,6 +730,7 @@ class _$SyncInventoryUnitsImpl implements _SyncInventoryUnits {
     TResult? Function(_SyncPrices value)? syncPrices,
     TResult? Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult? Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult? Function(_SyncSalesTaxes value)? syncSalesTaxes,
   }) {
     return syncInventoryUnits?.call(this);
   }
@@ -708,6 +743,7 @@ class _$SyncInventoryUnitsImpl implements _SyncInventoryUnits {
     TResult Function(_SyncPrices value)? syncPrices,
     TResult Function(_SyncInventoryItems value)? syncInventoryItems,
     TResult Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult Function(_SyncSalesTaxes value)? syncSalesTaxes,
     required TResult orElse(),
   }) {
     if (syncInventoryUnits != null) {
@@ -719,4 +755,136 @@ class _$SyncInventoryUnitsImpl implements _SyncInventoryUnits {
 
 abstract class _SyncInventoryUnits implements SyncEvent {
   const factory _SyncInventoryUnits() = _$SyncInventoryUnitsImpl;
+}
+
+/// @nodoc
+abstract class _$$SyncSalesTaxesImplCopyWith<$Res> {
+  factory _$$SyncSalesTaxesImplCopyWith(
+    _$SyncSalesTaxesImpl value,
+    $Res Function(_$SyncSalesTaxesImpl) then,
+  ) = __$$SyncSalesTaxesImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$SyncSalesTaxesImplCopyWithImpl<$Res>
+    extends _$SyncEventCopyWithImpl<$Res, _$SyncSalesTaxesImpl>
+    implements _$$SyncSalesTaxesImplCopyWith<$Res> {
+  __$$SyncSalesTaxesImplCopyWithImpl(
+    _$SyncSalesTaxesImpl _value,
+    $Res Function(_$SyncSalesTaxesImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of SyncEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$SyncSalesTaxesImpl implements _SyncSalesTaxes {
+  const _$SyncSalesTaxesImpl();
+
+  @override
+  String toString() {
+    return 'SyncEvent.syncSalesTaxes()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$SyncSalesTaxesImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() syncCustomers,
+    required TResult Function() syncSalesRepCustomers,
+    required TResult Function() syncPrices,
+    required TResult Function() syncInventoryItems,
+    required TResult Function() syncInventoryUnits,
+    required TResult Function() syncSalesTaxes,
+  }) {
+    return syncSalesTaxes();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? syncCustomers,
+    TResult? Function()? syncSalesRepCustomers,
+    TResult? Function()? syncPrices,
+    TResult? Function()? syncInventoryItems,
+    TResult? Function()? syncInventoryUnits,
+    TResult? Function()? syncSalesTaxes,
+  }) {
+    return syncSalesTaxes?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? syncCustomers,
+    TResult Function()? syncSalesRepCustomers,
+    TResult Function()? syncPrices,
+    TResult Function()? syncInventoryItems,
+    TResult Function()? syncInventoryUnits,
+    TResult Function()? syncSalesTaxes,
+    required TResult orElse(),
+  }) {
+    if (syncSalesTaxes != null) {
+      return syncSalesTaxes();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_SyncCustomers value) syncCustomers,
+    required TResult Function(_SyncSalesRepCustomers value)
+    syncSalesRepCustomers,
+    required TResult Function(_SyncPrices value) syncPrices,
+    required TResult Function(_SyncInventoryItems value) syncInventoryItems,
+    required TResult Function(_SyncInventoryUnits value) syncInventoryUnits,
+    required TResult Function(_SyncSalesTaxes value) syncSalesTaxes,
+  }) {
+    return syncSalesTaxes(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_SyncCustomers value)? syncCustomers,
+    TResult? Function(_SyncSalesRepCustomers value)? syncSalesRepCustomers,
+    TResult? Function(_SyncPrices value)? syncPrices,
+    TResult? Function(_SyncInventoryItems value)? syncInventoryItems,
+    TResult? Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult? Function(_SyncSalesTaxes value)? syncSalesTaxes,
+  }) {
+    return syncSalesTaxes?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_SyncCustomers value)? syncCustomers,
+    TResult Function(_SyncSalesRepCustomers value)? syncSalesRepCustomers,
+    TResult Function(_SyncPrices value)? syncPrices,
+    TResult Function(_SyncInventoryItems value)? syncInventoryItems,
+    TResult Function(_SyncInventoryUnits value)? syncInventoryUnits,
+    TResult Function(_SyncSalesTaxes value)? syncSalesTaxes,
+    required TResult orElse(),
+  }) {
+    if (syncSalesTaxes != null) {
+      return syncSalesTaxes(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _SyncSalesTaxes implements SyncEvent {
+  const factory _SyncSalesTaxes() = _$SyncSalesTaxesImpl;
 }

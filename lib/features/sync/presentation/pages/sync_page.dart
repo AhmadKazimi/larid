@@ -34,32 +34,36 @@ class SyncPage extends StatelessWidget {
                       if (state.salesRepState.isLoading ||
                           state.salesRepState.isSuccess ||
                           state.salesRepState.errorCode != null) ...[
-                        const Divider(height: 24, thickness: 1),
-                        _buildApiLogSection('Sales Rep', state.salesRepState),
+                        const SizedBox(height: 8),
+                        _buildApiLogSection(
+                          'Sales Rep Customers', state.salesRepState),
                       ],
                       if (state.pricesState.isLoading ||
                           state.pricesState.isSuccess ||
                           state.pricesState.errorCode != null) ...[
-                        const Divider(height: 24, thickness: 1),
+                        const SizedBox(height: 8),
                         _buildApiLogSection('Prices', state.pricesState),
                       ],
                       if (state.inventoryItemsState.isLoading ||
                           state.inventoryItemsState.isSuccess ||
                           state.inventoryItemsState.errorCode != null) ...[
-                        const Divider(height: 24, thickness: 1),
+                        const SizedBox(height: 8),
                         _buildApiLogSection(
-                          'Inventory Items',
-                          state.inventoryItemsState,
-                        ),
+                          'Inventory Items', state.inventoryItemsState),
                       ],
                       if (state.inventoryUnitsState.isLoading ||
                           state.inventoryUnitsState.isSuccess ||
                           state.inventoryUnitsState.errorCode != null) ...[
-                        const Divider(height: 24, thickness: 1),
+                        const SizedBox(height: 8),
                         _buildApiLogSection(
-                          'Inventory Units',
-                          state.inventoryUnitsState,
-                        ),
+                          'Inventory Units', state.inventoryUnitsState),
+                      ],
+                      if (state.salesTaxesState.isLoading ||
+                          state.salesTaxesState.isSuccess ||
+                          state.salesTaxesState.errorCode != null) ...[
+                        const SizedBox(height: 8),
+                        _buildApiLogSection(
+                          'Sales Taxes', state.salesTaxesState),
                       ],
                     ],
                   ),
@@ -80,15 +84,18 @@ class SyncPage extends StatelessWidget {
     final bool isLoading =
         state.customersState.isLoading ||
         state.salesRepState.isLoading ||
-        state.inventoryUnitsState.isLoading;
+        state.inventoryUnitsState.isLoading ||
+        state.salesTaxesState.isLoading;
     final bool hasError =
         state.customersState.errorCode != null ||
         state.salesRepState.errorCode != null ||
-        state.inventoryUnitsState.errorCode != null;
+        state.inventoryUnitsState.errorCode != null ||
+        state.salesTaxesState.errorCode != null;
     final bool isSuccess =
         state.customersState.isSuccess &&
         state.salesRepState.isSuccess &&
-        state.inventoryUnitsState.isSuccess;
+        state.inventoryUnitsState.isSuccess &&
+        state.salesTaxesState.isSuccess;
 
     return SizedBox(
       width: double.infinity,
@@ -104,6 +111,7 @@ class SyncPage extends StatelessWidget {
                   context.read<SyncBloc>().add(const SyncEvent.syncPrices());
                   context.read<SyncBloc>().add(const SyncEvent.syncInventoryItems());
                   context.read<SyncBloc>().add(const SyncEvent.syncInventoryUnits());
+                  context.read<SyncBloc>().add(const SyncEvent.syncSalesTaxes());
                 },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(16),

@@ -13,6 +13,7 @@ import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../database/user_table.dart';
 import '../../database/customer_table.dart';
 import '../../database/prices_table.dart';
+import '../../database/sales_taxes_table.dart';
 import '../../database/inventory_items_table.dart';
 import '../../database/inventory_units_table.dart';
 import '../../features/sync/data/repositories/sync_repository_impl.dart';
@@ -22,6 +23,7 @@ import '../../features/sync/domain/usecases/sync_sales_rep_customers_usecase.dar
 import '../../features/sync/domain/usecases/sync_prices_usecase.dart';
 import '../../features/sync/domain/usecases/sync_inventory_items_usecase.dart';
 import '../../features/sync/domain/usecases/sync_inventory_units_usecase.dart';
+import '../../features/sync/domain/usecases/sync_sales_taxes_usecase.dart';
 import '../../features/sync/presentation/bloc/sync_bloc.dart';
 
 final getIt = GetIt.instance;
@@ -59,6 +61,7 @@ Future<void> setupServiceLocator() async {
       await db.execute(PricesTable.createTableQuery);
       await db.execute(InventoryItemsTable.createTableQuery);
       await db.execute(InventoryUnitsTable.createTableQuery);
+      await db.execute(SalesTaxesTable.createTableQuery);
     },
   );
 
@@ -68,12 +71,14 @@ Future<void> setupServiceLocator() async {
   final pricesTable = PricesTable(database);
   final inventoryItemsTable = InventoryItemsTable(database);
   final inventoryUnitsTable = InventoryUnitsTable(database);
+  final salesTaxesTable = SalesTaxesTable(database);
 
   getIt.registerSingleton<UserTable>(userTable);
   getIt.registerSingleton<CustomerTable>(customerTable);
   getIt.registerSingleton<PricesTable>(pricesTable);
   getIt.registerSingleton<InventoryItemsTable>(inventoryItemsTable);
   getIt.registerSingleton<InventoryUnitsTable>(inventoryUnitsTable);
+  getIt.registerSingleton<SalesTaxesTable>(salesTaxesTable);
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();
@@ -100,6 +105,7 @@ Future<void> setupServiceLocator() async {
       pricesTable: getIt(),
       inventoryItemsTable: getIt(),
       inventoryUnitsTable: getIt(),
+      salesTaxesTable: getIt(),
     ),
   );
 
@@ -110,6 +116,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(() => SyncPricesUseCase(getIt()));
   getIt.registerFactory(() => SyncInventoryItemsUseCase(getIt()));
   getIt.registerFactory(() => SyncInventoryUnitsUseCase(getIt()));
+  getIt.registerFactory(() => SyncSalesTaxesUseCase(getIt()));
 
   // BLoCs
   getIt.registerFactory<AuthBloc>(
@@ -123,6 +130,7 @@ Future<void> setupServiceLocator() async {
       syncPricesUseCase: getIt(),
       syncInventoryItemsUseCase: getIt(),
       syncInventoryUnitsUseCase: getIt(),
+      syncSalesTaxesUseCase: getIt(),
     ),
   );
 }

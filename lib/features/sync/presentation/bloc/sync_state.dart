@@ -3,6 +3,7 @@ import '../../domain/entities/customer_entity.dart';
 import '../../domain/entities/inventory/inventory_item_entity.dart';
 import '../../domain/entities/inventory/inventory_unit_entity.dart';
 import '../../domain/entities/prices/prices_entity.dart';
+import '../../domain/entities/sales_tax_entity.dart';
 
 part 'sync_state.freezed.dart';
 
@@ -14,16 +15,21 @@ class ApiCallState<T> with _$ApiCallState<T> {
     String? errorCode,
     String? errorMessage,
     List<T>? data,
-  }) = _ApiCallState<T>;
+  }) = _ApiCallState;
+
+  const ApiCallState._();
+
+  bool get hasError => errorCode != null;
 }
 
 @freezed
 class SyncState with _$SyncState {
   const factory SyncState({
-    @Default(ApiCallState<CustomerEntity>()) ApiCallState<CustomerEntity> customersState,
-    @Default(ApiCallState<CustomerEntity>()) ApiCallState<CustomerEntity> salesRepState,
-    @Default(ApiCallState<PriceEntity>()) ApiCallState<PriceEntity> pricesState,
-    @Default(ApiCallState<InventoryItemEntity>()) ApiCallState<InventoryItemEntity> inventoryItemsState,
-    @Default(ApiCallState<InventoryUnitEntity>()) ApiCallState<InventoryUnitEntity> inventoryUnitsState,
+    @Default(ApiCallState()) ApiCallState<CustomerEntity> customersState,
+    @Default(ApiCallState()) ApiCallState<CustomerEntity> salesRepState,
+    @Default(ApiCallState()) ApiCallState<PriceEntity> pricesState,
+    @Default(ApiCallState()) ApiCallState<InventoryItemEntity> inventoryItemsState,
+    @Default(ApiCallState()) ApiCallState<InventoryUnitEntity> inventoryUnitsState,
+    @Default(ApiCallState()) ApiCallState<SalesTaxEntity> salesTaxesState,
   }) = _SyncState;
 }

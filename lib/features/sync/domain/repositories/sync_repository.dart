@@ -3,6 +3,7 @@ import '../entities/customer_entity.dart';
 import '../entities/inventory/inventory_item_entity.dart';
 import '../entities/inventory/inventory_unit_entity.dart';
 import '../entities/prices/prices_entity.dart';
+import '../entities/sales_tax_entity.dart';
 
 abstract class SyncRepository {
   Future<ApiResponse<List<CustomerEntity>>> getCustomers();
@@ -19,4 +20,7 @@ abstract class SyncRepository {
 
   Future<ApiResponse<List<InventoryUnitEntity>>> getInventoryUnits();
   Future<void> saveInventoryUnits(List<InventoryUnitEntity> units);
+
+  Future<ApiResponse<List<SalesTaxEntity>>> getSalesTaxes();
+  Future<void> saveSalesTaxes(List<SalesTaxEntity> taxes);
 }

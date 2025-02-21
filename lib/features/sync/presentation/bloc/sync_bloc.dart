@@ -5,11 +5,13 @@ import '../../domain/entities/customer_entity.dart';
 import '../../domain/entities/inventory/inventory_item_entity.dart';
 import '../../domain/entities/inventory/inventory_unit_entity.dart';
 import '../../domain/entities/prices/prices_entity.dart';
+import '../../domain/entities/sales_tax_entity.dart';
 import '../../domain/usecases/sync_customers_usecase.dart';
 import '../../domain/usecases/sync_inventory_items_usecase.dart';
 import '../../domain/usecases/sync_inventory_units_usecase.dart';
 import '../../domain/usecases/sync_prices_usecase.dart';
 import '../../domain/usecases/sync_sales_rep_customers_usecase.dart';
+import '../../domain/usecases/sync_sales_taxes_usecase.dart';
 import 'sync_event.dart';
 import 'sync_state.dart';
 
@@ -19,6 +21,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
   final SyncPricesUseCase _syncPricesUseCase;
   final SyncInventoryItemsUseCase _syncInventoryItemsUseCase;
   final SyncInventoryUnitsUseCase _syncInventoryUnitsUseCase;
+  final SyncSalesTaxesUseCase _syncSalesTaxesUseCase;
 
   SyncBloc({
     required SyncCustomersUseCase syncCustomersUseCase,
@@ -26,11 +29,13 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
     required SyncPricesUseCase syncPricesUseCase,
     required SyncInventoryItemsUseCase syncInventoryItemsUseCase,
     required SyncInventoryUnitsUseCase syncInventoryUnitsUseCase,
+    required SyncSalesTaxesUseCase syncSalesTaxesUseCase,
   })  : _syncCustomersUseCase = syncCustomersUseCase,
         _syncSalesRepCustomersUseCase = syncSalesRepCustomersUseCase,
         _syncPricesUseCase = syncPricesUseCase,
         _syncInventoryItemsUseCase = syncInventoryItemsUseCase,
         _syncInventoryUnitsUseCase = syncInventoryUnitsUseCase,
+        _syncSalesTaxesUseCase = syncSalesTaxesUseCase,
         super(const SyncState()) {
     on<SyncEvent>((event, emit) async {
       await event.when(
@@ -39,6 +44,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
         syncPrices: () => _onSyncPrices(emit),
         syncInventoryItems: () => _onSyncInventoryItems(emit),
         syncInventoryUnits: () => _onSyncInventoryUnits(emit),
+        syncSalesTaxes: () => _onSyncSalesTaxes(emit),
       );
     });
   }
@@ -201,9 +207,9 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
         inventoryUnitsState: state.inventoryUnitsState.copyWith(isLoading: true),
       ));
 
-      final response = await _syncInventoryUnitsUseCase();
-      
-      if (response.isSuccess) {
+    final response = await _syncInventoryUnitsUseCase();
+
+    if (response.isSuccess) {
         emit(state.copyWith(
           inventoryUnitsState: ApiCallState<InventoryUnitEntity>(
             isLoading: false,
@@ -211,8 +217,8 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
             data: response.data,
           ),
         ));
-      } else {
-        emit(state.copyWith(
+    } else {
+      emit(state.copyWith(
           inventoryUnitsState: ApiCallState<InventoryUnitEntity>(
             isLoading: false,
             errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
@@ -230,4 +236,52 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
       ));
     }
   }
+
+  Future<void> _onSyncSalesTaxes(Emitter<SyncState> emit) async {
+    
+    try {
+      emit(state.copyWith(
+        salesTaxesState: state.salesTaxesState.copyWith(
+          isLoading: true,
+          errorCode: null,
+          errorMessage: null,
+        ),
+      ));
+
+      final response = await _syncSalesTaxesUseCase();
+
+      if (response.isSuccess) {
+        emit(state.copyWith(
+          salesTaxesState: ApiCallState<SalesTaxEntity>(
+            isLoading: false,
+            isSuccess: true,
+            data: response.data,
+            errorCode: null,
+            errorMessage: null,
+          ),
+        ));
+      } else {
+        emit(state.copyWith(
+          salesTaxesState: ApiCallState<SalesTaxEntity>(
+            isLoading: false,
+            isSuccess: false,
+            data: null,
+            errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
+            errorMessage: response.message ?? 'Unknown error occurred',
+          ),
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        salesTaxesState: ApiCallState<SalesTaxEntity>(
+          isLoading: false,
+          isSuccess: false,
+          data: null,
+          errorCode: ApiErrorCode.unknown.message,
+          errorMessage: 'Failed to sync sales taxes: ${e.toString()}',
+        ),
+      ));
+    }
+  }
+
 }

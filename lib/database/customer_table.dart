@@ -3,7 +3,7 @@ import '../features/sync/domain/entities/customer_entity.dart';
 
 class CustomerTable {
   static const String tableName = 'customers';
-    static const String salesrepCustomerTableName = 'salesrepCustomer';
+    static const String salesrepCustomerTableName = 'sales_rep_customer';
 
   
   static const String createTableQuery = '''

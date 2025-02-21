@@ -5,12 +5,16 @@ import 'package:larid/database/customer_table.dart';
 import 'package:larid/database/inventory_items_table.dart';
 import 'package:larid/database/inventory_units_table.dart';
 import 'package:larid/database/prices_table.dart';
+import 'package:larid/database/sales_taxes_table.dart';
 import 'package:larid/database/user_table.dart';
+
 import 'package:larid/features/auth/domain/entities/user_entity.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/features/sync/domain/entities/inventory/inventory_item_entity.dart';
 import 'package:larid/features/sync/domain/entities/inventory/inventory_unit_entity.dart';
 import 'package:larid/features/sync/domain/entities/prices/prices_entity.dart';
+import 'package:larid/features/sync/domain/entities/sales_tax_entity.dart';
+
 import 'package:larid/core/models/api_response.dart';
 import '../../../sync/domain/repositories/sync_repository.dart';
 
@@ -21,6 +25,7 @@ class SyncRepositoryImpl implements SyncRepository {
   final PricesTable _pricesTable;
   final InventoryItemsTable _inventoryItemsTable;
   final InventoryUnitsTable _inventoryUnitsTable;
+  final SalesTaxesTable _salesTaxesTable;
   UserEntity? _user;
   Future<void>? _initUserFuture;
 
@@ -31,23 +36,34 @@ class SyncRepositoryImpl implements SyncRepository {
     required PricesTable pricesTable,
     required InventoryItemsTable inventoryItemsTable,
     required InventoryUnitsTable inventoryUnitsTable,
+    required SalesTaxesTable salesTaxesTable,
   }) : _apiService = apiService,
        _customerTable = customerTable,
        _userTable = userTable,
        _pricesTable = pricesTable,
        _inventoryItemsTable = inventoryItemsTable,
-       _inventoryUnitsTable = inventoryUnitsTable {
+       _inventoryUnitsTable = inventoryUnitsTable,
+       _salesTaxesTable = salesTaxesTable {
     _initUserFuture = _initUser();
   }
 
   Future<void> _initUser() async {
     try {
+      if (_user != null) {
+        dev.log('User already initialized: ${_user!.userid}');
+        return;
+      }
+      
       _user = await _userTable.getCurrentUser();
+      if (_user == null) {
+        dev.log('No user found in database during initialization');
+      } else {
+        dev.log('Successfully initialized user: ${_user!.userid}');
+      }
     } catch (e) {
       dev.log('Error initializing user: $e');
+      _user = null;
     }
-
-    await _ensureUserInitialized();
   }
 
   Future<void> _ensureUserInitialized() async {
@@ -249,5 +265,88 @@ class SyncRepositoryImpl implements SyncRepository {
   @override
   Future<void> saveInventoryUnits(List<InventoryUnitEntity> units) async {
     await _inventoryUnitsTable.createOrUpdateUnits(units);
+  }
+
+  @override
+  Future<ApiResponse<List<SalesTaxEntity>>> getSalesTaxes() async {
+    try {
+      await _initUser();
+      
+      if (_user == null) {
+        dev.log('User not found in database - cannot sync sales taxes');
+        return ApiResponse(errorCode: '-1', message: 'Please login again to sync sales taxes');
+      }
+
+      dev.log('Getting sales taxes for user: ${_user!.userid}');
+      final response = await _apiService.getSalesTaxes(
+        userid: _user!.userid,
+        workspace: _user!.workspace,
+        password: _user!.password,
+      );
+
+      if (response.isEmpty) {
+        dev.log('No sales taxes returned from API');
+        return ApiResponse(data: []);
+      }
+
+      // Check if the response contains an error code
+      if (response[0] is Map) {
+        final firstItem = response[0];
+        if (firstItem.containsKey('ERROR')) {
+          final errorMsg = firstItem['ERROR']?.toString() ?? 'Unknown error';
+          dev.log('API returned error: $errorMsg');
+          return ApiResponse(
+            errorCode: '-1',
+            message: 'Failed to get sales taxes: $errorMsg',
+          );
+        }
+      }
+
+      dev.log('Raw API response: $response');
+      final taxes = response.map((json) {
+        try {
+          if (json is! Map<String, dynamic>) {
+            dev.log('Invalid JSON item: $json');
+            return null;
+          }
+          return SalesTaxEntity.fromJson(json);
+        } catch (e) {
+          dev.log('Error parsing sales tax item: $e, JSON: $json');
+          return null;
+        }
+      })
+      .whereType<SalesTaxEntity>() // Filter out null items
+      .toList();
+
+      dev.log('Successfully parsed ${taxes.length} sales taxes from API');
+      
+      if (taxes.isEmpty) {
+        return ApiResponse(
+          errorCode: '-1',
+          message: 'No valid sales taxes data received from API',
+        );
+      }
+
+      try {
+        await _salesTaxesTable.createOrUpdateTaxes(taxes);
+        dev.log('Successfully saved sales taxes to database');
+      } catch (dbError) {
+        dev.log('Error saving sales taxes to database: $dbError');
+        // Continue even if save fails - at least return the API data
+      }
+
+      return ApiResponse(data: taxes);
+    } catch (e, stackTrace) {
+      dev.log('Error in getSalesTaxes: $e\n$stackTrace');
+      return ApiResponse(
+        errorCode: '-1',
+        message: 'Failed to sync sales taxes: $e',
+      );
+    }
+  }
+
+  @override
+  Future<void> saveSalesTaxes(List<SalesTaxEntity> taxes) async {
+    await _salesTaxesTable.createOrUpdateTaxes(taxes);
   }
 }
