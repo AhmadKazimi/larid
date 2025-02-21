@@ -111,8 +111,8 @@ class _SyncPageState extends State<SyncPage>
                       turns: _animationController,
                       child: SvgPicture.asset(
                         syncIcon,
-                        width: 120,
-                        height: 120,
+                        width: double.infinity,
+                        height: 200,
                       ),
                     ),
                   ),
