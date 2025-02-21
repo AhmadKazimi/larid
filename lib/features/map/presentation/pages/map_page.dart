@@ -11,8 +11,13 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:larid/core/storage/shared_prefs.dart';
 import '../../domain/usecases/check_active_session_usecase.dart';
 import '../../domain/usecases/start_session_usecase.dart';
+import '../../domain/usecases/end_session_usecase.dart';
 import 'package:larid/core/widgets/custom_dialog.dart';
 import 'package:larid/core/widgets/custom_button.dart';
+import '../widgets/search_bar_widget.dart';
+
+import 'package:larid/core/widgets/gradient_page_layout.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -24,7 +29,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   GoogleMapController? _mapController;
   final Location _location = Location();
-  LatLng _currentPosition = const LatLng(0, 0);
+  LatLng _currentPosition = const LatLng(24.7136, 46.6753); // Default to Riyadh
   bool _isLoading = true;
   final Set<Marker> _markers = {};
   List<CustomerEntity> _customers = [];
@@ -34,6 +39,9 @@ class _MapPageState extends State<MapPage> {
   final CustomerTable _customerTable = getIt<CustomerTable>();
   final CheckActiveSessionUseCase _checkActiveSessionUseCase = getIt<CheckActiveSessionUseCase>();
   final StartSessionUseCase _startSessionUseCase = getIt<StartSessionUseCase>();
+  final EndSessionUseCase _endSessionUseCase = getIt<EndSessionUseCase>();
+  final TextEditingController _searchController = TextEditingController();
+  List<CustomerEntity> _filteredCustomers = [];
 
   @override
   void initState() {
@@ -42,6 +50,15 @@ class _MapPageState extends State<MapPage> {
     _getCurrentLocation();
     _loadCustomers();
     _checkWorkingSession();
+    _filteredCustomers = _customers;
+  }
+
+  @override
+  void dispose() {
+    _hideCustomerInfo();
+    _mapController?.dispose();
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadMapStyle() async {
@@ -51,13 +68,6 @@ class _MapPageState extends State<MapPage> {
     } catch (e) {
       debugPrint('Error loading map style: $e');
     }
-  }
-
-  @override
-  void dispose() {
-    _hideCustomerInfo();
-    _mapController?.dispose();
-    super.dispose();
   }
 
   Future<void> _getCurrentLocation() async {
@@ -139,6 +149,7 @@ class _MapPageState extends State<MapPage> {
       final customers = await _customerTable.getAllSalesRepCustomers();
       setState(() {
         _customers = customers;
+        _filteredCustomers = customers;
       });
       _addCustomerMarkers();
     } catch (e) {
@@ -147,7 +158,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _addCustomerMarkers() {
-    for (final customer in _customers) {
+    for (final customer in _filteredCustomers) {
       if (customer.mapCoords.isNotEmpty) {
         try {
           final coords = customer.mapCoords.split(',');
@@ -343,15 +354,78 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _checkWorkingSession() async {
-    final hasActiveSession = await _checkActiveSessionUseCase();
-    if (!hasActiveSession) {
-      if (mounted) {
-        _showStartSessionDialog();
+    try {
+      final hasActiveSession = await _checkActiveSessionUseCase();
+      if (!hasActiveSession) {
+        _showStartSessionDialog(context);
       }
+    } catch (e) {
+      debugPrint('Error checking working session: $e');
     }
   }
 
-  void _showStartSessionDialog() {
+  Future<void> _startSession(CustomerEntity customer) async {
+    try {
+      await _startSessionUseCase();
+      if (mounted) {
+        _hideCustomerInfo();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Started session with ${customer.customerName}',
+              style: GoogleFonts.notoSansArabic(),
+            ),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error starting session: $e',
+              style: GoogleFonts.notoSansArabic(),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      debugPrint('Error starting session: $e');
+    }
+  }
+
+  Future<void> _endSession() async {
+    try {
+      await _endSessionUseCase();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context).sessionEnded,
+              style: GoogleFonts.notoSansArabic(),
+            ),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error ending session: $e',
+              style: GoogleFonts.notoSansArabic(),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      debugPrint('Error ending session: $e');
+    }
+  }
+
+  void _showStartSessionDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     showCustomDialog(
       context: context,
@@ -381,40 +455,172 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
+  void _onSearch(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredCustomers = _customers;
+      } else {
+        _filteredCustomers = _customers.where((customer) {
+          final name = customer.customerName.toLowerCase();
+          final code = customer.customerCode.toLowerCase();
+          final searchQuery = query.toLowerCase();
+          return name.contains(searchQuery) || code.contains(searchQuery);
+        }).toList();
+      }
+      _updateMarkersForSearch();
+    });
+  }
+
+  void _updateMarkersForSearch() {
+    _markers.clear();
+    for (final customer in _filteredCustomers) {
+      if (customer.mapCoords.isNotEmpty) {
+        try {
+          final coords = customer.mapCoords.split(',');
+          if (coords.length == 2) {
+            final lat = double.parse(coords[0]);
+            final lng = double.parse(coords[1]);
+            final marker = Marker(
+              markerId: MarkerId(customer.customerCode),
+              position: LatLng(lat, lng),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueRed,
+              ),
+              onTap: () => _showCustomerInfo(customer, context),
+            );
+            _markers.add(marker);
+          }
+        } catch (e) {
+          debugPrint(
+            'Error adding marker for customer ${customer.customerCode}: $e',
+          );
+        }
+      }
+    }
+  }
+
+  void _onSearchClear() {
+    setState(() {
+      _filteredCustomers = _customers;
+      _updateMarkersForSearch();
+    });
+  }
+
+  Widget _buildCustomerInfoCard(CustomerEntity customer) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    customer.customerName,
+                    style: GoogleFonts.notoSansArabic(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textColor,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: _hideCustomerInfo,
+                  color: AppColors.textColor,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              AppLocalizations.of(context).customerCode + ': ${customer.customerCode}',
+              style: GoogleFonts.notoSansArabic(
+                fontSize: 14,
+                color: AppColors.textColor.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                CustomButton(
+                  onPressed: () => _startSession(customer),
+                  text: AppLocalizations.of(context).startSession,
+                  isPrimary: true,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.map),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.my_location),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Stack(
+              children: [
+                GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  initialCameraPosition: CameraPosition(
+                    target: _currentPosition,
+                    zoom: 15,
+                  ),
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  markers: _markers,
+                  onTap: (_) => _hideCustomerInfo(),
+                  mapType: MapType.normal,
+                  style: _mapStyle,
+                  zoomControlsEnabled: false,
+                ),
+                SearchBarWidget(
+                  controller: _searchController,
+                  onSearch: _onSearch,
+                  onClear: _onSearchClear,
+                ),
+                if (_overlayEntry == null && _selectedCustomer != null)
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 16,
+                    child: _buildCustomerInfoCard(_selectedCustomer!),
+                  ),
+              ],
+            ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'location',
             onPressed: _animateToCurrentLocation,
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.my_location),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'end_session',
+            onPressed: _endSession,
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.stop),
           ),
         ],
       ),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Stack(
-                children: [
-                  GoogleMap(
-                    onMapCreated: _onMapCreated,
-                    initialCameraPosition: CameraPosition(
-                      target: _currentPosition,
-                      zoom: 15,
-                    ),
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: true,
-                    markers: _markers,
-                    onTap: (_) => _hideCustomerInfo(),
-                    mapType: MapType.normal,
-                    style: _mapStyle,
-                  ),
-                ],
-              ),
     );
   }
 }

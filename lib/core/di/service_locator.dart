@@ -29,6 +29,7 @@ import '../../features/map/data/repositories/working_session_repository_impl.dar
 import '../../features/map/domain/repositories/working_session_repository.dart';
 import '../../features/map/domain/usecases/check_active_session_usecase.dart';
 import '../../features/map/domain/usecases/start_session_usecase.dart';
+import '../../features/map/domain/usecases/end_session_usecase.dart';
 
 final getIt = GetIt.instance;
 
@@ -126,6 +127,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(() => SyncInventoryItemsUseCase(getIt()));
   getIt.registerFactory(() => SyncInventoryUnitsUseCase(getIt()));
   getIt.registerFactory(() => SyncSalesTaxesUseCase(getIt()));
+  getIt.registerFactory(() => EndSessionUseCase(getIt()));
 
   // BLoCs
   getIt.registerFactory<AuthBloc>(

@@ -150,4 +150,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cancel => 'إلغاء';
+
+  @override
+  String get searchForClient => 'البحث عن عميل...';
+
+  @override
+  String get sessionEnded => 'تم إنهاء الجلسة';
 }

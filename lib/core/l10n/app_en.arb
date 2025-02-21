@@ -61,5 +61,7 @@
     "startSession": "Start Session",
     "noActiveSessionMessage": "You don't have an active session. Would you like to start a new one?",
     "start": "Start",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "searchForClient": "Search for client...",
+    "sessionEnded": "Session ended"
 }

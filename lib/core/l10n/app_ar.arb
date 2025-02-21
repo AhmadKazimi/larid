@@ -48,6 +48,8 @@
 
     "makeSureInternetConnected": "تأكد من اتصالك بالإنترنت",
     "dontClosePage": "لا تغلق هذه الصفحة حتى تكتمل المزامنة",
+    "searchForClient": "البحث عن عميل...",
+    "sessionEnded": "تم إنهاء الجلسة",
 
     "map": "الخريطة",
     "customerCode": "رمز العميل",

@@ -25,7 +25,7 @@ class SharedPrefs {
     return _prefs?.getBool(_isSyncedKey) ?? false;
   }
 
-  static Future<void> clearLoginState() async {
+  static Future<void> clear() async {
     await _prefs?.remove(_isLoggedInKey);
     await _prefs?.remove(_isSyncedKey);
   }

@@ -376,6 +376,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
+
+  /// No description provided for @searchForClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for client...'**
+  String get searchForClient;
+
+  /// No description provided for @sessionEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ended'**
+  String get sessionEnded;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
