@@ -36,7 +36,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
         _syncInventoryItemsUseCase = syncInventoryItemsUseCase,
         _syncInventoryUnitsUseCase = syncInventoryUnitsUseCase,
         _syncSalesTaxesUseCase = syncSalesTaxesUseCase,
-        super(const SyncState()) {
+        super(SyncState()) {
     on<SyncEvent>((event, emit) async {
       await event.when(
         syncCustomers: () => _onSyncCustomers(emit),
