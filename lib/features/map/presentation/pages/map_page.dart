@@ -21,7 +21,7 @@ class _MapPageState extends State<MapPage> {
   final Location _location = Location();
   LatLng _currentPosition = const LatLng(0, 0);
   bool _isLoading = true;
-  Set<Marker> _markers = {};
+  final Set<Marker> _markers = {};
   List<CustomerEntity> _customers = [];
   CustomerEntity? _selectedCustomer;
   OverlayEntry? _overlayEntry;
@@ -37,7 +37,8 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> _loadMapStyle() async {
     try {
-      _mapStyle = await rootBundle.loadString('assets/map/map_style.json');
+      final style = await rootBundle.loadString('assets/map/map_style.json');
+      setState(() => _mapStyle = style);
     } catch (e) {
       debugPrint('Error loading map style: $e');
     }
@@ -83,7 +84,7 @@ class _MapPageState extends State<MapPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                AppLocalizations.of(context)!.locationServicesRequired,
+                AppLocalizations.of(context).locationServicesRequired,
               ),
               duration: const Duration(seconds: 3),
             ),
@@ -101,7 +102,7 @@ class _MapPageState extends State<MapPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                AppLocalizations.of(context)!.locationPermissionRequired,
+                AppLocalizations.of(context).locationPermissionRequired,
               ),
               duration: const Duration(seconds: 3),
             ),
@@ -139,9 +140,9 @@ class _MapPageState extends State<MapPage> {
 
   void _addCustomerMarkers() {
     for (final customer in _customers) {
-      if (customer.mapCoords != null && customer.mapCoords!.isNotEmpty) {
+      if (customer.mapCoords.isNotEmpty) {
         try {
-          final coords = customer.mapCoords!.split(',');
+          final coords = customer.mapCoords.split(',');
           if (coords.length == 2) {
             final lat = double.parse(coords[0]);
             final lng = double.parse(coords[1]);
@@ -179,10 +180,7 @@ class _MapPageState extends State<MapPage> {
           ),
         ),
         Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(color: Colors.black87),
-          ),
+          child: Text(value, style: const TextStyle(color: Colors.black87)),
         ),
       ],
     );
@@ -197,14 +195,16 @@ class _MapPageState extends State<MapPage> {
         final url = Uri.parse(
           'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
         );
-        
+
         if (await canLaunchUrl(url)) {
           await launchUrl(url, mode: LaunchMode.externalApplication);
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(AppLocalizations.of(context)!.cannotOpenGoogleMaps),
+                content: Text(
+                  AppLocalizations.of(context).cannotOpenGoogleMaps,
+                ),
                 duration: const Duration(seconds: 3),
               ),
             );
@@ -216,7 +216,7 @@ class _MapPageState extends State<MapPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.cannotOpenGoogleMaps),
+            content: Text(AppLocalizations.of(context).cannotOpenGoogleMaps),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -226,11 +226,12 @@ class _MapPageState extends State<MapPage> {
 
   void _showCustomerInfo(CustomerEntity customer, BuildContext context) {
     _hideCustomerInfo();
-    
-    final l10n = AppLocalizations.of(context)!;
-    
+
+    final l10n = AppLocalizations.of(context);
+
     _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
+      builder:
+          (context) => Positioned(
         bottom: 16,
         left: 16,
         right: 16,
@@ -243,7 +244,7 @@ class _MapPageState extends State<MapPage> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -273,16 +274,28 @@ class _MapPageState extends State<MapPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                _buildInfoRow(Icons.badge, l10n.customerCode, customer.customerCode),
+                _buildInfoRow(
+                  Icons.badge,
+                  l10n.customerCode,
+                  customer.customerCode,
+                ),
                 const SizedBox(height: 4),
-                _buildInfoRow(Icons.location_on, l10n.address, customer.address),
+                _buildInfoRow(
+                  Icons.location_on,
+                  l10n.address,
+                  customer.address,
+                ),
                 const SizedBox(height: 4),
-                _buildInfoRow(Icons.phone, l10n.phone, customer.contactPhone),
+                _buildInfoRow(
+                  Icons.phone,
+                  l10n.phone,
+                  customer.contactPhone,
+                ),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () => _openInGoogleMaps(customer.mapCoords!),
+                    onPressed: () => _openInGoogleMaps(customer.mapCoords),
                     icon: const Icon(Icons.directions),
                     label: Text(l10n.getDirections),
                     style: ElevatedButton.styleFrom(
@@ -318,16 +331,13 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       _mapController = controller;
     });
-    if (_mapStyle != null) {
-      controller.setMapStyle(_mapStyle);
-    }
     _animateToCurrentLocation();
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.map),
@@ -338,23 +348,26 @@ class _MapPageState extends State<MapPage> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _currentPosition,
-                    zoom: 15,
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Stack(
+                children: [
+                  GoogleMap(
+                    onMapCreated: _onMapCreated,
+                    initialCameraPosition: CameraPosition(
+                      target: _currentPosition,
+                      zoom: 15,
+                    ),
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: true,
+                    markers: _markers,
+                    onTap: (_) => _hideCustomerInfo(),
+                    mapType: MapType.normal,
+                    style: _mapStyle,
                   ),
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  markers: _markers,
-                  onTap: (_) => _hideCustomerInfo(),
-                ),
-              ],
-            ),
+                ],
+              ),
     );
   }
 }

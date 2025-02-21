@@ -1,6 +1,5 @@
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -27,19 +26,10 @@ import '../../features/sync/domain/usecases/sync_sales_taxes_usecase.dart';
 import '../../features/sync/presentation/bloc/sync_bloc.dart';
 
 final getIt = GetIt.instance;
-final _logger = Logger('ServiceLocator');
 
-// Setup logger once
-void _setupLogger() {
-  Logger.root.level = Level.ALL;
-  Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.time}: ${record.message}');
-  });
-}
+
 
 Future<void> setupServiceLocator() async {
-  _setupLogger();
-  _logger.info('Setting up service locator');
 
   // Core
   final sharedPreferences = await SharedPreferences.getInstance();
@@ -48,13 +38,11 @@ Future<void> setupServiceLocator() async {
   // Database
   final documentsDirectory = await getApplicationDocumentsDirectory();
   final databasePath = join(documentsDirectory.path, 'larid.db');
-  _logger.info('Initializing database at path: $databasePath');
 
   final database = await openDatabase(
     databasePath,
     version: 2,
     onCreate: (db, version) async {
-      _logger.info('Creating database tables for version $version');
       await db.execute(UserTable.createTableQuery);
       await db.execute(CustomerTable.createTableQuery);
       await db.execute(CustomerTable.createSalesrepCustomerTableQuery);
@@ -82,7 +70,6 @@ Future<void> setupServiceLocator() async {
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();
-  _logger.info('Initial base URL from database: $baseUrl');
 
   // Initialize network components with base URL
   await _initializeNetworkComponents(baseUrl);
@@ -136,7 +123,6 @@ Future<void> setupServiceLocator() async {
 }
 
 Future<void> _initializeNetworkComponents(String? baseUrl) async {
-  _logger.info('Initializing network components with base URL: $baseUrl');
 
   try {
     // Initialize DioClient singleton with base URL
@@ -145,28 +131,23 @@ Future<void> _initializeNetworkComponents(String? baseUrl) async {
     // Register the singleton instance
     if (!getIt.isRegistered<DioClient>()) {
       getIt.registerSingleton<DioClient>(DioClient.instance);
-      _logger.info('DioClient registered');
     }
 
     // Create and register ApiService if not already registered
     if (!getIt.isRegistered<ApiService>()) {
       final apiService = ApiService(DioClient.instance);
       getIt.registerSingleton<ApiService>(apiService);
-      _logger.info('ApiService registered with DioClient');
     }
 
     // Verify registrations
     final registeredBaseUrl = DioClient.instance.baseUrl;
-    _logger.info('Verified DioClient base URL: $registeredBaseUrl');
   } catch (e) {
-    _logger.severe('Error initializing network components: $e');
     rethrow;
   }
 }
 
 // Function to update DioClient's baseUrl
 Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
-  _logger.info('Updating base URL to: $newBaseUrl');
 
   try {
     // Update the base URL in the singleton instance
@@ -174,12 +155,8 @@ Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
     
     // Verify the update
     final updatedBaseUrl = DioClient.instance.baseUrl;
-    _logger.info('Verified updated base URL: $updatedBaseUrl');
 
     if (updatedBaseUrl != newBaseUrl) {
-      _logger.severe(
-        'Base URL mismatch after update. Expected: $newBaseUrl, Got: $updatedBaseUrl',
-      );
       throw Exception('Base URL update verification failed');
     }
 
@@ -198,9 +175,7 @@ Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
       ),
     );
     
-    _logger.info('Successfully updated base URL and reinitialized network components');
   } catch (e) {
-    _logger.severe('Error updating base URL: $e');
     rethrow;
   }
 }

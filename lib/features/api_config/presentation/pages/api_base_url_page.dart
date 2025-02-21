@@ -45,7 +45,7 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     
     return Scaffold(
       body: BlocListener<ApiConfigBloc, ApiConfigState>(

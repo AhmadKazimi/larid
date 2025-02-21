@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
 
 part 'sales_tax_entity.freezed.dart';
 part 'sales_tax_entity.g.dart';

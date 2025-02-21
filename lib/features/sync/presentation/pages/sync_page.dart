@@ -40,7 +40,7 @@ class _SyncPageState extends State<SyncPage>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: BlocConsumer<SyncBloc, SyncState>(
         listener: (context, state) {
@@ -223,7 +223,7 @@ class _SyncPageState extends State<SyncPage>
   }
 
   Widget _buildSyncButton(BuildContext context, SyncState state) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final bool isLoading =
         state.customersState.isLoading ||
         state.salesRepState.isLoading ||
@@ -317,7 +317,7 @@ class _SyncPageState extends State<SyncPage>
   Widget _buildApiLogSection(String title, ApiCallState state) {
     return Builder(
       builder: (context) {
-        final l10n = AppLocalizations.of(context)!;
+        final l10n = AppLocalizations.of(context);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

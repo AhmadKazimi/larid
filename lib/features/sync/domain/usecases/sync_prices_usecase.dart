@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 
 import '../../../../core/models/api_response.dart';
 import '../entities/prices/prices_entity.dart';

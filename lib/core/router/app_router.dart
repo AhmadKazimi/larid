@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
 import 'package:larid/features/sync/presentation/pages/sync_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -13,9 +12,7 @@ import '../storage/shared_prefs.dart';
 import 'route_constants.dart';
 
 class AppRouter {
-  static final _logger = Logger('AppRouter');
   static final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-  static final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
   static GoRouter get router => _router;
 
@@ -63,8 +60,7 @@ class AppRouter {
         }
 
         return null;
-      } catch (e, stackTrace) {
-        _logger.severe('Error in redirect: $e\n$stackTrace');
+      } catch (_, _) {
         return null;
       }
     },

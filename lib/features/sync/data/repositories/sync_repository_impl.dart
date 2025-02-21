@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer' as dev;
 import 'package:larid/core/network/api_service.dart';
 import 'package:larid/database/customer_table.dart';
@@ -27,7 +26,6 @@ class SyncRepositoryImpl implements SyncRepository {
   final InventoryUnitsTable _inventoryUnitsTable;
   final SalesTaxesTable _salesTaxesTable;
   UserEntity? _user;
-  Future<void>? _initUserFuture;
 
   SyncRepositoryImpl({
     required ApiService apiService,
@@ -43,9 +41,7 @@ class SyncRepositoryImpl implements SyncRepository {
        _pricesTable = pricesTable,
        _inventoryItemsTable = inventoryItemsTable,
        _inventoryUnitsTable = inventoryUnitsTable,
-       _salesTaxesTable = salesTaxesTable {
-    _initUserFuture = _initUser();
-  }
+       _salesTaxesTable = salesTaxesTable;
 
   Future<void> _initUser() async {
     try {
@@ -66,12 +62,6 @@ class SyncRepositoryImpl implements SyncRepository {
     }
   }
 
-  Future<void> _ensureUserInitialized() async {
-    if (_initUserFuture != null) {
-      await _initUserFuture;
-      _initUserFuture = null;
-    }
-  }
 
   @override
   Future<ApiResponse<List<CustomerEntity>>> getCustomers() async {
@@ -87,7 +77,7 @@ class SyncRepositoryImpl implements SyncRepository {
       );
 
       // Check if the response contains an error code
-      if (customersData.isNotEmpty && customersData[0] is Map) {
+      if (customersData.isNotEmpty) {
         final firstItem = customersData[0];
         if (firstItem.containsKey('ERROR')) {
           return ApiResponse(
@@ -125,7 +115,7 @@ class SyncRepositoryImpl implements SyncRepository {
       );
 
       // Check if the response contains an error code
-      if (customersData.isNotEmpty && customersData[0] is Map) {
+      if (customersData.isNotEmpty) {
         final firstItem = customersData[0];
         if (firstItem.containsKey('ERROR')) {
           return ApiResponse(
@@ -165,7 +155,7 @@ class SyncRepositoryImpl implements SyncRepository {
       );
 
       // Check if the response contains an error code
-      if (customersData.isNotEmpty && customersData[0] is Map) {
+      if (customersData.isNotEmpty) {
         final firstItem = customersData[0];
         if (firstItem.containsKey('ERROR')) {
           return ApiResponse(
@@ -203,7 +193,7 @@ class SyncRepositoryImpl implements SyncRepository {
       );
 
       // Check if the response contains an error code
-      if (customersData.isNotEmpty && customersData[0] is Map) {
+      if (customersData.isNotEmpty) {
         final firstItem = customersData[0];
         if (firstItem.containsKey('ERROR')) {
           return ApiResponse(
@@ -243,7 +233,7 @@ class SyncRepositoryImpl implements SyncRepository {
       );
 
       // Check if the response contains an error code
-      if (response.isNotEmpty && response[0] is Map) {
+      if (response.isNotEmpty) {
         final firstItem = response[0];
         if (firstItem.containsKey('ERROR')) {
           return ApiResponse(
@@ -290,25 +280,19 @@ class SyncRepositoryImpl implements SyncRepository {
       }
 
       // Check if the response contains an error code
-      if (response[0] is Map) {
-        final firstItem = response[0];
-        if (firstItem.containsKey('ERROR')) {
-          final errorMsg = firstItem['ERROR']?.toString() ?? 'Unknown error';
-          dev.log('API returned error: $errorMsg');
-          return ApiResponse(
-            errorCode: '-1',
-            message: 'Failed to get sales taxes: $errorMsg',
-          );
-        }
+      final firstItem = response[0];
+      if (firstItem.containsKey('ERROR')) {
+        final errorMsg = firstItem['ERROR']?.toString() ?? 'Unknown error';
+        dev.log('API returned error: $errorMsg');
+        return ApiResponse(
+          errorCode: '-1',
+          message: 'Failed to get sales taxes: $errorMsg',
+        );
       }
-
+    
       dev.log('Raw API response: $response');
       final taxes = response.map((json) {
         try {
-          if (json is! Map<String, dynamic>) {
-            dev.log('Invalid JSON item: $json');
-            return null;
-          }
           return SalesTaxEntity.fromJson(json);
         } catch (e) {
           dev.log('Error parsing sales tax item: $e, JSON: $json');
