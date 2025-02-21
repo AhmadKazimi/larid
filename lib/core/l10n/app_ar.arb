@@ -39,5 +39,12 @@
     "start": "ابدأ",
 
     "makeSureInternetConnected": "تأكد من اتصالك بالإنترنت",
-    "dontClosePage": "لا تغلق هذه الصفحة حتى تكتمل المزامنة"
+    "dontClosePage": "لا تغلق هذه الصفحة حتى تكتمل المزامنة",
+
+    "map": "الخريطة",
+    "customerCode": "رمز العميل",
+    "address": "العنوان",
+    "phone": "الهاتف",
+    "locationServicesRequired": "خدمات الموقع مطلوبة لاستخدام الخريطة",
+    "locationPermissionRequired": "إذن الموقع مطلوب لعرض موقعك على الخريطة"
 }

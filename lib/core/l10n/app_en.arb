@@ -15,7 +15,7 @@
     "baseUrlHint": "https://api.example.com",
     "pleaseEnterUrl": "Please enter a URL",
     "pleaseEnterValidUrl": "Please enter a valid URL starting with http:// or https://",
-    "saveAndContinue": "Save and Continue",
+    "saveAndContinue": "Save & Continue",
 
     "home": "Home",
     "welcomeToLarid": "Welcome to Larid",
@@ -39,5 +39,12 @@
     "start": "Start",
 
     "makeSureInternetConnected": "Make sure you are connected to the internet",
-    "dontClosePage": "Don't close this page until sync is complete"
+    "dontClosePage": "Don't close this page until sync is complete",
+
+    "map": "Map",
+    "customerCode": "Customer Code",
+    "address": "Address",
+    "phone": "Phone",
+    "locationServicesRequired": "Location services are required to use the map",
+    "locationPermissionRequired": "Location permission is required to show your location on the map"
 }

@@ -3,9 +3,8 @@ import '../features/sync/domain/entities/customer_entity.dart';
 
 class CustomerTable {
   static const String tableName = 'customers';
-    static const String salesrepCustomerTableName = 'sales_rep_customer';
+  static const String salesrepCustomerTableName = 'sales_rep_customer';
 
-  
   static const String createTableQuery = '''
     CREATE TABLE IF NOT EXISTS $tableName (
       customerCode TEXT PRIMARY KEY,
@@ -16,7 +15,7 @@ class CustomerTable {
     )
   ''';
 
-   static const String createSalesrepCustomerTableQuery = '''
+  static const String createSalesrepCustomerTableQuery = '''
     CREATE TABLE IF NOT EXISTS $salesrepCustomerTableName (
       customerCode TEXT PRIMARY KEY,
       customerName TEXT NOT NULL,
@@ -29,8 +28,6 @@ class CustomerTable {
   final Database db;
 
   CustomerTable(this.db);
-
-
 
   Future<void> createOrUpdateCustomers(List<CustomerEntity> customers) async {
     final batch = db.batch();
@@ -52,7 +49,6 @@ class CustomerTable {
     await batch.commit();
   }
 
-  
   Future<void> createOrUpdateSalesRepCustomers(List<CustomerEntity> customers) async {
     final batch = db.batch();
     
@@ -71,5 +67,17 @@ class CustomerTable {
     }
     
     await batch.commit();
+  }
+
+  Future<List<CustomerEntity>> getAllSalesRepCustomers() async {
+    final List<Map<String, dynamic>> maps = await db.query(salesrepCustomerTableName);
+    
+    return maps.map((map) => CustomerEntity(
+      customerCode: map['customerCode'] as String,
+      customerName: map['customerName'] as String,
+      address: map['address'] as String,
+      contactPhone: map['contactPhone'] as String,
+      mapCoords: map['mapCoords'] as String,
+    )).toList();
   }
 }
