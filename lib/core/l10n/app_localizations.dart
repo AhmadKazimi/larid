@@ -311,6 +311,36 @@ abstract class AppLocalizations {
   /// **'Don\'t close this page until sync is complete'**
   String get dontClosePage;
 
+  /// No description provided for @searchForClient.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for client...'**
+  String get searchForClient;
+
+  /// No description provided for @sessionEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ended'**
+  String get sessionEnded;
+
+  /// No description provided for @endSession.
+  ///
+  /// In en, this message translates to:
+  /// **'End Session'**
+  String get endSession;
+
+  /// No description provided for @endSessionConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to end the current session?'**
+  String get endSessionConfirmation;
+
+  /// No description provided for @end.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get end;
+
   /// No description provided for @map.
   ///
   /// In en, this message translates to:
@@ -376,18 +406,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancel;
-
-  /// No description provided for @searchForClient.
-  ///
-  /// In en, this message translates to:
-  /// **'Search for client...'**
-  String get searchForClient;
-
-  /// No description provided for @sessionEnded.
-  ///
-  /// In en, this message translates to:
-  /// **'Session ended'**
-  String get sessionEnded;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

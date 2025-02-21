@@ -396,33 +396,53 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _endSession() async {
-    try {
-      await _endSessionUseCase();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context).sessionEnded,
-              style: GoogleFonts.notoSansArabic(),
-            ),
-            backgroundColor: AppColors.primary,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error ending session: $e',
-              style: GoogleFonts.notoSansArabic(),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      debugPrint('Error ending session: $e');
-    }
+    final l10n = AppLocalizations.of(context);
+    showCustomDialog(
+      context: context,
+      title: l10n.endSession,
+      content: l10n.endSessionConfirmation,
+      actions: [
+        CustomButton(
+          onPressed: () => Navigator.pop(context),
+          text: l10n.cancel,
+          isPrimary: false,
+        ),
+        CustomButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            try {
+              await _endSessionUseCase();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      l10n.sessionEnded,
+                      style: GoogleFonts.notoSansArabic(),
+                    ),
+                    backgroundColor: AppColors.primary,
+                  ),
+                );
+              }
+            } catch (e) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Error ending session: $e',
+                      style: GoogleFonts.notoSansArabic(),
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+              debugPrint('Error ending session: $e');
+            }
+          },
+          text: l10n.end,
+          isPrimary: true,
+        ),
+      ],
+    );
   }
 
   void _showStartSessionDialog(BuildContext context) {
@@ -578,7 +598,7 @@ class _MapPageState extends State<MapPage> {
                   onMapCreated: _onMapCreated,
                   initialCameraPosition: CameraPosition(
                     target: _currentPosition,
-                    zoom: 15,
+                    zoom: 20,
                   ),
                   myLocationEnabled: true,
                   myLocationButtonEnabled: false,

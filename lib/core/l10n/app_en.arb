@@ -48,6 +48,11 @@
 
     "makeSureInternetConnected": "Make sure you are connected to the internet",
     "dontClosePage": "Don't close this page until sync is complete",
+    "searchForClient": "Search for client...",
+    "sessionEnded": "Session ended",
+    "endSession": "End Session",
+    "endSessionConfirmation": "Are you sure you want to end the current session?",
+    "end": "End",
 
     "map": "Map",
     "customerCode": "Customer Code",
@@ -62,6 +67,5 @@
     "noActiveSessionMessage": "You don't have an active session. Would you like to start a new one?",
     "start": "Start",
     "cancel": "Cancel",
-    "searchForClient": "Search for client...",
     "sessionEnded": "Session ended"
 }

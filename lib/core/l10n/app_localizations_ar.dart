@@ -119,6 +119,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dontClosePage => 'لا تغلق هذه الصفحة حتى تكتمل المزامنة';
 
   @override
+  String get searchForClient => 'البحث عن عميل...';
+
+  @override
+  String get sessionEnded => 'تم إنهاء الجلسة';
+
+  @override
+  String get endSession => 'إنهاء الجلسة';
+
+  @override
+  String get endSessionConfirmation => 'هل أنت متأكد من أنك تريد إنهاء الجلسة الحالية؟';
+
+  @override
+  String get end => 'إنهاء';
+
+  @override
   String get map => 'الخريطة';
 
   @override
@@ -150,10 +165,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cancel => 'إلغاء';
-
-  @override
-  String get searchForClient => 'البحث عن عميل...';
-
-  @override
-  String get sessionEnded => 'تم إنهاء الجلسة';
 }

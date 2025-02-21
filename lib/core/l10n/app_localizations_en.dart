@@ -119,6 +119,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dontClosePage => 'Don\'t close this page until sync is complete';
 
   @override
+  String get searchForClient => 'Search for client...';
+
+  @override
+  String get sessionEnded => 'Session ended';
+
+  @override
+  String get endSession => 'End Session';
+
+  @override
+  String get endSessionConfirmation => 'Are you sure you want to end the current session?';
+
+  @override
+  String get end => 'End';
+
+  @override
   String get map => 'Map';
 
   @override
@@ -150,10 +165,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
-
-  @override
-  String get searchForClient => 'Search for client...';
-
-  @override
-  String get sessionEnded => 'Session ended';
 }

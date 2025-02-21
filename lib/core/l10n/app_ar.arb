@@ -50,6 +50,9 @@
     "dontClosePage": "لا تغلق هذه الصفحة حتى تكتمل المزامنة",
     "searchForClient": "البحث عن عميل...",
     "sessionEnded": "تم إنهاء الجلسة",
+    "endSession": "إنهاء الجلسة",
+    "endSessionConfirmation": "هل أنت متأكد من أنك تريد إنهاء الجلسة الحالية؟",
+    "end": "إنهاء",
 
     "map": "الخريطة",
     "customerCode": "رمز العميل",
