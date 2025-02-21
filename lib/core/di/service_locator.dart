@@ -15,6 +15,7 @@ import '../../database/prices_table.dart';
 import '../../database/sales_taxes_table.dart';
 import '../../database/inventory_items_table.dart';
 import '../../database/inventory_units_table.dart';
+import '../../database/working_session_table.dart';
 import '../../features/sync/data/repositories/sync_repository_impl.dart';
 import '../../features/sync/domain/repositories/sync_repository.dart';
 import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
@@ -24,6 +25,10 @@ import '../../features/sync/domain/usecases/sync_inventory_items_usecase.dart';
 import '../../features/sync/domain/usecases/sync_inventory_units_usecase.dart';
 import '../../features/sync/domain/usecases/sync_sales_taxes_usecase.dart';
 import '../../features/sync/presentation/bloc/sync_bloc.dart';
+import '../../features/map/data/repositories/working_session_repository_impl.dart';
+import '../../features/map/domain/repositories/working_session_repository.dart';
+import '../../features/map/domain/usecases/check_active_session_usecase.dart';
+import '../../features/map/domain/usecases/start_session_usecase.dart';
 
 final getIt = GetIt.instance;
 
@@ -50,6 +55,7 @@ Future<void> setupServiceLocator() async {
       await db.execute(InventoryItemsTable.createTableQuery);
       await db.execute(InventoryUnitsTable.createTableQuery);
       await db.execute(SalesTaxesTable.createTableQuery);
+      await db.execute(WorkingSessionTable.createTableQuery);
     },
   );
 
@@ -60,6 +66,7 @@ Future<void> setupServiceLocator() async {
   final inventoryItemsTable = InventoryItemsTable(database);
   final inventoryUnitsTable = InventoryUnitsTable(database);
   final salesTaxesTable = SalesTaxesTable(database);
+  final workingSessionTable = WorkingSessionTable(database);
 
   getIt.registerSingleton<UserTable>(userTable);
   getIt.registerSingleton<CustomerTable>(customerTable);
@@ -67,6 +74,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerSingleton<InventoryItemsTable>(inventoryItemsTable);
   getIt.registerSingleton<InventoryUnitsTable>(inventoryUnitsTable);
   getIt.registerSingleton<SalesTaxesTable>(salesTaxesTable);
+  getIt.registerSingleton<WorkingSessionTable>(workingSessionTable);
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();
@@ -94,6 +102,20 @@ Future<void> setupServiceLocator() async {
       inventoryUnitsTable: getIt(),
       salesTaxesTable: getIt(),
     ),
+  );
+
+  // Register working session dependencies
+  getIt.registerLazySingleton<WorkingSessionRepository>(
+    () => WorkingSessionRepositoryImpl(
+      getIt<WorkingSessionTable>(),
+      getIt<UserTable>(),
+    ),
+  );
+  getIt.registerLazySingleton(
+    () => CheckActiveSessionUseCase(getIt<WorkingSessionRepository>()),
+  );
+  getIt.registerLazySingleton(
+    () => StartSessionUseCase(getIt<WorkingSessionRepository>()),
   );
 
   // Use Cases

@@ -110,7 +110,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get start => 'ابدأ';
+  String get start => 'بدء';
 
   @override
   String get makeSureInternetConnected => 'تأكد من اتصالك بالإنترنت';
@@ -141,4 +141,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cannotOpenGoogleMaps => 'لا يمكن فتح خرائط جوجل';
+
+  @override
+  String get startSession => 'بدء جلسة عمل';
+
+  @override
+  String get noActiveSessionMessage => 'لا توجد جلسة عمل نشطة. هل تريد بدء جلسة جديدة؟';
+
+  @override
+  String get cancel => 'إلغاء';
 }

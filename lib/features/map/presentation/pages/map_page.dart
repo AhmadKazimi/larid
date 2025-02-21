@@ -6,8 +6,11 @@ import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/core/di/service_locator.dart';
 import 'package:larid/core/theme/app_theme.dart';
 import 'package:larid/core/l10n/app_localizations.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle, SystemNavigator;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:larid/core/storage/shared_prefs.dart';
+import '../../domain/usecases/check_active_session_usecase.dart';
+import '../../domain/usecases/start_session_usecase.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -26,6 +29,9 @@ class _MapPageState extends State<MapPage> {
   CustomerEntity? _selectedCustomer;
   OverlayEntry? _overlayEntry;
   String? _mapStyle;
+  final CustomerTable _customerTable = getIt<CustomerTable>();
+  final CheckActiveSessionUseCase _checkActiveSessionUseCase = getIt<CheckActiveSessionUseCase>();
+  final StartSessionUseCase _startSessionUseCase = getIt<StartSessionUseCase>();
 
   @override
   void initState() {
@@ -33,6 +39,7 @@ class _MapPageState extends State<MapPage> {
     _loadMapStyle();
     _getCurrentLocation();
     _loadCustomers();
+    _checkWorkingSession();
   }
 
   Future<void> _loadMapStyle() async {
@@ -127,8 +134,7 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> _loadCustomers() async {
     try {
-      final customerTable = getIt<CustomerTable>();
-      final customers = await customerTable.getAllSalesRepCustomers();
+      final customers = await _customerTable.getAllSalesRepCustomers();
       setState(() {
         _customers = customers;
       });
@@ -332,6 +338,45 @@ class _MapPageState extends State<MapPage> {
       _mapController = controller;
     });
     _animateToCurrentLocation();
+  }
+
+  Future<void> _checkWorkingSession() async {
+    final hasActiveSession = await _checkActiveSessionUseCase();
+    if (!hasActiveSession) {
+      if (mounted) {
+        _showStartSessionDialog();
+      }
+    }
+  }
+
+  void _showStartSessionDialog() {
+    final l10n = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.startSession),
+        content: Text(l10n.noActiveSessionMessage),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              SystemNavigator.pop();
+            },
+            child: Text(l10n.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await _startSessionUseCase();
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+            },
+            child: Text(l10n.start),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

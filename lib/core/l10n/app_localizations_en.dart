@@ -141,4 +141,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cannotOpenGoogleMaps => 'Cannot open Google Maps';
+
+  @override
+  String get startSession => 'Start Session';
+
+  @override
+  String get noActiveSessionMessage => 'You don\'t have an active session. Would you like to start a new one?';
+
+  @override
+  String get cancel => 'Cancel';
 }

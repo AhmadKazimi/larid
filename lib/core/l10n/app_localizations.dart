@@ -358,6 +358,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot open Google Maps'**
   String get cannotOpenGoogleMaps;
+
+  /// No description provided for @startSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Session'**
+  String get startSession;
+
+  /// No description provided for @noActiveSessionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have an active session. Would you like to start a new one?'**
+  String get noActiveSessionMessage;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

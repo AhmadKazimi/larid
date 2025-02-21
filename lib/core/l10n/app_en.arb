@@ -56,5 +56,10 @@
     "locationServicesRequired": "Location services are required to use the map",
     "locationPermissionRequired": "Location permission is required to show your location on the map",
     "getDirections": "Get Directions",
-    "cannotOpenGoogleMaps": "Cannot open Google Maps"
+    "cannotOpenGoogleMaps": "Cannot open Google Maps",
+
+    "startSession": "Start Session",
+    "noActiveSessionMessage": "You don't have an active session. Would you like to start a new one?",
+    "start": "Start",
+    "cancel": "Cancel"
 }

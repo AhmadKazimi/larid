@@ -56,5 +56,10 @@
     "locationServicesRequired": "خدمات الموقع مطلوبة لاستخدام الخريطة",
     "locationPermissionRequired": "إذن الموقع مطلوب لعرض موقعك على الخريطة",
     "getDirections": "الحصول على الاتجاهات",
-    "cannotOpenGoogleMaps": "لا يمكن فتح خرائط جوجل"
+    "cannotOpenGoogleMaps": "لا يمكن فتح خرائط جوجل",
+
+    "startSession": "بدء جلسة عمل",
+    "noActiveSessionMessage": "لا توجد جلسة عمل نشطة. هل تريد بدء جلسة جديدة؟",
+    "start": "بدء",
+    "cancel": "إلغاء"
 }
