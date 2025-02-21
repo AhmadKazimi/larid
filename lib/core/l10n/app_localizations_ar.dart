@@ -1,0 +1,144 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Arabic (`ar`).
+class AppLocalizationsAr extends AppLocalizations {
+  AppLocalizationsAr([String locale = 'ar']) : super(locale);
+
+  @override
+  String get welcomeBack => 'مرحباً بعودتك';
+
+  @override
+  String get signInToContinue => 'سجل دخول للمتابعة';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get password => 'كلمة المرور';
+
+  @override
+  String get login => 'تسجيل الدخول';
+
+  @override
+  String get pleaseEnterEmail => 'الرجاء إدخال البريد الإلكتروني';
+
+  @override
+  String get pleaseEnterValidEmail => 'الرجاء إدخال بريد إلكتروني صحيح';
+
+  @override
+  String get pleaseEnterPassword => 'الرجاء إدخال كلمة المرور';
+
+  @override
+  String get passwordMustBe6Chars => 'يجب أن تكون كلمة المرور 6 أحرف على الأقل';
+
+  @override
+  String get apiConfiguration => 'إعدادات API';
+
+  @override
+  String get enterApiBaseUrl => 'أدخل عنوان API الأساسي';
+
+  @override
+  String get baseUrl => 'العنوان الأساسي';
+
+  @override
+  String get baseUrlHint => 'https://api.example.com';
+
+  @override
+  String get pleaseEnterUrl => 'الرجاء إدخال عنوان URL';
+
+  @override
+  String get pleaseEnterValidUrl => 'الرجاء إدخال عنوان URL صحيح يبدأ بـ http:// أو https://';
+
+  @override
+  String get saveAndContinue => 'حفظ ومتابعة';
+
+  @override
+  String get home => 'الرئيسية';
+
+  @override
+  String get welcomeToLarid => 'مرحباً بك في لاريد';
+
+  @override
+  String get goToLogin => 'الذهاب لتسجيل الدخول';
+
+  @override
+  String get workspace => 'مساحة العمل';
+
+  @override
+  String get pleaseEnterWorkspace => 'الرجاء إدخال مساحة العمل';
+
+  @override
+  String get userId => 'معرف المستخدم';
+
+  @override
+  String get pleaseEnterUserId => 'الرجاء إدخال معرف المستخدم';
+
+  @override
+  String get sync => 'مزامنة';
+
+  @override
+  String get syncStatus => 'حالة المزامنة';
+
+  @override
+  String get customers => 'العملاء';
+
+  @override
+  String get salesRepCustomers => 'عملاء مندوب المبيعات';
+
+  @override
+  String get prices => 'الأسعار';
+
+  @override
+  String get inventoryItems => 'عناصر المخزون';
+
+  @override
+  String get inventoryUnits => 'وحدات المخزون';
+
+  @override
+  String get salesTaxes => 'ضرائب المبيعات';
+
+  @override
+  String get syncAllData => 'مزامنة جميع البيانات';
+
+  @override
+  String recordsSynced(Object count) {
+    return 'تمت مزامنة $count سجل';
+  }
+
+  @override
+  String get start => 'ابدأ';
+
+  @override
+  String get makeSureInternetConnected => 'تأكد من اتصالك بالإنترنت';
+
+  @override
+  String get dontClosePage => 'لا تغلق هذه الصفحة حتى تكتمل المزامنة';
+
+  @override
+  String get map => 'الخريطة';
+
+  @override
+  String get customerCode => 'رمز العميل';
+
+  @override
+  String get address => 'العنوان';
+
+  @override
+  String get phone => 'الهاتف';
+
+  @override
+  String get locationServicesRequired => 'خدمات الموقع مطلوبة لاستخدام الخريطة';
+
+  @override
+  String get locationPermissionRequired => 'إذن الموقع مطلوب لعرض موقعك على الخريطة';
+
+  @override
+  String get getDirections => 'الحصول على الاتجاهات';
+
+  @override
+  String get cannotOpenGoogleMaps => 'لا يمكن فتح خرائط جوجل';
+}

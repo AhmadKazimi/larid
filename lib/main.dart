@@ -16,7 +16,7 @@ import 'package:larid/features/sync/presentation/bloc/sync_bloc.dart';
 import 'core/di/service_locator.dart';
 import 'core/l10n/l10n.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import 'database/user_table.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

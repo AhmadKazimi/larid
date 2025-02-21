@@ -1,4 +1,5 @@
 {
+    "@@locale": "en",
     "welcomeBack": "Welcome Back",
     "signInToContinue": "Sign in to continue",
     "email": "Email",
@@ -36,6 +37,13 @@
     "salesTaxes": "Sales Taxes",
     "syncAllData": "Sync All Data",
     "recordsSynced": "{count} records synced",
+    "@recordsSynced": {
+        "placeholders": {
+            "count": {
+                "type": "Object"
+            }
+        }
+    },
     "start": "Start",
 
     "makeSureInternetConnected": "Make sure you are connected to the internet",
@@ -46,5 +54,7 @@
     "address": "Address",
     "phone": "Phone",
     "locationServicesRequired": "Location services are required to use the map",
-    "locationPermissionRequired": "Location permission is required to show your location on the map"
+    "locationPermissionRequired": "Location permission is required to show your location on the map",
+    "getDirections": "Get Directions",
+    "cannotOpenGoogleMaps": "Cannot open Google Maps"
 }

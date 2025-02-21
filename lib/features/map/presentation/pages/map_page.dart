@@ -5,7 +5,9 @@ import 'package:larid/database/customer_table.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/core/di/service_locator.dart';
 import 'package:larid/core/theme/app_theme.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:larid/core/l10n/app_localizations.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:url_launcher/url_launcher.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -23,12 +25,22 @@ class _MapPageState extends State<MapPage> {
   List<CustomerEntity> _customers = [];
   CustomerEntity? _selectedCustomer;
   OverlayEntry? _overlayEntry;
+  String? _mapStyle;
 
   @override
   void initState() {
     super.initState();
+    _loadMapStyle();
     _getCurrentLocation();
     _loadCustomers();
+  }
+
+  Future<void> _loadMapStyle() async {
+    try {
+      _mapStyle = await rootBundle.loadString('assets/map/map_style.json');
+    } catch (e) {
+      debugPrint('Error loading map style: $e');
+    }
   }
 
   @override
@@ -176,6 +188,42 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
+  Future<void> _openInGoogleMaps(String mapCoords) async {
+    try {
+      final coords = mapCoords.split(',');
+      if (coords.length == 2) {
+        final lat = double.parse(coords[0]);
+        final lng = double.parse(coords[1]);
+        final url = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+        );
+        
+        if (await canLaunchUrl(url)) {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context)!.cannotOpenGoogleMaps),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error opening Google Maps: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.cannotOpenGoogleMaps),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   void _showCustomerInfo(CustomerEntity customer, BuildContext context) {
     _hideCustomerInfo();
     
@@ -230,6 +278,23 @@ class _MapPageState extends State<MapPage> {
                 _buildInfoRow(Icons.location_on, l10n.address, customer.address),
                 const SizedBox(height: 4),
                 _buildInfoRow(Icons.phone, l10n.phone, customer.contactPhone),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _openInGoogleMaps(customer.mapCoords!),
+                    icon: const Icon(Icons.directions),
+                    label: Text(l10n.getDirections),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -247,6 +312,16 @@ class _MapPageState extends State<MapPage> {
     if (mounted) {
       setState(() => _selectedCustomer = null);
     }
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    setState(() {
+      _mapController = controller;
+    });
+    if (_mapStyle != null) {
+      controller.setMapStyle(_mapStyle);
+    }
+    _animateToCurrentLocation();
   }
 
   @override
@@ -268,12 +343,7 @@ class _MapPageState extends State<MapPage> {
           : Stack(
               children: [
                 GoogleMap(
-                  onMapCreated: (controller) {
-                    setState(() {
-                      _mapController = controller;
-                    });
-                    _animateToCurrentLocation();
-                  },
+                  onMapCreated: _onMapCreated,
                   initialCameraPosition: CameraPosition(
                     target: _currentPosition,
                     zoom: 15,

@@ -1,4 +1,5 @@
 {
+    "@@locale": "ar",
     "welcomeBack": "مرحباً بعودتك",
     "signInToContinue": "سجل دخول للمتابعة",
     "email": "البريد الإلكتروني",
@@ -36,6 +37,13 @@
     "salesTaxes": "ضرائب المبيعات",
     "syncAllData": "مزامنة جميع البيانات",
     "recordsSynced": "تمت مزامنة {count} سجل",
+    "@recordsSynced": {
+        "placeholders": {
+            "count": {
+                "type": "Object"
+            }
+        }
+    },
     "start": "ابدأ",
 
     "makeSureInternetConnected": "تأكد من اتصالك بالإنترنت",
@@ -46,5 +54,7 @@
     "address": "العنوان",
     "phone": "الهاتف",
     "locationServicesRequired": "خدمات الموقع مطلوبة لاستخدام الخريطة",
-    "locationPermissionRequired": "إذن الموقع مطلوب لعرض موقعك على الخريطة"
+    "locationPermissionRequired": "إذن الموقع مطلوب لعرض موقعك على الخريطة",
+    "getDirections": "الحصول على الاتجاهات",
+    "cannotOpenGoogleMaps": "لا يمكن فتح خرائط جوجل"
 }

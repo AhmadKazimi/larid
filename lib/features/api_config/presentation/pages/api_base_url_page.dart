@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:larid/core/router/route_constants.dart';
 import 'package:larid/features/api_config/presentation/bloc/api_config_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../../core/l10n/app_localizations.dart';
 import '../../../../core/widgets/gradient_page_layout.dart';
 
 class ApiBaseUrlPage extends StatefulWidget {
