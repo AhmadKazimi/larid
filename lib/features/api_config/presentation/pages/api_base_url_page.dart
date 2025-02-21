@@ -15,7 +15,10 @@ class ApiBaseUrlPage extends StatefulWidget {
 
 class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
   final _formKey = GlobalKey<FormState>();
-  final _urlController = TextEditingController();
+  final _urlController = TextEditingController(
+    // TODO: remove for production
+    text: "https://cloud.larid.net/api/sr"
+  );
 
   @override
   void dispose() {

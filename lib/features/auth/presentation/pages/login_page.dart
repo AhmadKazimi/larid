@@ -17,10 +17,19 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _workspaceController = TextEditingController();
-  final _useridController = TextEditingController();
-  final _passwordController = TextEditingController();
-
+  final _workspaceController = TextEditingController(
+    // TODO: remove for production
+    text: "DEMO",
+  );
+  final _useridController = TextEditingController(
+    // TODO: remove for production
+    text: "101",
+  );
+  final _passwordController = TextEditingController(
+    // TODO: remove for production
+    text: "12345",
+  );
+  
   @override
   void dispose() {
     _workspaceController.dispose();
@@ -36,17 +45,15 @@ class _LoginPageState extends State<LoginPage> {
         workspace: _workspaceController.text,
         password: _passwordController.text,
       );
-      
-      context.read<AuthBloc>().add(
-            LoginEvent(userEntity: userEntity),
-          );
+
+      context.read<AuthBloc>().add(LoginEvent(userEntity: userEntity));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -76,7 +83,9 @@ class _LoginPageState extends State<LoginPage> {
                           children: [
                             Text(
                               l10n.welcomeBack,
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              style: Theme.of(
+                                context,
+                              ).textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
@@ -84,9 +93,8 @@ class _LoginPageState extends State<LoginPage> {
                             const SizedBox(height: 8),
                             Text(
                               l10n.signInToContinue,
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(color: Colors.grey[600]),
                             ),
                             const SizedBox(height: 32),
                             TextFormField(
@@ -135,29 +143,36 @@ class _LoginPageState extends State<LoginPage> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: state is AuthLoading ? null : _onLoginPressed,
+                                onPressed:
+                                    state is AuthLoading
+                                        ? null
+                                        : _onLoginPressed,
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.all(16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                child: state is AuthLoading
-                                    ? const SizedBox(
-                                        height: 24,
-                                        width: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                child:
+                                    state is AuthLoading
+                                        ? const SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
+                                          ),
+                                        )
+                                        : Text(
+                                          l10n.login,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      )
-                                    : Text(
-                                        l10n.login,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
                               ),
                             ),
                           ],
