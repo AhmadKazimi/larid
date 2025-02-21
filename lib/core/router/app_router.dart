@@ -9,6 +9,7 @@ import '../../features/api_config/presentation/pages/api_base_url_page.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../database/user_table.dart';
 import '../di/service_locator.dart';
+import '../storage/shared_prefs.dart';
 import 'route_constants.dart';
 
 class AppRouter {
@@ -18,52 +19,49 @@ class AppRouter {
 
   static GoRouter get router => _router;
 
- 
-
   static final _router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: RouteConstants.login,
     debugLogDiagnostics: true,
     redirect: (context, state) async {
       try {
-        _logger.info('Starting redirect for location: ${state.matchedLocation}');
-        
         final userDB = getIt<UserTable>();
         final baseUrl = await userDB.getBaseUrl();
-        _logger.info('Got base URL: $baseUrl');
 
         final isApiConfigPage = state.matchedLocation == RouteConstants.apiConfig;
         final isLoginPage = state.matchedLocation == RouteConstants.login;
         final isSyncPage = state.matchedLocation == RouteConstants.sync;
+        final isMapPage = state.matchedLocation == RouteConstants.map;
 
         // If base URL is not set, redirect to API config page
         if ((baseUrl == null || baseUrl.isEmpty) && !isApiConfigPage) {
-          _logger.info('Redirecting to API config page - no base URL');
           return RouteConstants.apiConfig;
         }
-
-
 
         // Only proceed with auth checks if base URL is configured
         if (baseUrl != null && baseUrl.isNotEmpty) {
           final authRepository = getIt<AuthRepository>();
           final isLoggedIn = authRepository.isLoggedIn();
-          _logger.info('Auth check - isLoggedIn: $isLoggedIn, current page: ${state.matchedLocation}');
-
-          // If logged in, redirect to sync unless already there
-          if (isLoggedIn && !isSyncPage) {
-            _logger.info('User is logged in, redirecting to sync page');
-            return RouteConstants.sync;
-          }
+          final isSynced = SharedPrefs.isSynced();
 
           // If not logged in and trying to access protected page, redirect to login
           if (!isLoggedIn && !isLoginPage && !isApiConfigPage) {
-            _logger.info('User not logged in, redirecting to login');
             return RouteConstants.login;
+          }
+
+          // If logged in but not on a protected page
+          if (isLoggedIn) {
+            // If data is synced and not on map page, go to map
+            if (isSynced && !isMapPage) {
+              return RouteConstants.map;
+            }
+            // If data is not synced and not on sync page, go to sync
+            if (!isSynced && !isSyncPage) {
+              return RouteConstants.sync;
+            }
           }
         }
 
-        _logger.info('No redirect needed for ${state.matchedLocation}');
         return null;
       } catch (e, stackTrace) {
         _logger.severe('Error in redirect: $e\n$stackTrace');
@@ -106,8 +104,7 @@ class AppRouter {
         builder: (context, state) => const SyncPage(),
       ),
     ],
-    errorBuilder:
-        (context, state) =>
-            Scaffold(body: Center(child: Text('Error: ${state.error}'))),
+    errorBuilder: (context, state) =>
+        Scaffold(body: Center(child: Text('Error: ${state.error}'))),
   );
 }

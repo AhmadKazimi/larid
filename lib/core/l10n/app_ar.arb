@@ -24,5 +24,17 @@
     "workspace": "مساحة العمل",
     "pleaseEnterWorkspace": "الرجاء إدخال مساحة العمل",
     "userId": "معرف المستخدم",
-    "pleaseEnterUserId": "الرجاء إدخال معرف المستخدم"
+    "pleaseEnterUserId": "الرجاء إدخال معرف المستخدم",
+
+    "sync": "مزامنة",
+    "syncStatus": "حالة المزامنة",
+    "customers": "العملاء",
+    "salesRepCustomers": "عملاء مندوب المبيعات",
+    "prices": "الأسعار",
+    "inventoryItems": "عناصر المخزون",
+    "inventoryUnits": "وحدات المخزون",
+    "salesTaxes": "ضرائب المبيعات",
+    "syncAllData": "مزامنة جميع البيانات",
+    "recordsSynced": "تمت مزامنة {count} سجل",
+    "start": "ابدأ"
 }

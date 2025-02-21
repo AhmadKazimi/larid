@@ -24,5 +24,17 @@
     "workspace": "Workspace",
     "pleaseEnterWorkspace": "Please enter workspace",
     "userId": "User ID",
-    "pleaseEnterUserId": "Please enter user ID"
+    "pleaseEnterUserId": "Please enter user ID",
+
+    "sync": "Sync",
+    "syncStatus": "Sync Status",
+    "customers": "Customers",
+    "salesRepCustomers": "Sales Rep Customers",
+    "prices": "Prices",
+    "inventoryItems": "Inventory Items",
+    "inventoryUnits": "Inventory Units",
+    "salesTaxes": "Sales Taxes",
+    "syncAllData": "Sync All Data",
+    "recordsSynced": "{count} records synced",
+    "start": "Start"
 }
