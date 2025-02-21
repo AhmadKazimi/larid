@@ -544,7 +544,7 @@ class __$$SyncStateImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$SyncStateImpl implements _SyncState {
+class _$SyncStateImpl extends _SyncState {
   const _$SyncStateImpl({
     this.customersState = const ApiCallState(),
     this.salesRepState = const ApiCallState(),
@@ -552,7 +552,7 @@ class _$SyncStateImpl implements _SyncState {
     this.inventoryItemsState = const ApiCallState(),
     this.inventoryUnitsState = const ApiCallState(),
     this.salesTaxesState = const ApiCallState(),
-  });
+  }) : super._();
 
   @override
   @JsonKey()
@@ -617,7 +617,7 @@ class _$SyncStateImpl implements _SyncState {
       __$$SyncStateImplCopyWithImpl<_$SyncStateImpl>(this, _$identity);
 }
 
-abstract class _SyncState implements SyncState {
+abstract class _SyncState extends SyncState {
   const factory _SyncState({
     final ApiCallState<CustomerEntity> customersState,
     final ApiCallState<CustomerEntity> salesRepState,
@@ -626,6 +626,7 @@ abstract class _SyncState implements SyncState {
     final ApiCallState<InventoryUnitEntity> inventoryUnitsState,
     final ApiCallState<SalesTaxEntity> salesTaxesState,
   }) = _$SyncStateImpl;
+  const _SyncState._() : super._();
 
   @override
   ApiCallState<CustomerEntity> get customersState;

@@ -9,9 +9,9 @@ part of 'sales_tax_entity.dart';
 _$SalesTaxEntityImpl _$$SalesTaxEntityImplFromJson(Map<String, dynamic> json) =>
     _$SalesTaxEntityImpl(
       id: (json['id'] as num?)?.toInt(),
-      taxCode: json['sTax_cd'] as String,
-      description: json['sTax_desc'] as String,
-      taxRate: (json['mTax_rate'] as num).toDouble(),
+      taxCode: json['sTax_cd'] as String? ?? '',
+      description: json['sTax_desc'] as String? ?? '',
+      taxRate: (json['mTax_rate'] as num?)?.toDouble() ?? 0.0,
       createdAt: json['created_at'] as String?,
     );
 

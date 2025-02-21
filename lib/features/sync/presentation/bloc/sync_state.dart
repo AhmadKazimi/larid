@@ -24,6 +24,8 @@ class ApiCallState<T> with _$ApiCallState<T> {
 
 @freezed
 class SyncState with _$SyncState {
+  const SyncState._(); 
+
   const factory SyncState({
     @Default(ApiCallState()) ApiCallState<CustomerEntity> customersState,
     @Default(ApiCallState()) ApiCallState<CustomerEntity> salesRepState,
@@ -32,4 +34,11 @@ class SyncState with _$SyncState {
     @Default(ApiCallState()) ApiCallState<InventoryUnitEntity> inventoryUnitsState,
     @Default(ApiCallState()) ApiCallState<SalesTaxEntity> salesTaxesState,
   }) = _SyncState;
+
+  bool get isAllSynced => customersState.isSuccess &&
+      salesRepState.isSuccess &&
+      pricesState.isSuccess &&
+      inventoryItemsState.isSuccess &&
+      inventoryUnitsState.isSuccess &&
+      salesTaxesState.isSuccess;
 }

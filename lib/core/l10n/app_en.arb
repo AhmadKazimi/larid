@@ -36,5 +36,8 @@
     "salesTaxes": "Sales Taxes",
     "syncAllData": "Sync All Data",
     "recordsSynced": "{count} records synced",
-    "start": "Start"
+    "start": "Start",
+
+    "makeSureInternetConnected": "Make sure you are connected to the internet",
+    "dontClosePage": "Don't close this page until sync is complete"
 }
