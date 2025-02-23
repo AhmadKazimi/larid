@@ -119,119 +119,104 @@ class _SyncPageState extends State<SyncPage>
           return GradientPageLayout(
             useScroll: false,
             child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    const SizedBox(height: 32),
-                    GradientFormCard(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RotationTransition(
-                            turns: _animationController,
-                            child: Icon(
-                              Icons.cloud_sync,
-                              size: 64,
-                              color: isSuccess
-                                  ? Colors.green
-                                  : hasError
-                                      ? Colors.red
-                                      : AppColors.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            isSuccess
-                                ? l10n.sync
-                                : hasError
-                                    ? l10n.pleaseEnterValidUrl // Using this as a temporary error message
-                                    : l10n.syncStatus,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
-                                ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          if (isLoading || (!isSuccess && !hasError)) ...[
-                            LinearProgressIndicator(
-                              value: progress,
-                              backgroundColor: Colors.grey[200],
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.primary,
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  GradientFormCard(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            RotationTransition(
+                              turns: _animationController,
+                              child: Icon(
+                                Icons.sync,
+                                size: 32,
+                                color: isSuccess
+                                    ? Colors.green
+                                    : hasError
+                                        ? Colors.red
+                                        : AppColors.primary,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(width: 16),
                             Text(
-                              '${(progress * 100).toInt()}%',
-                              style: Theme.of(context).textTheme.bodyMedium,
+                              l10n.syncAllData,
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
                             ),
                           ],
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 16),
+                        LinearProgressIndicator(
+                          value: progress,
+                          backgroundColor: Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${(progress * 100).toInt()}%',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: AppColors.primary,
+                              ),
+                        ),
+                      ],
                     ),
-                  const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 16),
                   Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 12),
-                          if (state.customersState.isLoading ||
-                              state.customersState.isSuccess ||
-                              state.customersState.errorCode != null) ...[
-                            const SizedBox(height: 8),
+                    child: GradientFormCard(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.syncStatus,
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                            ),
+                            const SizedBox(height: 16),
                             _buildApiLogSection(
                               l10n.customers,
                               state.customersState,
                             ),
-                          ],
-                          if (state.salesRepState.isLoading ||
-                              state.salesRepState.isSuccess ||
-                              state.salesRepState.errorCode != null) ...[
                             const SizedBox(height: 8),
                             _buildApiLogSection(
                               l10n.salesRepCustomers,
                               state.salesRepState,
                             ),
-                          ],
-                          if (state.pricesState.isLoading ||
-                              state.pricesState.isSuccess ||
-                              state.pricesState.errorCode != null) ...[
                             const SizedBox(height: 8),
-                            _buildApiLogSection(l10n.prices, state.pricesState),
-                          ],
-                          if (state.inventoryItemsState.isLoading ||
-                              state.inventoryItemsState.isSuccess ||
-                              state.inventoryItemsState.errorCode != null) ...[
+                            _buildApiLogSection(
+                              l10n.prices,
+                              state.pricesState,
+                            ),
                             const SizedBox(height: 8),
                             _buildApiLogSection(
                               l10n.inventoryItems,
                               state.inventoryItemsState,
                             ),
-                          ],
-                          if (state.inventoryUnitsState.isLoading ||
-                              state.inventoryUnitsState.isSuccess ||
-                              state.inventoryUnitsState.errorCode != null) ...[
                             const SizedBox(height: 8),
                             _buildApiLogSection(
                               l10n.inventoryUnits,
                               state.inventoryUnitsState,
                             ),
-                          ],
-                          if (state.salesTaxesState.isLoading ||
-                              state.salesTaxesState.isSuccess ||
-                              state.salesTaxesState.errorCode != null) ...[
                             const SizedBox(height: 8),
                             _buildApiLogSection(
                               l10n.salesTaxes,
                               state.salesTaxesState,
                             ),
                           ],
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -243,7 +228,7 @@ class _SyncPageState extends State<SyncPage>
                 ],
               ),
             ),
-          ));
+          );
         },
       ),
     );
