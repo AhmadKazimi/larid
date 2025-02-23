@@ -15,7 +15,7 @@ import '../../domain/usecases/end_session_usecase.dart';
 import 'package:larid/core/widgets/custom_dialog.dart';
 import 'package:larid/core/widgets/custom_button.dart';
 import '../widgets/search_bar_widget.dart';
-
+import '../widgets/session_clock_widget.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -34,10 +34,12 @@ class _MapPageState extends State<MapPage> {
   final Set<Marker> _markers = {};
   List<CustomerEntity> _customers = [];
   CustomerEntity? _selectedCustomer;
+  bool _activeSession = false;
   OverlayEntry? _overlayEntry;
   String? _mapStyle;
   final CustomerTable _customerTable = getIt<CustomerTable>();
-  final CheckActiveSessionUseCase _checkActiveSessionUseCase = getIt<CheckActiveSessionUseCase>();
+  final CheckActiveSessionUseCase _checkActiveSessionUseCase =
+      getIt<CheckActiveSessionUseCase>();
   final StartSessionUseCase _startSessionUseCase = getIt<StartSessionUseCase>();
   final EndSessionUseCase _endSessionUseCase = getIt<EndSessionUseCase>();
   final TextEditingController _searchController = TextEditingController();
@@ -251,87 +253,87 @@ class _MapPageState extends State<MapPage> {
     _overlayEntry = OverlayEntry(
       builder:
           (context) => Positioned(
-        bottom: 16,
-        left: 16,
-        right: 16,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        customer.customerName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: _hideCustomerInfo,
-                      color: AppColors.primary,
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                _buildInfoRow(
-                  Icons.badge,
-                  l10n.customerCode,
-                  customer.customerCode,
-                ),
-                const SizedBox(height: 4),
-                _buildInfoRow(
-                  Icons.location_on,
-                  l10n.address,
-                  customer.address,
-                ),
-                const SizedBox(height: 4),
-                _buildInfoRow(
-                  Icons.phone,
-                  l10n.phone,
-                  customer.contactPhone,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _openInGoogleMaps(customer.mapCoords),
-                    icon: const Icon(Icons.directions),
-                    label: Text(l10n.getDirections),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            customer.customerName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: _hideCustomerInfo,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      Icons.badge,
+                      l10n.customerCode,
+                      customer.customerCode,
+                    ),
+                    const SizedBox(height: 4),
+                    _buildInfoRow(
+                      Icons.location_on,
+                      l10n.address,
+                      customer.address,
+                    ),
+                    const SizedBox(height: 4),
+                    _buildInfoRow(
+                      Icons.phone,
+                      l10n.phone,
+                      customer.contactPhone,
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openInGoogleMaps(customer.mapCoords),
+                        icon: const Icon(Icons.directions),
+                        label: Text(l10n.getDirections),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
     );
 
     Overlay.of(context).insert(_overlayEntry!);
@@ -356,24 +358,30 @@ class _MapPageState extends State<MapPage> {
   Future<void> _checkWorkingSession() async {
     try {
       final hasActiveSession = await _checkActiveSessionUseCase();
-      if (!hasActiveSession) {
-        _showStartSessionDialog(context);
-      }
+      setState(() {
+        _activeSession = hasActiveSession;
+        if (!hasActiveSession) {
+          _showStartSessionDialog(context);
+        }
+      });
     } catch (e) {
       debugPrint('Error checking working session: $e');
     }
   }
 
-  Future<void> _startSession(CustomerEntity customer) async {
+  Future<void> _startSession() async {
     try {
       await _startSessionUseCase();
       if (mounted) {
+        setState(() {
+          _activeSession = true;
+        });
         _hideCustomerInfo();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Started session with ${customer.customerName}',
-              style: GoogleFonts.notoSansArabic(),
+              'Started work session',
+              style: GoogleFonts.notoKufiArabic(),
             ),
             backgroundColor: AppColors.primary,
           ),
@@ -385,7 +393,7 @@ class _MapPageState extends State<MapPage> {
           SnackBar(
             content: Text(
               'Error starting session: $e',
-              style: GoogleFonts.notoSansArabic(),
+              style: GoogleFonts.notoKufiArabic(),
             ),
             backgroundColor: Colors.red,
           ),
@@ -413,11 +421,14 @@ class _MapPageState extends State<MapPage> {
             try {
               await _endSessionUseCase();
               if (mounted) {
+                setState(() {
+                  _activeSession = false;
+                });
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
                       l10n.sessionEnded,
-                      style: GoogleFonts.notoSansArabic(),
+                      style: GoogleFonts.notoKufiArabic(),
                     ),
                     backgroundColor: AppColors.primary,
                   ),
@@ -429,7 +440,7 @@ class _MapPageState extends State<MapPage> {
                   SnackBar(
                     content: Text(
                       'Error ending session: $e',
-                      style: GoogleFonts.notoSansArabic(),
+                      style: GoogleFonts.notoKufiArabic(),
                     ),
                     backgroundColor: Colors.red,
                   ),
@@ -453,7 +464,7 @@ class _MapPageState extends State<MapPage> {
       title: l10n.startSession,
       content: l10n.noActiveSessionMessage,
       actions: [
-           CustomButton(
+        CustomButton(
           text: l10n.start,
           onPressed: () async {
             await _startSessionUseCase();
@@ -480,12 +491,13 @@ class _MapPageState extends State<MapPage> {
       if (query.isEmpty) {
         _filteredCustomers = _customers;
       } else {
-        _filteredCustomers = _customers.where((customer) {
-          final name = customer.customerName.toLowerCase();
-          final code = customer.customerCode.toLowerCase();
-          final searchQuery = query.toLowerCase();
-          return name.contains(searchQuery) || code.contains(searchQuery);
-        }).toList();
+        _filteredCustomers =
+            _customers.where((customer) {
+              final name = customer.customerName.toLowerCase();
+              final code = customer.customerCode.toLowerCase();
+              final searchQuery = query.toLowerCase();
+              return name.contains(searchQuery) || code.contains(searchQuery);
+            }).toList();
       }
       _updateMarkersForSearch();
     });
@@ -529,9 +541,7 @@ class _MapPageState extends State<MapPage> {
   Widget _buildCustomerInfoCard(CustomerEntity customer) {
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -544,7 +554,7 @@ class _MapPageState extends State<MapPage> {
                 Expanded(
                   child: Text(
                     customer.customerName,
-                    style: GoogleFonts.notoSansArabic(
+                    style: GoogleFonts.notoKufiArabic(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textColor,
@@ -562,8 +572,9 @@ class _MapPageState extends State<MapPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context).customerCode + ': ${customer.customerCode}',
-              style: GoogleFonts.notoSansArabic(
+              AppLocalizations.of(context).customerCode +
+                  ': ${customer.customerCode}',
+              style: GoogleFonts.notoKufiArabic(
                 fontSize: 14,
                 color: AppColors.textColor.withOpacity(0.8),
               ),
@@ -573,7 +584,7 @@ class _MapPageState extends State<MapPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 CustomButton(
-                  onPressed: () => _startSession(customer),
+                  onPressed: () => _startSession(),
                   text: AppLocalizations.of(context).startSession,
                   isPrimary: true,
                 ),
@@ -590,38 +601,46 @@ class _MapPageState extends State<MapPage> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-              children: [
-                GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _currentPosition,
-                    zoom: 20,
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : Stack(
+                children: [
+                  GoogleMap(
+                    onMapCreated: _onMapCreated,
+                    initialCameraPosition: CameraPosition(
+                      target: _currentPosition,
+                      zoom: 20,
+                    ),
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    markers: _markers,
+                    onTap: (_) => _hideCustomerInfo(),
+                    mapType: MapType.normal,
+                    style: _mapStyle,
+                    zoomControlsEnabled: false,
                   ),
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: false,
-                  markers: _markers,
-                  onTap: (_) => _hideCustomerInfo(),
-                  mapType: MapType.normal,
-                  style: _mapStyle,
-                  zoomControlsEnabled: false,
-                ),
-                SearchBarWidget(
-                  controller: _searchController,
-                  onSearch: _onSearch,
-                  onClear: _onSearchClear,
-                ),
-                if (_overlayEntry == null && _selectedCustomer != null)
-                  Positioned(
-                    left: 16,
-                    right: 16,
-                    bottom: 16,
-                    child: _buildCustomerInfoCard(_selectedCustomer!),
+                  Column(
+                    children: [
+                      SizedBox(height: 100),
+                      SearchBarWidget(
+                        controller: _searchController,
+                        onSearch: _onSearch,
+                        onClear: _onSearchClear,
+                        topPosition: 0,
+                      ),
+                      SessionClockWidget(isSessionActive: _activeSession),
+                    ],
                   ),
-              ],
-            ),
+                  if (_overlayEntry == null && _selectedCustomer != null)
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                      child: _buildCustomerInfoCard(_selectedCustomer!),
+                    ),
+                ],
+              ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,

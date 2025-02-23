@@ -165,4 +165,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get sessionDuration => 'Session Duration';
+
+  @override
+  String get minutes => 'Minutes';
+
+  @override
+  String get hours => 'Hours';
+
+  @override
+  String get days => 'Days';
+
+  @override
+  String get months => 'Months';
+
+  @override
+  String get years => 'Years';
 }

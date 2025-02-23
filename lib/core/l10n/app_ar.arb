@@ -66,5 +66,14 @@
     "startSession": "بدء جلسة عمل",
     "noActiveSessionMessage": "لا توجد جلسة عمل نشطة. هل تريد بدء جلسة جديدة؟",
     "start": "بدء",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "sessionDuration": "مدة الجلسة",
+    "minutes": "دقيقة",
+    "hours": "ساعة",
+    "days": "يوم",
+    "months": "شهر",
+    "years": "سنة",
+    "endSession": "إنهاء الجلسة",
+    "end": "إنهاء",
+    "sessionEnded": "تم إنهاء الجلسة"
 }

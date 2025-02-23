@@ -165,4 +165,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cancel => 'إلغاء';
+
+  @override
+  String get sessionDuration => 'مدة الجلسة';
+
+  @override
+  String get minutes => 'دقيقة';
+
+  @override
+  String get hours => 'ساعة';
+
+  @override
+  String get days => 'يوم';
+
+  @override
+  String get months => 'شهر';
+
+  @override
+  String get years => 'سنة';
 }

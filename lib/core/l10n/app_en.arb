@@ -67,5 +67,14 @@
     "noActiveSessionMessage": "You don't have an active session. Would you like to start a new one?",
     "start": "Start",
     "cancel": "Cancel",
+    "sessionDuration": "Session Duration",
+    "minutes": "Minutes",
+    "hours": "Hours",
+    "days": "Days",
+    "months": "Months",
+    "years": "Years",
+    "endSession": "End Session",
+    "end": "End",
     "sessionEnded": "Session ended"
+    
 }

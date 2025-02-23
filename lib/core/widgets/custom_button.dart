@@ -36,7 +36,7 @@ class CustomButton extends StatelessWidget {
               ),
             );
 
-    final textStyle = GoogleFonts.notoSansArabic(
+    final textStyle = GoogleFonts.notoKufiArabic(
       fontSize: 16,
       fontWeight: FontWeight.w500,
     );

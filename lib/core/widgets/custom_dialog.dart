@@ -29,7 +29,7 @@ class CustomDialog extends StatelessWidget {
       actionsPadding: const EdgeInsets.all(16),
       title: Text(
         title,
-        style: GoogleFonts.notoSansArabic(
+        style: GoogleFonts.notoKufiArabic(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: Theme.of(context).brightness == Brightness.light 
@@ -40,7 +40,7 @@ class CustomDialog extends StatelessWidget {
       ),
       content: Text(
         content,
-        style: GoogleFonts.notoSansArabic(
+        style: GoogleFonts.notoKufiArabic(
           fontSize: 16,
           color: Theme.of(context).brightness == Brightness.light 
               ? AppColors.textColor
