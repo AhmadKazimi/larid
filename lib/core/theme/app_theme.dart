@@ -51,8 +51,8 @@ class AppTheme {
     );
 
     return baseTheme.copyWith(
-      textTheme: GoogleFonts.notoSansArabicTextTheme(baseTheme.textTheme),
-      primaryTextTheme: GoogleFonts.notoSansArabicTextTheme(baseTheme.primaryTextTheme),
+      textTheme: GoogleFonts.notoKufiArabicTextTheme(baseTheme.textTheme),
+      primaryTextTheme: GoogleFonts.notoKufiArabicTextTheme(baseTheme.primaryTextTheme),
       
       // Button themes
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -63,7 +63,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: GoogleFonts.notoSansArabic(
+          textStyle: GoogleFonts.notoKufiArabic(
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
@@ -76,7 +76,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          textStyle: GoogleFonts.notoSansArabic(
+          textStyle: GoogleFonts.notoKufiArabic(
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
@@ -88,12 +88,12 @@ class AppTheme {
         ),
         elevation: 0,
         backgroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.notoSansArabic(
+        titleTextStyle: GoogleFonts.notoKufiArabic(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: AppColors.onBackground,
         ),
-        contentTextStyle: GoogleFonts.notoSansArabic(
+        contentTextStyle: GoogleFonts.notoKufiArabic(
           fontSize: 16,
           color: AppColors.onBackground,
         ),
@@ -122,10 +122,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
-        labelStyle: GoogleFonts.notoSansArabic(
+        labelStyle: GoogleFonts.notoKufiArabic(
           color: Colors.grey[700],
         ),
-        errorStyle: GoogleFonts.notoSansArabic(
+        errorStyle: GoogleFonts.notoKufiArabic(
           color: AppColors.error,
         ),
       ),
