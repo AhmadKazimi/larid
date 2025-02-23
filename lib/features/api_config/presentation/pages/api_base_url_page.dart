@@ -72,7 +72,11 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
           );
         },
         child: GradientPageLayout(
-          child: Column(
+          useScroll: false,
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
             children: [
               const SizedBox(height: 32),
               GradientFormCard(
@@ -163,8 +167,9 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
                   ),
                 ),
               ),
-            ],
+            ]),
           ),
+        ),
         ),
       ),
     );
