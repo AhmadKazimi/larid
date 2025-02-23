@@ -388,23 +388,53 @@ class _MapPageState extends State<MapPage> {
     try {
       await _startSessionUseCase();
       if (mounted) {
-        final session = await getIt<WorkingSessionRepository>().getCurrentSession();
-        setState(() {
-          _activeSession = true;
-          _sessionStartTime = session != null 
-            ? DateTime.fromMillisecondsSinceEpoch(session.startTimestamp)
-            : null;
-        });
-        _hideCustomerInfo();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Started work session',
-              style: GoogleFonts.notoKufiArabic(),
+        // Verify session started successfully
+        final hasActiveSession = await _checkActiveSessionUseCase();
+        if (hasActiveSession) {
+          final session = await getIt<WorkingSessionRepository>().getCurrentSession();
+          if (session != null) {
+            setState(() {
+              _activeSession = true;
+              _sessionStartTime = DateTime.fromMillisecondsSinceEpoch(session.startTimestamp);
+            });
+            _hideCustomerInfo();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Started work session',
+                  style: GoogleFonts.notoKufiArabic(),
+                ),
+                backgroundColor: AppColors.primary,
+              ),
+            );
+          } else {
+            // Session exists but couldn't get details
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Error getting session details',
+                  style: GoogleFonts.notoKufiArabic(),
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        } else {
+          // Session didn't start
+          setState(() {
+            _activeSession = false;
+            _sessionStartTime = null;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Error starting session',
+                style: GoogleFonts.notoKufiArabic(),
+              ),
+              backgroundColor: Colors.red,
             ),
-            backgroundColor: AppColors.primary,
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -440,19 +470,35 @@ class _MapPageState extends State<MapPage> {
             try {
               await _endSessionUseCase();
               if (mounted) {
-                setState(() {
-                  _activeSession = false;
-                  _sessionStartTime = null;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      l10n.sessionEnded,
-                      style: GoogleFonts.notoKufiArabic(),
+                // Recheck session status
+                final hasActiveSession = await _checkActiveSessionUseCase();
+                if (!hasActiveSession) {
+                  setState(() {
+                    _activeSession = false;
+                    _sessionStartTime = null;
+                  });
+                  _showStartSessionDialog(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.sessionEnded,
+                        style: GoogleFonts.notoKufiArabic(),
+                      ),
+                      backgroundColor: AppColors.primary,
                     ),
-                    backgroundColor: AppColors.primary,
-                  ),
-                );
+                  );
+                } else {
+                  // Something went wrong, session is still active
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Error: Session is still active',
+                        style: GoogleFonts.notoKufiArabic(),
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               }
             } catch (e) {
               if (mounted) {
@@ -487,10 +533,8 @@ class _MapPageState extends State<MapPage> {
         CustomButton(
           text: l10n.start,
           onPressed: () async {
-            await _startSessionUseCase();
-            if (mounted) {
-              Navigator.of(context).pop();
-            }
+            Navigator.of(context).pop();
+            await _startSession(); // This will handle UI updates
           },
           isPrimary: true,
         ),
