@@ -5,6 +5,7 @@ class WorkingSessionEntity {
   final String dayName;
   final String date;
   final String startTime;
+  final int startTimestamp;
   final String? endTime;
 
   const WorkingSessionEntity({
@@ -14,6 +15,7 @@ class WorkingSessionEntity {
     required this.dayName,
     required this.date,
     required this.startTime,
+    required this.startTimestamp,
     this.endTime,
   });
 
@@ -25,6 +27,7 @@ class WorkingSessionEntity {
       dayName: map['day_name'] as String,
       date: map['date'] as String,
       startTime: map['start_time'] as String,
+      startTimestamp: map['start_timestamp'] as int,
       endTime: map['end_time'] as String?,
     );
   }

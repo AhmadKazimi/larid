@@ -12,6 +12,7 @@ import 'package:larid/core/storage/shared_prefs.dart';
 import '../../domain/usecases/check_active_session_usecase.dart';
 import '../../domain/usecases/start_session_usecase.dart';
 import '../../domain/usecases/end_session_usecase.dart';
+import '../../domain/repositories/working_session_repository.dart';
 import 'package:larid/core/widgets/custom_dialog.dart';
 import 'package:larid/core/widgets/custom_button.dart';
 import '../widgets/search_bar_widget.dart';
@@ -35,6 +36,7 @@ class _MapPageState extends State<MapPage> {
   List<CustomerEntity> _customers = [];
   CustomerEntity? _selectedCustomer;
   bool _activeSession = false;
+  DateTime? _sessionStartTime;
   OverlayEntry? _overlayEntry;
   String? _mapStyle;
   final CustomerTable _customerTable = getIt<CustomerTable>();
@@ -358,12 +360,25 @@ class _MapPageState extends State<MapPage> {
   Future<void> _checkWorkingSession() async {
     try {
       final hasActiveSession = await _checkActiveSessionUseCase();
-      setState(() {
-        _activeSession = hasActiveSession;
-        if (!hasActiveSession) {
+      if (hasActiveSession) {
+        final session = await getIt<WorkingSessionRepository>().getCurrentSession();
+        if (mounted) {
+          setState(() {
+            _activeSession = true;
+            _sessionStartTime = session != null 
+              ? DateTime.fromMillisecondsSinceEpoch(session.startTimestamp)
+              : null;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _activeSession = false;
+            _sessionStartTime = null;
+          });
           _showStartSessionDialog(context);
         }
-      });
+      }
     } catch (e) {
       debugPrint('Error checking working session: $e');
     }
@@ -373,8 +388,12 @@ class _MapPageState extends State<MapPage> {
     try {
       await _startSessionUseCase();
       if (mounted) {
+        final session = await getIt<WorkingSessionRepository>().getCurrentSession();
         setState(() {
           _activeSession = true;
+          _sessionStartTime = session != null 
+            ? DateTime.fromMillisecondsSinceEpoch(session.startTimestamp)
+            : null;
         });
         _hideCustomerInfo();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -423,6 +442,7 @@ class _MapPageState extends State<MapPage> {
               if (mounted) {
                 setState(() {
                   _activeSession = false;
+                  _sessionStartTime = null;
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -629,7 +649,10 @@ class _MapPageState extends State<MapPage> {
                         onClear: _onSearchClear,
                         topPosition: 0,
                       ),
-                      SessionClockWidget(isSessionActive: _activeSession),
+                      SessionClockWidget(
+                        isSessionActive: _activeSession,
+                        sessionStartTime: _sessionStartTime,
+                      ),
                     ],
                   ),
                   if (_overlayEntry == null && _selectedCustomer != null)

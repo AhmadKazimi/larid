@@ -83,7 +83,10 @@ class _SessionClockWidgetState extends State<SessionClockWidget> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
+          colors: widget.isSessionActive ? [
+            Colors.green.withOpacity(0.2),
+            Colors.green.withOpacity(0.1),
+          ] : [
             AppColors.primary.withOpacity(0.1),
             AppColors.primary.withOpacity(0.05),
           ],
@@ -92,7 +95,9 @@ class _SessionClockWidgetState extends State<SessionClockWidget> {
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.2),
+          color: widget.isSessionActive 
+            ? Colors.green.withOpacity(0.3)
+            : AppColors.primary.withOpacity(0.2),
           width: 1,
         ),
       ),
@@ -108,7 +113,7 @@ class _SessionClockWidgetState extends State<SessionClockWidget> {
                   dateFormat.format(_now),
                   style: GoogleFonts.notoKufiArabic(
                     fontSize: 14,
-                    color: AppColors.textColor.withOpacity(0.8),
+                    color: widget.isSessionActive ? Colors.green.shade700.withOpacity(0.8) : AppColors.textColor.withOpacity(0.8),
                   ),
                 ),
                 Text(
@@ -116,7 +121,7 @@ class _SessionClockWidgetState extends State<SessionClockWidget> {
                   style: GoogleFonts.notoKufiArabic(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: widget.isSessionActive ? Colors.green.shade700 : AppColors.primary,
                   ),
                 ),
               ],
@@ -124,26 +129,20 @@ class _SessionClockWidgetState extends State<SessionClockWidget> {
             if (widget.isSessionActive && widget.sessionStartTime != null) ...[
               const SizedBox(height: 8),
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.timer_outlined,
-                    color: AppColors.primary,
-                    size: 20,
+                    color: widget.isSessionActive ? Colors.green.shade700 : AppColors.primary,
+                    size: 24,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${l10n.sessionDuration}: ',
-                    style: GoogleFonts.notoKufiArabic(
-                      fontSize: 14,
-                      color: AppColors.textColor,
-                    ),
-                  ),
+                  const SizedBox(width: 12),
                   Text(
                     _formatDuration(_elapsedTime),
                     style: GoogleFonts.notoKufiArabic(
-                      fontSize: 14,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: widget.isSessionActive ? Colors.green.shade700 : AppColors.primary,
                     ),
                   ),
                 ],

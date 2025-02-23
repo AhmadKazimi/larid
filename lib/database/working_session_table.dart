@@ -15,6 +15,7 @@ class WorkingSessionTable {
       day_name TEXT NOT NULL,
       date TEXT NOT NULL,
       start_time TEXT NOT NULL,
+      start_timestamp INTEGER NOT NULL,
       end_time TEXT
     )
   ''';
@@ -32,7 +33,8 @@ class WorkingSessionTable {
     final now = DateTime.now();
     final dayName = DateFormat('EEEE').format(now);
     final date = DateFormat('dd-MM-yyyy').format(now);
-    final startTime = DateFormat('HH:mm').format(now);
+    final startTime = DateFormat('HH:mm:ss').format(now);
+    final startTimestamp = now.millisecondsSinceEpoch;
 
     await _db.insert(
       tableName,
@@ -42,13 +44,14 @@ class WorkingSessionTable {
         'day_name': dayName,
         'date': date,
         'start_time': startTime,
+        'start_timestamp': startTimestamp,
       },
     );
   }
 
   Future<void> endCurrentSession() async {
     final now = DateTime.now();
-    final endTime = DateFormat('HH:mm').format(now);
+    final endTime = DateFormat('HH:mm:ss').format(now);
 
     await _db.update(
       tableName,
