@@ -94,62 +94,89 @@ class _SyncPageState extends State<SyncPage>
               state.inventoryUnitsState.isSuccess &&
               state.salesTaxesState.isSuccess;
 
-          String syncIcon = 'assets/images/ic_sync.svg';
-          if (isSuccess) {
-            syncIcon = 'assets/images/ic_sync_success.svg';
-          } else if (hasError) {
-            syncIcon = 'assets/images/ic_sync_fail.svg';
-          }
+          final bool isLoading =
+              state.customersState.isLoading ||
+              state.salesRepState.isLoading ||
+              state.pricesState.isLoading ||
+              state.inventoryItemsState.isLoading ||
+              state.inventoryUnitsState.isLoading ||
+              state.salesTaxesState.isLoading;
 
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Center(
-                    child: RotationTransition(
-                      turns: _animationController,
-                      child: SvgPicture.asset(
-                        syncIcon,
-                        width: double.infinity,
-                        height: 200,
+          // Calculate progress (0.0 to 1.0)
+          double progress = 0.0;
+          int totalSteps = 6; // Total number of sync operations
+          int completedSteps = 0;
+          
+          if (state.customersState.isSuccess) completedSteps++;
+          if (state.salesRepState.isSuccess) completedSteps++;
+          if (state.pricesState.isSuccess) completedSteps++;
+          if (state.inventoryItemsState.isSuccess) completedSteps++;
+          if (state.inventoryUnitsState.isSuccess) completedSteps++;
+          if (state.salesTaxesState.isSuccess) completedSteps++;
+          
+          progress = completedSteps / totalSteps;
+
+          return GradientPageLayout(
+            useScroll: false,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    const SizedBox(height: 32),
+                    GradientFormCard(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RotationTransition(
+                            turns: _animationController,
+                            child: Icon(
+                              Icons.cloud_sync,
+                              size: 64,
+                              color: isSuccess
+                                  ? Colors.green
+                                  : hasError
+                                      ? Colors.red
+                                      : AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            isSuccess
+                                ? l10n.sync
+                                : hasError
+                                    ? l10n.pleaseEnterValidUrl // Using this as a temporary error message
+                                    : l10n.syncStatus,
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          if (isLoading || (!isSuccess && !hasError)) ...[
+                            LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: Colors.grey[200],
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${(progress * 100).toInt()}%',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 48),
-                  GradientFormCard(
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.wifi,
-                          size: 48,
-                          color: AppColors.secondary,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.makeSureInternetConnected,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.dontClosePage,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 24),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 12),
@@ -216,7 +243,7 @@ class _SyncPageState extends State<SyncPage>
                 ],
               ),
             ),
-          );
+          ));
         },
       ),
     );
@@ -252,8 +279,17 @@ class _SyncPageState extends State<SyncPage>
       SharedPrefs.setSynced(true);
     }
 
-    return ElevatedButton(
-      onPressed:
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryLight],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ElevatedButton(
+        onPressed:
           isLoading
               ? null
               : () {
@@ -261,6 +297,7 @@ class _SyncPageState extends State<SyncPage>
                   context.go(RouteConstants.map);
                 } else {
                   // Start sync process
+                  context.read<SyncBloc>().add(const SyncEvent.syncSalesTaxes());
                   context.read<SyncBloc>().add(const SyncEvent.syncCustomers());
                   context.read<SyncBloc>().add(
                     const SyncEvent.syncSalesRepCustomers(),
@@ -272,13 +309,12 @@ class _SyncPageState extends State<SyncPage>
                   context.read<SyncBloc>().add(
                     const SyncEvent.syncInventoryUnits(),
                   );
-                  context.read<SyncBloc>().add(
-                    const SyncEvent.syncSalesTaxes(),
-                  );
                 }
               },
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.all(16),
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child:
@@ -311,7 +347,7 @@ class _SyncPageState extends State<SyncPage>
                   ],
                 ],
               ),
-    );
+    ));
   }
 
   Widget _buildApiLogSection(String title, ApiCallState state) {

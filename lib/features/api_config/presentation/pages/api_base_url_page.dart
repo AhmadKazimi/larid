@@ -15,9 +15,10 @@ class ApiBaseUrlPage extends StatefulWidget {
 
 class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
   final _formKey = GlobalKey<FormState>();
+  static const String _urlPrefix = 'https://';
+  static const String _urlSuffix = '/api/sr';
   final _urlController = TextEditingController(
-    // TODO: remove for production
-    text: "https://cloud.larid.net/api/sr"
+    text: "cloud.larid.net",
   );
 
   @override
@@ -26,20 +27,28 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
     super.dispose();
   }
 
-  bool _isValidUrl(String url) {
-    try {
-      final uri = Uri.parse(url);
-      return uri.isScheme('http') || uri.isScheme('https');
-    } catch (e) {
-      return false;
-    }
+  bool _isValidDomain(String domain) {
+    // Basic domain validation: at least one dot and no spaces
+    return domain.contains('.') && !domain.contains(' ');
+  }
+
+  String _getFullUrl() {
+    final domain = _urlController.text.trim();
+    // Remove any accidentally entered prefixes or suffixes
+    final cleanDomain = domain
+        .replaceAll(_urlPrefix, '')
+        .replaceAll(_urlSuffix, '')
+        .replaceAll('https://', '')
+        .replaceAll('http://', '');
+    return '$_urlPrefix$cleanDomain$_urlSuffix';
   }
 
   void _saveBaseUrl() {
     if (!_formKey.currentState!.validate()) return;
     
+    final fullUrl = _getFullUrl();
     context.read<ApiConfigBloc>().add(
-      ApiConfigEvent.saveBaseUrl(_urlController.text.trim()),
+      ApiConfigEvent.saveBaseUrl(fullUrl),
     );
   }
 
@@ -87,24 +96,32 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      TextFormField(
-                        controller: _urlController,
-                        decoration: InputDecoration(
-                          labelText: l10n.baseUrl,
-                          hintText: l10n.baseUrlHint,
-                          prefixIcon: const Icon(Icons.link),
-                        ),
-                        keyboardType: TextInputType.url,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return l10n.pleaseEnterUrl;
-                          }
-                          if (!_isValidUrl(value)) {
-                            return l10n.pleaseEnterValidUrl;
-                          }
+                      Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: TextFormField(
+                          controller: _urlController,
+                          decoration: InputDecoration(
+                            labelText: l10n.baseUrl,
+                            hintText: 'cloud.larid.net',
+                            prefixIcon: const Icon(Icons.link),
+                            prefixText: _urlPrefix,
+                            suffixText: _urlSuffix,
+                            helperText: 'Enter only the domain name',
+                            alignLabelWithHint: true,
+                          ),
+                          textDirection: TextDirection.ltr,
+                          textAlign: TextAlign.left,
+                          keyboardType: TextInputType.url,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.pleaseEnterUrl;
+                            }
+                            if (!_isValidDomain(value.trim())) {
+                              return 'Please enter a valid domain (e.g., cloud.larid.net)';
+                            }
                           return null;
                         },
-                      ),
+                      )),
                       const SizedBox(height: 32),
                       BlocBuilder<ApiConfigBloc, ApiConfigState>(
                         builder: (context, state) {

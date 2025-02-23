@@ -17,23 +17,7 @@ class GradientPageLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget content = child;
-
-    // Wrap with SingleChildScrollView if needed
-    if (useScroll) {
-      content = SingleChildScrollView(child: content);
-    }
-
-    // Apply padding
-    content = Padding(padding: padding, child: content);
-
-    // Wrap with SafeArea if needed
-    if (useSafeArea) {
-      content = SafeArea(child: content);
-    }
-
     return Container(
-      height: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -44,7 +28,30 @@ class GradientPageLayout extends StatelessWidget {
           ],
         ),
       ),
-      child: content,
+      child: Builder(
+        builder: (context) {
+          Widget content = child;
+
+          // Apply padding
+          if (padding != EdgeInsets.zero) {
+            content = Padding(padding: padding, child: content);
+          }
+
+          // Wrap with SafeArea if needed
+          if (useSafeArea) {
+            content = SafeArea(child: content);
+          }
+
+          // Wrap with SingleChildScrollView if needed
+          if (useScroll) {
+            content = SingleChildScrollView(
+              child: content,
+            );
+          }
+
+          return content;
+        },
+      ),
     );
   }
 }

@@ -41,7 +41,16 @@ class SyncRepositoryImpl implements SyncRepository {
        _pricesTable = pricesTable,
        _inventoryItemsTable = inventoryItemsTable,
        _inventoryUnitsTable = inventoryUnitsTable,
-       _salesTaxesTable = salesTaxesTable;
+       _salesTaxesTable = salesTaxesTable {
+    // Initialize user when repository is created
+    _initUser().then((_) {
+      if (_user != null) {
+        dev.log('User initialized on repository creation: ${_user!.userid}');
+      } else {
+        dev.log('Failed to initialize user on repository creation');
+      }
+    });
+  }
 
   Future<void> _initUser() async {
     try {
@@ -67,7 +76,8 @@ class SyncRepositoryImpl implements SyncRepository {
   Future<ApiResponse<List<CustomerEntity>>> getCustomers() async {
     try {
       if (_user == null) {
-        return ApiResponse(errorCode: '-1', message: 'User not found');
+        dev.log('User not found in database - cannot sync customers');
+        return ApiResponse(errorCode: '-1', message: 'Please login again to sync customers');
       }
 
       final customersData = await _apiService.getCustomers(
@@ -105,7 +115,8 @@ class SyncRepositoryImpl implements SyncRepository {
   Future<ApiResponse<List<CustomerEntity>>> getSalesrepRouteCustomers() async {
     try {
       if (_user == null) {
-        return ApiResponse(errorCode: '-1', message: 'User not found');
+        dev.log('User not found in database - cannot sync sales rep customers');
+        return ApiResponse(errorCode: '-1', message: 'Please login again to sync sales rep customers');
       }
 
       final customersData = await _apiService.getSalesrepRouteCustomers(
@@ -145,7 +156,8 @@ class SyncRepositoryImpl implements SyncRepository {
   Future<ApiResponse<List<PriceEntity>>> getPrices() async {
     try {
       if (_user == null) {
-        return ApiResponse(errorCode: '-1', message: 'User not found');
+        dev.log('User not found in database - cannot sync prices');
+        return ApiResponse(errorCode: '-1', message: 'Please login again to sync prices');
       }
 
       final customersData = await _apiService.getCustomersPriceList(
@@ -183,7 +195,8 @@ class SyncRepositoryImpl implements SyncRepository {
   Future<ApiResponse<List<InventoryItemEntity>>> getInventoryItems() async {
     try {
       if (_user == null) {
-        return ApiResponse(errorCode: '-1', message: 'User not found');
+        dev.log('User not found in database - cannot sync inventory items');
+        return ApiResponse(errorCode: '-1', message: 'Please login again to sync inventory items');
       }
 
       final customersData = await _apiService.getInventoryItems(
@@ -260,8 +273,6 @@ class SyncRepositoryImpl implements SyncRepository {
   @override
   Future<ApiResponse<List<SalesTaxEntity>>> getSalesTaxes() async {
     try {
-      await _initUser();
-      
       if (_user == null) {
         dev.log('User not found in database - cannot sync sales taxes');
         return ApiResponse(errorCode: '-1', message: 'Please login again to sync sales taxes');
