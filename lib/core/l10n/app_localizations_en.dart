@@ -155,6 +155,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get getDirections => 'Get Directions';
 
   @override
+  String get startVisit => 'Start Visit';
+
+  @override
   String get cannotOpenGoogleMaps => 'Cannot open Google Maps';
 
   @override

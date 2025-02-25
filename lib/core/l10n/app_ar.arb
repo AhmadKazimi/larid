@@ -61,6 +61,7 @@
     "locationServicesRequired": "خدمات الموقع مطلوبة لاستخدام الخريطة",
     "locationPermissionRequired": "إذن الموقع مطلوب لعرض موقعك على الخريطة",
     "getDirections": "الحصول على الاتجاهات",
+    "startVisit": "بدء زيارة",
     "cannotOpenGoogleMaps": "لا يمكن فتح خرائط جوجل",
 
     "startSession": "بدء جلسة عمل",

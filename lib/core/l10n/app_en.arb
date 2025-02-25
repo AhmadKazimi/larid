@@ -61,6 +61,7 @@
     "locationServicesRequired": "Location services are required to use the map",
     "locationPermissionRequired": "Location permission is required to show your location on the map",
     "getDirections": "Get Directions",
+    "startVisit": "Start Visit",
     "cannotOpenGoogleMaps": "Cannot open Google Maps",
 
     "startSession": "Start Session",

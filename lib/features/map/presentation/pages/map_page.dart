@@ -138,7 +138,7 @@ class _MapPageState extends State<MapPage> {
     if (_mapController != null && _currentPosition.latitude != 0) {
       _mapController!.animateCamera(
         CameraUpdate.newCameraPosition(
-          CameraPosition(target: _currentPosition, zoom: 15),
+          CameraPosition(target: _currentPosition, zoom: 11),
         ),
       );
     }
@@ -318,6 +318,23 @@ class _MapPageState extends State<MapPage> {
                         label: Text(l10n.getDirections),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.secondary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                      SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => {},
+                        icon: const Icon(Icons.start),
+                        label: Text(l10n.startVisit),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(

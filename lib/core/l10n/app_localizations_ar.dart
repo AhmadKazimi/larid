@@ -155,6 +155,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get getDirections => 'الحصول على الاتجاهات';
 
   @override
+  String get startVisit => 'بدء زيارة';
+
+  @override
   String get cannotOpenGoogleMaps => 'لا يمكن فتح خرائط جوجل';
 
   @override

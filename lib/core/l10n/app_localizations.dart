@@ -383,6 +383,12 @@ abstract class AppLocalizations {
   /// **'Get Directions'**
   String get getDirections;
 
+  /// No description provided for @startVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Visit'**
+  String get startVisit;
+
   /// No description provided for @cannotOpenGoogleMaps.
   ///
   /// In en, this message translates to:
