@@ -8,6 +8,7 @@ import '../../../../features/sync/domain/entities/customer_entity.dart';
 import '../bloc/customer_search_bloc.dart';
 import '../bloc/customer_search_event.dart';
 import '../bloc/customer_search_state.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class SearchCustomerPage extends StatefulWidget {
   const SearchCustomerPage({super.key});
@@ -49,7 +50,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF4A73C3),
+      backgroundColor: AppColors.primary,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -63,72 +64,100 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Container(
+              height: 45,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25),
+                color: Colors.white.withAlpha(0x7F),
+                borderRadius: BorderRadius.horizontal(left: Radius.circular(25), right: Radius.circular(25)),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: SegmentedButton<bool>(
-                segments: const [
-                  ButtonSegment<bool>(
-                    value: true,
-                    label: Text('Today Customers'),
+              child: Stack(
+                children: [
+                  // Sliding indicator
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    left: _showTodayCustomers ? MediaQuery.of(context).size.width / 2 - 16 : 0,
+                    right: _showTodayCustomers ? 0 : MediaQuery.of(context).size.width / 2 - 16,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.horizontal(left: Radius.circular(25), right: Radius.circular(25)),
+                      ),
+                    ),
                   ),
-                  ButtonSegment<bool>(
-                    value: false,
-                    label: Text('Customers'),
+                  // Tabs
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: !_showTodayCustomers ? () {
+                            setState(() {
+                              _showTodayCustomers = true;
+                            });
+                            _onSearchChanged(_searchController.text);
+                          } : null,
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 300),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: _showTodayCustomers ? AppColors.primary : AppColors.background,
+                              ),
+                              child: const Text('Today Customers'),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: _showTodayCustomers ? () {
+                            setState(() {
+                              _showTodayCustomers = false;
+                            });
+                            _onSearchChanged(_searchController.text);
+                          } : null,
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 300),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: _showTodayCustomers ? AppColors.background : AppColors.primary,
+                              ),
+                              child: const Text('Customers'),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-                selected: {_showTodayCustomers},
-                onSelectionChanged: (Set<bool> newSelection) {
-                  setState(() {
-                    _showTodayCustomers = newSelection.first;
-                  });
-                  _onSearchChanged(_searchController.text);
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                    (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.selected)) {
-                        return const Color(0xFF4A73C3);
-                      }
-                      return Colors.transparent;
-                    },
-                  ),
-                  foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                    (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.selected)) {
-                        return Colors.white;
-                      }
-                      return const Color(0xFF4A73C3);
-                    },
-                  ),
-                ),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF1E3C72),
-                borderRadius: BorderRadius.circular(12),
+                color: const Color(0xFF3A5DA3),
+                borderRadius: BorderRadius.circular(25),
               ),
               child: TextField(
                 controller: _searchController,
+                onChanged: _onSearchChanged,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Search',
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white),
-                  suffixIcon: const Icon(Icons.access_time, color: Colors.white),
+                  hintStyle: const TextStyle(color: Colors.white70),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white70),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+                    horizontal: 20,
+                    vertical: 15,
                   ),
                 ),
-                onChanged: _onSearchChanged,
               ),
             ),
           ),
