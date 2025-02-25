@@ -80,74 +80,40 @@ class _SessionClockWidgetState extends State<SessionClockWidget> {
     final timeFormat = DateFormat('HH:mm:ss');
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: widget.isSessionActive ? [
-            Colors.green.withOpacity(0.2),
-            Colors.green.withOpacity(0.1),
-          ] : [
-            AppColors.primary.withOpacity(0.1),
-            AppColors.primary.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: widget.isSessionActive 
-            ? Colors.green.withOpacity(0.3)
-            : AppColors.primary.withOpacity(0.2),
-          width: 1,
-        ),
+        color: widget.isSessionActive ? Colors.green : AppColors.primary,
+        borderRadius: BorderRadius.circular(30),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  dateFormat.format(_now),
-                  style: GoogleFonts.notoKufiArabic(
-                    fontSize: 14,
-                    color: widget.isSessionActive ? Colors.green.shade700.withOpacity(0.8) : AppColors.textColor.withOpacity(0.8),
-                  ),
-                ),
-                Text(
-                  timeFormat.format(_now),
-                  style: GoogleFonts.notoKufiArabic(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: widget.isSessionActive ? Colors.green.shade700 : AppColors.primary,
-                  ),
-                ),
-              ],
+            Icon(
+              Icons.timer_outlined,
+              color: Colors.white,
+              size: 20,
             ),
-            if (widget.isSessionActive && widget.sessionStartTime != null) ...[
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.timer_outlined,
-                    color: widget.isSessionActive ? Colors.green.shade700 : AppColors.primary,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    _formatDuration(_elapsedTime),
-                    style: GoogleFonts.notoKufiArabic(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: widget.isSessionActive ? Colors.green.shade700 : AppColors.primary,
-                    ),
-                  ),
-                ],
+            const SizedBox(width: 8),
+            if (widget.isSessionActive && widget.sessionStartTime != null)
+              Text(
+                _formatDuration(_elapsedTime),
+                style: GoogleFonts.notoKufiArabic(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              )
+            else
+              Text(
+                timeFormat.format(_now),
+                style: GoogleFonts.notoKufiArabic(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ],
           ],
         ),
       ),

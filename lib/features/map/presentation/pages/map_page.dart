@@ -15,7 +15,7 @@ import '../../domain/usecases/end_session_usecase.dart';
 import '../../domain/repositories/working_session_repository.dart';
 import 'package:larid/core/widgets/custom_dialog.dart';
 import 'package:larid/core/widgets/custom_button.dart';
-import '../widgets/search_bar_widget.dart';
+
 import '../widgets/session_clock_widget.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -44,8 +44,6 @@ class _MapPageState extends State<MapPage> {
       getIt<CheckActiveSessionUseCase>();
   final StartSessionUseCase _startSessionUseCase = getIt<StartSessionUseCase>();
   final EndSessionUseCase _endSessionUseCase = getIt<EndSessionUseCase>();
-  final TextEditingController _searchController = TextEditingController();
-  List<CustomerEntity> _filteredCustomers = [];
 
   @override
   void initState() {
@@ -54,14 +52,12 @@ class _MapPageState extends State<MapPage> {
     _getCurrentLocation();
     _loadCustomers();
     _checkWorkingSession();
-    _filteredCustomers = _customers;
   }
 
   @override
   void dispose() {
     _hideCustomerInfo();
     _mapController?.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -153,7 +149,6 @@ class _MapPageState extends State<MapPage> {
       final customers = await _customerTable.getAllSalesRepCustomers();
       setState(() {
         _customers = customers;
-        _filteredCustomers = customers;
       });
       _addCustomerMarkers();
     } catch (e) {
@@ -162,7 +157,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _addCustomerMarkers() {
-    for (final customer in _filteredCustomers) {
+    for (final customer in _customers) {
       if (customer.mapCoords.isNotEmpty) {
         try {
           final coords = customer.mapCoords.split(',');
@@ -361,13 +356,17 @@ class _MapPageState extends State<MapPage> {
     try {
       final hasActiveSession = await _checkActiveSessionUseCase();
       if (hasActiveSession) {
-        final session = await getIt<WorkingSessionRepository>().getCurrentSession();
+        final session =
+            await getIt<WorkingSessionRepository>().getCurrentSession();
         if (mounted) {
           setState(() {
             _activeSession = true;
-            _sessionStartTime = session != null 
-              ? DateTime.fromMillisecondsSinceEpoch(session.startTimestamp)
-              : null;
+            _sessionStartTime =
+                session != null
+                    ? DateTime.fromMillisecondsSinceEpoch(
+                      session.startTimestamp,
+                    )
+                    : null;
           });
         }
       } else {
@@ -391,11 +390,14 @@ class _MapPageState extends State<MapPage> {
         // Verify session started successfully
         final hasActiveSession = await _checkActiveSessionUseCase();
         if (hasActiveSession) {
-          final session = await getIt<WorkingSessionRepository>().getCurrentSession();
+          final session =
+              await getIt<WorkingSessionRepository>().getCurrentSession();
           if (session != null) {
             setState(() {
               _activeSession = true;
-              _sessionStartTime = DateTime.fromMillisecondsSinceEpoch(session.startTimestamp);
+              _sessionStartTime = DateTime.fromMillisecondsSinceEpoch(
+                session.startTimestamp,
+              );
             });
             _hideCustomerInfo();
             ScaffoldMessenger.of(context).showSnackBar(
@@ -550,58 +552,6 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  void _onSearch(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _filteredCustomers = _customers;
-      } else {
-        _filteredCustomers =
-            _customers.where((customer) {
-              final name = customer.customerName.toLowerCase();
-              final code = customer.customerCode.toLowerCase();
-              final searchQuery = query.toLowerCase();
-              return name.contains(searchQuery) || code.contains(searchQuery);
-            }).toList();
-      }
-      _updateMarkersForSearch();
-    });
-  }
-
-  void _updateMarkersForSearch() {
-    _markers.clear();
-    for (final customer in _filteredCustomers) {
-      if (customer.mapCoords.isNotEmpty) {
-        try {
-          final coords = customer.mapCoords.split(',');
-          if (coords.length == 2) {
-            final lat = double.parse(coords[0]);
-            final lng = double.parse(coords[1]);
-            final marker = Marker(
-              markerId: MarkerId(customer.customerCode),
-              position: LatLng(lat, lng),
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueRed,
-              ),
-              onTap: () => _showCustomerInfo(customer, context),
-            );
-            _markers.add(marker);
-          }
-        } catch (e) {
-          debugPrint(
-            'Error adding marker for customer ${customer.customerCode}: $e',
-          );
-        }
-      }
-    }
-  }
-
-  void _onSearchClear() {
-    setState(() {
-      _filteredCustomers = _customers;
-      _updateMarkersForSearch();
-    });
-  }
-
   Widget _buildCustomerInfoCard(CustomerEntity customer) {
     return Card(
       elevation: 4,
@@ -684,20 +634,44 @@ class _MapPageState extends State<MapPage> {
                     style: _mapStyle,
                     zoomControlsEnabled: false,
                   ),
-                  Column(
-                    children: [
-                      SizedBox(height: 100),
-                      SearchBarWidget(
-                        controller: _searchController,
-                        onSearch: _onSearch,
-                        onClear: _onSearchClear,
-                        topPosition: 0,
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
                       ),
-                      SessionClockWidget(
-                        isSessionActive: _activeSession,
-                        sessionStartTime: _sessionStartTime,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.search,
+                                color: AppColors.primary,
+                              ),
+                              onPressed: () {
+                                // TODO: Navigate to search screen
+                              },
+                            ),
+                          ),
+                          SessionClockWidget(
+                            isSessionActive: _activeSession,
+                            sessionStartTime: _sessionStartTime,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                   if (_overlayEntry == null && _selectedCustomer != null)
                     Positioned(
