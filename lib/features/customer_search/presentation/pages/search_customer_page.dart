@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import '../../../../database/customer_table.dart';
 import '../../../../core/di/service_locator.dart';
@@ -9,6 +10,7 @@ import '../bloc/customer_search_bloc.dart';
 import '../bloc/customer_search_event.dart';
 import '../bloc/customer_search_state.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/app_localizations.dart';
 
 class SearchCustomerPage extends StatefulWidget {
   const SearchCustomerPage({super.key});
@@ -25,7 +27,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
   @override
   void initState() {
     super.initState();
-    context.read<CustomerSearchBloc>().add(const LoadInitialData());
+    context.read<CustomerSearchBloc>().add(const SwitchCustomerList(showTodayCustomers: true));
   }
 
   @override
@@ -45,6 +47,22 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
             ),
           );
     });
+  }
+
+  void _onTabChanged(bool showTodayCustomers) {
+    if (_showTodayCustomers == showTodayCustomers) return;
+    
+    setState(() {
+      _showTodayCustomers = showTodayCustomers;
+    });
+
+    if (_searchController.text.isEmpty) {
+      context.read<CustomerSearchBloc>().add(
+        SwitchCustomerList(showTodayCustomers: showTodayCustomers),
+      );
+    } else {
+      _onSearchChanged(_searchController.text);
+    }
   }
 
   @override
@@ -91,12 +109,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: !_showTodayCustomers ? () {
-                            setState(() {
-                              _showTodayCustomers = true;
-                            });
-                            _onSearchChanged(_searchController.text);
-                          } : null,
+                          onTap: _showTodayCustomers ? null : () => _onTabChanged(true),
                           child: Container(
                             alignment: Alignment.center,
                             child: AnimatedDefaultTextStyle(
@@ -104,29 +117,30 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
                               style: TextStyle(
                                 fontSize: 13,
                                 color: _showTodayCustomers ? AppColors.primary : AppColors.background,
+                                fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
                               ),
-                              child: const Text('Today Customers'),
+                              child: Text(
+                                AppLocalizations.of(context).todayCustomersTab,
+                              ),
                             ),
                           ),
                         ),
                       ),
                       Expanded(
                         child: GestureDetector(
-                          onTap: _showTodayCustomers ? () {
-                            setState(() {
-                              _showTodayCustomers = false;
-                            });
-                            _onSearchChanged(_searchController.text);
-                          } : null,
+                          onTap: _showTodayCustomers ? () => _onTabChanged(false) : null,
                           child: Container(
                             alignment: Alignment.center,
                             child: AnimatedDefaultTextStyle(
                               duration: const Duration(milliseconds: 300),
                               style: TextStyle(
                                 fontSize: 13,
-                                color: _showTodayCustomers ? AppColors.background : AppColors.primary,
+                                color: !_showTodayCustomers ? AppColors.primary : AppColors.background,
+                                fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
                               ),
-                              child: const Text('Customers'),
+                              child: Text(
+                                AppLocalizations.of(context).customersTab,
+                              ),
                             ),
                           ),
                         ),
@@ -142,17 +156,30 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF3A5DA3),
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(50),
               ),
               child: TextField(
                 controller: _searchController,
                 onChanged: _onSearchChanged,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Search',
+                  fillColor: AppColors.primaryDark,
+                  filled: true,
+                  hintText: AppLocalizations.of(context)!.searchForClient,
                   hintStyle: const TextStyle(color: Colors.white70),
                   prefixIcon: const Icon(Icons.search, color: Colors.white70),
-                  border: InputBorder.none,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide.none,
+                  ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 15,
@@ -161,6 +188,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
               ),
             ),
           ),
+          const SizedBox(height: 8),
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
@@ -201,31 +229,85 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
                                 child: ListTile(
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 16,
-                                    vertical: 8,
+                                    vertical: 12,
                                   ),
-                                  title: Text(
-                                    customer.customerName,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+                                  title: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        customer.customerName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      _buildInfoRow(
+                                        Icons.location_on_outlined,
+                                        AppLocalizations.of(context)!.address,
+                                        customer.address?.isNotEmpty == true ? customer.address! : AppLocalizations.of(context)!.notExists,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      _buildInfoRow(
+                                        Icons.phone_outlined,
+                                        AppLocalizations.of(context)!.phone,
+                                        customer.contactPhone?.isNotEmpty == true ? customer.contactPhone! : AppLocalizations.of(context)!.notExists,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          if (customer.mapCoords != null)
+                                            Container(
+                                              height: 36,
+                                              decoration: BoxDecoration(
+                                                color: AppColors.primary.withOpacity(0.1),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: IconButton(
+                                                onPressed: () async {
+                                                  final coords = customer.mapCoords!.split(',');
+                                                  if (coords.length == 2) {
+                                                    final lat = double.tryParse(coords[0]);
+                                                    final lng = double.tryParse(coords[1]);
+                                                    if (lat != null && lng != null) {
+                                                      final url = Uri.parse(
+                                                        'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+                                                      );
+                                                      if (await canLaunchUrl(url)) {
+                                                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                      }
+                                                    }
+                                                  }
+                                                },
+                                                icon: Icon(
+                                                  Icons.directions,
+                                                  color: AppColors.primary,
+                                                  size: 20,
+                                                ),
+                                              ),
+                                            ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            height: 36,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primary.withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: IconButton(
+                                              onPressed: () {
+                                                Navigator.pop(context, customer);
+                                              },
+                                              icon: Icon(
+                                                Icons.play_arrow_rounded,
+                                                color: AppColors.primary,
+                                                size: 20,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  subtitle: Text(
-                                    'Customer details',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  trailing: Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[200],
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  onTap: () => Navigator.pop(context, customer),
                                 ),
                               );
                             },
@@ -240,6 +322,36 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: Colors.grey[600],
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

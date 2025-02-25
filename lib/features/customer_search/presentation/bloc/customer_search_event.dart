@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 @immutable
-sealed class CustomerSearchEvent {
+abstract class CustomerSearchEvent {
   const CustomerSearchEvent();
 }
 
@@ -16,5 +16,13 @@ class SearchQueryChanged extends CustomerSearchEvent {
   const SearchQueryChanged({
     required this.query,
     required this.searchInToday,
+  });
+}
+
+class SwitchCustomerList extends CustomerSearchEvent {
+  final bool showTodayCustomers;
+
+  const SwitchCustomerList({
+    required this.showTodayCustomers,
   });
 }

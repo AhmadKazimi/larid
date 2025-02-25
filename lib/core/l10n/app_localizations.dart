@@ -466,6 +466,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Today\'s Customers'**
   String get todayCustomers;
+
+  /// No description provided for @notExists.
+  ///
+  /// In en, this message translates to:
+  /// **'Not exists'**
+  String get notExists;
+
+  /// No description provided for @todayCustomersTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Customers'**
+  String get todayCustomersTab;
+
+  /// No description provided for @customersTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers'**
+  String get customersTab;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

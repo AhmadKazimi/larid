@@ -119,7 +119,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get dontClosePage => 'لا تغلق هذه الصفحة حتى تكتمل المزامنة';
 
   @override
-  String get searchForClient => 'البحث عن عميل...';
+  String get searchForClient => 'البحث عن عميل';
 
   @override
   String get sessionEnded => 'تم إنهاء الجلسة';
@@ -188,11 +188,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get years => 'سنة';
 
   @override
-  String get noLocationAvailable => 'No location available for this customer';
+  String get noLocationAvailable => 'لا يوجد موقع متاح لهذا العميل';
 
   @override
-  String get invalidCoordinates => 'Invalid coordinates format';
+  String get invalidCoordinates => 'تنسيق إحداثيات غير صالح';
 
   @override
-  String get todayCustomers => 'Today\'s Customers';
+  String get todayCustomers => 'عملاء اليوم';
+
+  @override
+  String get notExists => 'غير موجود';
+
+  @override
+  String get todayCustomersTab => 'عملاء اليوم';
+
+  @override
+  String get customersTab => 'العملاء';
 }

@@ -195,4 +195,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todayCustomers => 'Today\'s Customers';
+
+  @override
+  String get notExists => 'Not exists';
+
+  @override
+  String get todayCustomersTab => 'Today\'s Customers';
+
+  @override
+  String get customersTab => 'Customers';
 }

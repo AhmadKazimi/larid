@@ -79,5 +79,8 @@
     "sessionEnded": "Session ended",
     "noLocationAvailable": "No location available for this customer",
     "invalidCoordinates": "Invalid coordinates format",
-    "todayCustomers": "Today's Customers"
+    "todayCustomers": "Today's Customers",
+    "notExists": "Not exists",
+    "todayCustomersTab": "Today's Customers",
+    "customersTab": "Customers"
 }
