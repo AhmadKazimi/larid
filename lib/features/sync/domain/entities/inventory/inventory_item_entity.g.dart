@@ -16,6 +16,7 @@ _$InventoryItemEntityImpl _$$InventoryItemEntityImplFromJson(
   taxCode: json['sTax_cd'] as String,
   sellUnitCode: json['sSellUnit_cd'] as String,
   sellUnitPrice: (json['mSellUnitPrice_amt'] as num).toDouble(),
+  qty: (json['Qty'] as num).toInt(),
   createdAt: json['created_at'] as String?,
 );
 
@@ -29,5 +30,6 @@ Map<String, dynamic> _$$InventoryItemEntityImplToJson(
   'sTax_cd': instance.taxCode,
   'sSellUnit_cd': instance.sellUnitCode,
   'mSellUnitPrice_amt': instance.sellUnitPrice,
+  'Qty': instance.qty,
   'created_at': instance.createdAt,
 };

@@ -13,6 +13,7 @@ class InventoryItemEntity with _$InventoryItemEntity {
     @JsonKey(name: 'sTax_cd') required String taxCode,
     @JsonKey(name: 'sSellUnit_cd') required String sellUnitCode,
     @JsonKey(name: 'mSellUnitPrice_amt') required double sellUnitPrice,
+    @JsonKey(name: 'Qty') required int qty,
     @JsonKey(name: 'created_at') String? createdAt,
   }) = _InventoryItemEntity;
 

@@ -35,6 +35,8 @@ mixin _$InventoryItemEntity {
   String get sellUnitCode => throw _privateConstructorUsedError;
   @JsonKey(name: 'mSellUnitPrice_amt')
   double get sellUnitPrice => throw _privateConstructorUsedError;
+  @JsonKey(name: 'Qty')
+  int get qty => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   String? get createdAt => throw _privateConstructorUsedError;
 
@@ -63,6 +65,7 @@ abstract class $InventoryItemEntityCopyWith<$Res> {
     @JsonKey(name: 'sTax_cd') String taxCode,
     @JsonKey(name: 'sSellUnit_cd') String sellUnitCode,
     @JsonKey(name: 'mSellUnitPrice_amt') double sellUnitPrice,
+    @JsonKey(name: 'Qty') int qty,
     @JsonKey(name: 'created_at') String? createdAt,
   });
 }
@@ -89,6 +92,7 @@ class _$InventoryItemEntityCopyWithImpl<$Res, $Val extends InventoryItemEntity>
     Object? taxCode = null,
     Object? sellUnitCode = null,
     Object? sellUnitPrice = null,
+    Object? qty = null,
     Object? createdAt = freezed,
   }) {
     return _then(
@@ -128,6 +132,11 @@ class _$InventoryItemEntityCopyWithImpl<$Res, $Val extends InventoryItemEntity>
                     ? _value.sellUnitPrice
                     : sellUnitPrice // ignore: cast_nullable_to_non_nullable
                         as double,
+            qty:
+                null == qty
+                    ? _value.qty
+                    : qty // ignore: cast_nullable_to_non_nullable
+                        as int,
             createdAt:
                 freezed == createdAt
                     ? _value.createdAt
@@ -156,6 +165,7 @@ abstract class _$$InventoryItemEntityImplCopyWith<$Res>
     @JsonKey(name: 'sTax_cd') String taxCode,
     @JsonKey(name: 'sSellUnit_cd') String sellUnitCode,
     @JsonKey(name: 'mSellUnitPrice_amt') double sellUnitPrice,
+    @JsonKey(name: 'Qty') int qty,
     @JsonKey(name: 'created_at') String? createdAt,
   });
 }
@@ -181,6 +191,7 @@ class __$$InventoryItemEntityImplCopyWithImpl<$Res>
     Object? taxCode = null,
     Object? sellUnitCode = null,
     Object? sellUnitPrice = null,
+    Object? qty = null,
     Object? createdAt = freezed,
   }) {
     return _then(
@@ -220,6 +231,11 @@ class __$$InventoryItemEntityImplCopyWithImpl<$Res>
                 ? _value.sellUnitPrice
                 : sellUnitPrice // ignore: cast_nullable_to_non_nullable
                     as double,
+        qty:
+            null == qty
+                ? _value.qty
+                : qty // ignore: cast_nullable_to_non_nullable
+                    as int,
         createdAt:
             freezed == createdAt
                 ? _value.createdAt
@@ -241,6 +257,7 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
     @JsonKey(name: 'sTax_cd') required this.taxCode,
     @JsonKey(name: 'sSellUnit_cd') required this.sellUnitCode,
     @JsonKey(name: 'mSellUnitPrice_amt') required this.sellUnitPrice,
+    @JsonKey(name: 'Qty') required this.qty,
     @JsonKey(name: 'created_at') this.createdAt,
   });
 
@@ -269,12 +286,15 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
   @JsonKey(name: 'mSellUnitPrice_amt')
   final double sellUnitPrice;
   @override
+  @JsonKey(name: 'Qty')
+  final int qty;
+  @override
   @JsonKey(name: 'created_at')
   final String? createdAt;
 
   @override
   String toString() {
-    return 'InventoryItemEntity(id: $id, itemCode: $itemCode, description: $description, taxableFlag: $taxableFlag, taxCode: $taxCode, sellUnitCode: $sellUnitCode, sellUnitPrice: $sellUnitPrice, createdAt: $createdAt)';
+    return 'InventoryItemEntity(id: $id, itemCode: $itemCode, description: $description, taxableFlag: $taxableFlag, taxCode: $taxCode, sellUnitCode: $sellUnitCode, sellUnitPrice: $sellUnitPrice, qty: $qty, createdAt: $createdAt)';
   }
 
   @override
@@ -294,6 +314,7 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
                 other.sellUnitCode == sellUnitCode) &&
             (identical(other.sellUnitPrice, sellUnitPrice) ||
                 other.sellUnitPrice == sellUnitPrice) &&
+            (identical(other.qty, qty) || other.qty == qty) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -309,6 +330,7 @@ class _$InventoryItemEntityImpl implements _InventoryItemEntity {
     taxCode,
     sellUnitCode,
     sellUnitPrice,
+    qty,
     createdAt,
   );
 
@@ -338,6 +360,7 @@ abstract class _InventoryItemEntity implements InventoryItemEntity {
     @JsonKey(name: 'sTax_cd') required final String taxCode,
     @JsonKey(name: 'sSellUnit_cd') required final String sellUnitCode,
     @JsonKey(name: 'mSellUnitPrice_amt') required final double sellUnitPrice,
+    @JsonKey(name: 'Qty') required final int qty,
     @JsonKey(name: 'created_at') final String? createdAt,
   }) = _$InventoryItemEntityImpl;
 
@@ -365,6 +388,9 @@ abstract class _InventoryItemEntity implements InventoryItemEntity {
   @override
   @JsonKey(name: 'mSellUnitPrice_amt')
   double get sellUnitPrice;
+  @override
+  @JsonKey(name: 'Qty')
+  int get qty;
   @override
   @JsonKey(name: 'created_at')
   String? get createdAt;

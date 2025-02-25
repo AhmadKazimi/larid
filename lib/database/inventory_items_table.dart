@@ -14,6 +14,7 @@ class InventoryItemsTable {
       sTax_cd TEXT NOT NULL,
       sSellUnit_cd TEXT NOT NULL,
       mSellUnitPrice_amt REAL NOT NULL,
+      Qty INTEGER NOT NULL,
       created_at TEXT
     )
   ''';
@@ -39,6 +40,7 @@ class InventoryItemsTable {
             'sTax_cd': item.taxCode,
             'sSellUnit_cd': item.sellUnitCode,
             'mSellUnitPrice_amt': item.sellUnitPrice,
+            'Qty': item.qty,
             'created_at': item.createdAt ?? DateTime.now().toIso8601String(),
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
