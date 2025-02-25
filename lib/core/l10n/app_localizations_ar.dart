@@ -186,4 +186,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get years => 'سنة';
+
+  @override
+  String get noLocationAvailable => 'No location available for this customer';
+
+  @override
+  String get invalidCoordinates => 'Invalid coordinates format';
+
+  @override
+  String get todayCustomers => 'Today\'s Customers';
 }

@@ -19,6 +19,7 @@ import 'package:larid/core/widgets/custom_button.dart';
 import '../widgets/session_clock_widget.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -44,6 +45,7 @@ class _MapPageState extends State<MapPage> {
       getIt<CheckActiveSessionUseCase>();
   final StartSessionUseCase _startSessionUseCase = getIt<StartSessionUseCase>();
   final EndSessionUseCase _endSessionUseCase = getIt<EndSessionUseCase>();
+  late final AppLocalizations l10n;
 
   @override
   void initState() {
@@ -52,6 +54,12 @@ class _MapPageState extends State<MapPage> {
     _getCurrentLocation();
     _loadCustomers();
     _checkWorkingSession();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    l10n = AppLocalizations.of(context);
   }
 
   @override
@@ -103,7 +111,7 @@ class _MapPageState extends State<MapPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                AppLocalizations.of(context).locationServicesRequired,
+                l10n.locationServicesRequired,
               ),
               duration: const Duration(seconds: 3),
             ),
@@ -121,7 +129,7 @@ class _MapPageState extends State<MapPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                AppLocalizations.of(context).locationPermissionRequired,
+                l10n.locationPermissionRequired,
               ),
               duration: const Duration(seconds: 3),
             ),
@@ -158,9 +166,9 @@ class _MapPageState extends State<MapPage> {
 
   void _addCustomerMarkers() {
     for (final customer in _customers) {
-      if (customer.mapCoords.isNotEmpty) {
+      if (customer.mapCoords?.isNotEmpty ?? false) {
         try {
-          final coords = customer.mapCoords.split(',');
+          final coords = customer.mapCoords!.split(',');
           if (coords.length == 2) {
             final lat = double.parse(coords[0]);
             final lng = double.parse(coords[1]);
@@ -185,26 +193,42 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String? value) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.secondary),
+        Icon(icon, size: 20, color: AppColors.primary),
         const SizedBox(width: 8),
         Text(
-          '$label: ',
+          label,
           style: const TextStyle(
+            color: Colors.black54,
             fontWeight: FontWeight.w500,
-            color: AppColors.secondaryDark,
           ),
         ),
+        const SizedBox(width: 8),
         Expanded(
-          child: Text(value, style: const TextStyle(color: Colors.black87)),
+          child: Text(
+            value ?? '-',
+            style: const TextStyle(color: Colors.black87),
+          ),
         ),
       ],
     );
   }
 
-  Future<void> _openInGoogleMaps(String mapCoords) async {
+  Future<void> _openInGoogleMaps(String? mapCoords) async {
+    if (mapCoords == null || mapCoords.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.noLocationAvailable),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
     try {
       final coords = mapCoords.split(',');
       if (coords.length == 2) {
@@ -220,9 +244,7 @@ class _MapPageState extends State<MapPage> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                  AppLocalizations.of(context).cannotOpenGoogleMaps,
-                ),
+                content: Text(l10n.cannotOpenGoogleMaps),
                 duration: const Duration(seconds: 3),
               ),
             );
@@ -230,11 +252,10 @@ class _MapPageState extends State<MapPage> {
         }
       }
     } catch (e) {
-      debugPrint('Error opening Google Maps: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).cannotOpenGoogleMaps),
+            content: Text(l10n.invalidCoordinates),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -313,7 +334,9 @@ class _MapPageState extends State<MapPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () => _openInGoogleMaps(customer.mapCoords),
+                        onPressed: customer.mapCoords?.isNotEmpty ?? false
+                            ? () => _openInGoogleMaps(customer.mapCoords)
+                            : null,
                         icon: const Icon(Icons.directions),
                         label: Text(l10n.getDirections),
                         style: ElevatedButton.styleFrom(
@@ -327,7 +350,7 @@ class _MapPageState extends State<MapPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                      SizedBox(
+                    SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () => {},
@@ -603,7 +626,7 @@ class _MapPageState extends State<MapPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context).customerCode +
+              l10n.customerCode +
                   ': ${customer.customerCode}',
               style: GoogleFonts.notoKufiArabic(
                 fontSize: 14,
@@ -616,7 +639,7 @@ class _MapPageState extends State<MapPage> {
               children: [
                 CustomButton(
                   onPressed: () => _startSession(),
-                  text: AppLocalizations.of(context).startSession,
+                  text: l10n.startSession,
                   isPrimary: true,
                 ),
               ],
@@ -629,76 +652,71 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
     return Scaffold(
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Stack(
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition,
+              zoom: 20,
+            ),
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            markers: _markers,
+            onTap: (_) => _hideCustomerInfo(),
+            mapType: MapType.normal,
+            style: _mapStyle,
+            zoomControlsEnabled: false,
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GoogleMap(
-                    onMapCreated: _onMapCreated,
-                    initialCameraPosition: CameraPosition(
-                      target: _currentPosition,
-                      zoom: 20,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: false,
-                    markers: _markers,
-                    onTap: (_) => _hideCustomerInfo(),
-                    mapType: MapType.normal,
-                    style: _mapStyle,
-                    zoomControlsEnabled: false,
-                  ),
-                  SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.search,
+                        color: AppColors.primary,
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.search,
-                                color: AppColors.primary,
-                              ),
-                              onPressed: () {
-                                // TODO: Navigate to search screen
-                              },
-                            ),
-                          ),
-                          SessionClockWidget(
-                            isSessionActive: _activeSession,
-                            sessionStartTime: _sessionStartTime,
-                          ),
-                        ],
-                      ),
+                      onPressed: () {
+                        context.push('/customer-search');
+                      },
                     ),
                   ),
-                  if (_overlayEntry == null && _selectedCustomer != null)
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                      child: _buildCustomerInfoCard(_selectedCustomer!),
-                    ),
+                  SessionClockWidget(
+                    isSessionActive: _activeSession,
+                    sessionStartTime: _sessionStartTime,
+                  ),
                 ],
               ),
+            ),
+          ),
+          if (_overlayEntry == null && _selectedCustomer != null)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: _buildCustomerInfoCard(_selectedCustomer!),
+            ),
+        ],
+      ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,

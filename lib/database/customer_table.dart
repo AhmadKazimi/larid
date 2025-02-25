@@ -73,11 +73,48 @@ class CustomerTable {
     final List<Map<String, dynamic>> maps = await db.query(salesrepCustomerTableName);
     
     return maps.map((map) => CustomerEntity(
-      customerCode: map['customerCode'] as String,
-      customerName: map['customerName'] as String,
-      address: map['address'] as String,
-      contactPhone: map['contactPhone'] as String,
-      mapCoords: map['mapCoords'] as String,
+      customerCode: map['customerCode'] as String? ?? '',
+      customerName: map['customerName'] as String? ?? '',
+      address: map['address'] as String?,
+      contactPhone: map['contactPhone'] as String?,
+      mapCoords: map['mapCoords'] as String?,
     )).toList();
+  }
+
+  Future<List<CustomerEntity>> searchCustomers(String query) async {
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableName,
+      where: 'customerName LIKE ? OR customerCode LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+    );
+
+    return maps.map((map) => CustomerEntity.fromJson({
+      'sCustomer_cd': map['customerCode'],
+      'sCustomer_nm': map['customerName'],
+      'sAddress1': map['address'],
+      'sContactPhone': map['contactPhone'],
+      'sMapCoords': map['mapCoords'],
+    })).toList();
+  }
+
+  Future<List<CustomerEntity>> searchSalesRepCustomers(String query) async {
+    final List<Map<String, dynamic>> maps = await db.query(
+      salesrepCustomerTableName,
+      where: 'customerName LIKE ? OR customerCode LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+    );
+
+    return maps.map((map) => CustomerEntity.fromJson({
+      'sCustomer_cd': map['customerCode'],
+      'sCustomer_nm': map['customerName'],
+      'sAddress1': map['address'],
+      'sContactPhone': map['contactPhone'],
+      'sMapCoords': map['mapCoords'],
+    })).toList();
+  }
+
+  Future<List<CustomerEntity>> getAllCustomers() async {
+    final List<Map<String, dynamic>> maps = await db.query(tableName);
+    return maps.map((map) => CustomerEntity.fromJson(map)).toList();
   }
 }

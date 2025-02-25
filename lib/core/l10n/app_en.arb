@@ -76,6 +76,8 @@
     "years": "Years",
     "endSession": "End Session",
     "end": "End",
-    "sessionEnded": "Session ended"
-    
+    "sessionEnded": "Session ended",
+    "noLocationAvailable": "No location available for this customer",
+    "invalidCoordinates": "Invalid coordinates format",
+    "todayCustomers": "Today's Customers"
 }

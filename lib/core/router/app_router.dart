@@ -1,11 +1,14 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:larid/features/sync/presentation/pages/sync_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/map/presentation/pages/map_page.dart';
 import '../../features/api_config/presentation/pages/api_base_url_page.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/customer_search/presentation/pages/search_customer_page.dart';
+import '../../features/customer_search/presentation/bloc/customer_search_bloc.dart';
 import '../../database/user_table.dart';
 import '../di/service_locator.dart';
 import '../storage/shared_prefs.dart';
@@ -29,6 +32,7 @@ class AppRouter {
         final isLoginPage = state.matchedLocation == RouteConstants.login;
         final isSyncPage = state.matchedLocation == RouteConstants.sync;
         final isMapPage = state.matchedLocation == RouteConstants.map;
+        final isCustomerSearchPage = state.matchedLocation == RouteConstants.customerSearch;
 
         // If base URL is not set, redirect to API config page
         if ((baseUrl == null || baseUrl.isEmpty) && !isApiConfigPage) {
@@ -48,8 +52,8 @@ class AppRouter {
 
           // If logged in but not on a protected page
           if (isLoggedIn) {
-            // If data is synced and not on map page, go to map
-            if (isSynced && !isMapPage) {
+            // If data is synced and not on map or customer search page, go to map
+            if (isSynced && !isMapPage && !isCustomerSearchPage) {
               return RouteConstants.map;
             }
             // If data is not synced and not on sync page, go to sync
@@ -65,13 +69,6 @@ class AppRouter {
       }
     },
     routes: [
-      // Login Route
-      GoRoute(
-        path: RouteConstants.login,
-        name: 'login',
-        builder: (context, state) => const LoginPage(),
-      ),
-
       // API Config Route
       GoRoute(
         path: RouteConstants.apiConfig,
@@ -79,11 +76,18 @@ class AppRouter {
         builder: (context, state) => const ApiBaseUrlPage(),
       ),
 
-      // Home Route
+      // Login Route
       GoRoute(
-        path: RouteConstants.home,
-        name: 'home',
-        builder: (context, state) => const HomePage(),
+        path: RouteConstants.login,
+        name: 'login',
+        builder: (context, state) => const LoginPage(),
+      ),
+
+      // Sync Route
+      GoRoute(
+        path: RouteConstants.sync,
+        name: 'sync',
+        builder: (context, state) => const SyncPage(),
       ),
 
       // Map Route
@@ -93,11 +97,28 @@ class AppRouter {
         builder: (context, state) => const MapPage(),
       ),
 
-      // Sync Route
+      // Customer Search Route
       GoRoute(
-        path: RouteConstants.sync,
-        name: 'sync',
-        builder: (context, state) => const SyncPage(),
+        path: RouteConstants.customerSearch,
+        name: 'customer-search',
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: BlocProvider(
+            create: (context) => CustomerSearchBloc(),
+            child: const SearchCustomerPage(),
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: animation.drive(
+                Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).chain(CurveTween(curve: Curves.easeInOut)),
+              ),
+              child: child,
+            );
+          },
+        ),
       ),
     ],
     errorBuilder: (context, state) =>

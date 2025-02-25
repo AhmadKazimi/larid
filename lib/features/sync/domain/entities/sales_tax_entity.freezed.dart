@@ -23,11 +23,11 @@ SalesTaxEntity _$SalesTaxEntityFromJson(Map<String, dynamic> json) {
 mixin _$SalesTaxEntity {
   @JsonKey(name: 'id')
   int? get id => throw _privateConstructorUsedError;
-  @JsonKey(name: 'sTax_cd', defaultValue: '')
+  @JsonKey(name: 'sTax_cd')
   String get taxCode => throw _privateConstructorUsedError;
-  @JsonKey(name: 'sTax_desc', defaultValue: '')
+  @JsonKey(name: 'sTax_desc')
   String get description => throw _privateConstructorUsedError;
-  @JsonKey(name: 'mTax_rate', defaultValue: 0.0)
+  @JsonKey(name: 'mTax_rate')
   double get taxRate => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   String? get createdAt => throw _privateConstructorUsedError;
@@ -51,9 +51,9 @@ abstract class $SalesTaxEntityCopyWith<$Res> {
   @useResult
   $Res call({
     @JsonKey(name: 'id') int? id,
-    @JsonKey(name: 'sTax_cd', defaultValue: '') String taxCode,
-    @JsonKey(name: 'sTax_desc', defaultValue: '') String description,
-    @JsonKey(name: 'mTax_rate', defaultValue: 0.0) double taxRate,
+    @JsonKey(name: 'sTax_cd') String taxCode,
+    @JsonKey(name: 'sTax_desc') String description,
+    @JsonKey(name: 'mTax_rate') double taxRate,
     @JsonKey(name: 'created_at') String? createdAt,
   });
 }
@@ -123,9 +123,9 @@ abstract class _$$SalesTaxEntityImplCopyWith<$Res>
   @useResult
   $Res call({
     @JsonKey(name: 'id') int? id,
-    @JsonKey(name: 'sTax_cd', defaultValue: '') String taxCode,
-    @JsonKey(name: 'sTax_desc', defaultValue: '') String description,
-    @JsonKey(name: 'mTax_rate', defaultValue: 0.0) double taxRate,
+    @JsonKey(name: 'sTax_cd') String taxCode,
+    @JsonKey(name: 'sTax_desc') String description,
+    @JsonKey(name: 'mTax_rate') double taxRate,
     @JsonKey(name: 'created_at') String? createdAt,
   });
 }
@@ -187,9 +187,9 @@ class __$$SalesTaxEntityImplCopyWithImpl<$Res>
 class _$SalesTaxEntityImpl implements _SalesTaxEntity {
   const _$SalesTaxEntityImpl({
     @JsonKey(name: 'id') this.id,
-    @JsonKey(name: 'sTax_cd', defaultValue: '') required this.taxCode,
-    @JsonKey(name: 'sTax_desc', defaultValue: '') required this.description,
-    @JsonKey(name: 'mTax_rate', defaultValue: 0.0) required this.taxRate,
+    @JsonKey(name: 'sTax_cd') required this.taxCode,
+    @JsonKey(name: 'sTax_desc') required this.description,
+    @JsonKey(name: 'mTax_rate') required this.taxRate,
     @JsonKey(name: 'created_at') this.createdAt,
   });
 
@@ -200,13 +200,13 @@ class _$SalesTaxEntityImpl implements _SalesTaxEntity {
   @JsonKey(name: 'id')
   final int? id;
   @override
-  @JsonKey(name: 'sTax_cd', defaultValue: '')
+  @JsonKey(name: 'sTax_cd')
   final String taxCode;
   @override
-  @JsonKey(name: 'sTax_desc', defaultValue: '')
+  @JsonKey(name: 'sTax_desc')
   final String description;
   @override
-  @JsonKey(name: 'mTax_rate', defaultValue: 0.0)
+  @JsonKey(name: 'mTax_rate')
   final double taxRate;
   @override
   @JsonKey(name: 'created_at')
@@ -256,11 +256,9 @@ class _$SalesTaxEntityImpl implements _SalesTaxEntity {
 abstract class _SalesTaxEntity implements SalesTaxEntity {
   const factory _SalesTaxEntity({
     @JsonKey(name: 'id') final int? id,
-    @JsonKey(name: 'sTax_cd', defaultValue: '') required final String taxCode,
-    @JsonKey(name: 'sTax_desc', defaultValue: '')
-    required final String description,
-    @JsonKey(name: 'mTax_rate', defaultValue: 0.0)
-    required final double taxRate,
+    @JsonKey(name: 'sTax_cd') required final String taxCode,
+    @JsonKey(name: 'sTax_desc') required final String description,
+    @JsonKey(name: 'mTax_rate') required final double taxRate,
     @JsonKey(name: 'created_at') final String? createdAt,
   }) = _$SalesTaxEntityImpl;
 
@@ -271,13 +269,13 @@ abstract class _SalesTaxEntity implements SalesTaxEntity {
   @JsonKey(name: 'id')
   int? get id;
   @override
-  @JsonKey(name: 'sTax_cd', defaultValue: '')
+  @JsonKey(name: 'sTax_cd')
   String get taxCode;
   @override
-  @JsonKey(name: 'sTax_desc', defaultValue: '')
+  @JsonKey(name: 'sTax_desc')
   String get description;
   @override
-  @JsonKey(name: 'mTax_rate', defaultValue: 0.0)
+  @JsonKey(name: 'mTax_rate')
   double get taxRate;
   @override
   @JsonKey(name: 'created_at')

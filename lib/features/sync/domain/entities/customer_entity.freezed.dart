@@ -23,9 +23,9 @@ CustomerEntity _$CustomerEntityFromJson(Map<String, dynamic> json) {
 mixin _$CustomerEntity {
   String get customerCode => throw _privateConstructorUsedError;
   String get customerName => throw _privateConstructorUsedError;
-  String get address => throw _privateConstructorUsedError;
-  String get contactPhone => throw _privateConstructorUsedError;
-  String get mapCoords => throw _privateConstructorUsedError;
+  String? get address => throw _privateConstructorUsedError;
+  String? get contactPhone => throw _privateConstructorUsedError;
+  String? get mapCoords => throw _privateConstructorUsedError;
 
   /// Serializes this CustomerEntity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -47,9 +47,9 @@ abstract class $CustomerEntityCopyWith<$Res> {
   $Res call({
     String customerCode,
     String customerName,
-    String address,
-    String contactPhone,
-    String mapCoords,
+    String? address,
+    String? contactPhone,
+    String? mapCoords,
   });
 }
 
@@ -70,9 +70,9 @@ class _$CustomerEntityCopyWithImpl<$Res, $Val extends CustomerEntity>
   $Res call({
     Object? customerCode = null,
     Object? customerName = null,
-    Object? address = null,
-    Object? contactPhone = null,
-    Object? mapCoords = null,
+    Object? address = freezed,
+    Object? contactPhone = freezed,
+    Object? mapCoords = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -87,20 +87,20 @@ class _$CustomerEntityCopyWithImpl<$Res, $Val extends CustomerEntity>
                     : customerName // ignore: cast_nullable_to_non_nullable
                         as String,
             address:
-                null == address
+                freezed == address
                     ? _value.address
                     : address // ignore: cast_nullable_to_non_nullable
-                        as String,
+                        as String?,
             contactPhone:
-                null == contactPhone
+                freezed == contactPhone
                     ? _value.contactPhone
                     : contactPhone // ignore: cast_nullable_to_non_nullable
-                        as String,
+                        as String?,
             mapCoords:
-                null == mapCoords
+                freezed == mapCoords
                     ? _value.mapCoords
                     : mapCoords // ignore: cast_nullable_to_non_nullable
-                        as String,
+                        as String?,
           )
           as $Val,
     );
@@ -119,9 +119,9 @@ abstract class _$$CustomerEntityImplCopyWith<$Res>
   $Res call({
     String customerCode,
     String customerName,
-    String address,
-    String contactPhone,
-    String mapCoords,
+    String? address,
+    String? contactPhone,
+    String? mapCoords,
   });
 }
 
@@ -141,9 +141,9 @@ class __$$CustomerEntityImplCopyWithImpl<$Res>
   $Res call({
     Object? customerCode = null,
     Object? customerName = null,
-    Object? address = null,
-    Object? contactPhone = null,
-    Object? mapCoords = null,
+    Object? address = freezed,
+    Object? contactPhone = freezed,
+    Object? mapCoords = freezed,
   }) {
     return _then(
       _$CustomerEntityImpl(
@@ -158,20 +158,20 @@ class __$$CustomerEntityImplCopyWithImpl<$Res>
                 : customerName // ignore: cast_nullable_to_non_nullable
                     as String,
         address:
-            null == address
+            freezed == address
                 ? _value.address
                 : address // ignore: cast_nullable_to_non_nullable
-                    as String,
+                    as String?,
         contactPhone:
-            null == contactPhone
+            freezed == contactPhone
                 ? _value.contactPhone
                 : contactPhone // ignore: cast_nullable_to_non_nullable
-                    as String,
+                    as String?,
         mapCoords:
-            null == mapCoords
+            freezed == mapCoords
                 ? _value.mapCoords
                 : mapCoords // ignore: cast_nullable_to_non_nullable
-                    as String,
+                    as String?,
       ),
     );
   }
@@ -183,9 +183,9 @@ class _$CustomerEntityImpl implements _CustomerEntity {
   const _$CustomerEntityImpl({
     required this.customerCode,
     required this.customerName,
-    required this.address,
-    required this.contactPhone,
-    required this.mapCoords,
+    this.address,
+    this.contactPhone,
+    this.mapCoords,
   });
 
   factory _$CustomerEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -196,11 +196,11 @@ class _$CustomerEntityImpl implements _CustomerEntity {
   @override
   final String customerName;
   @override
-  final String address;
+  final String? address;
   @override
-  final String contactPhone;
+  final String? contactPhone;
   @override
-  final String mapCoords;
+  final String? mapCoords;
 
   @override
   String toString() {
@@ -255,9 +255,9 @@ abstract class _CustomerEntity implements CustomerEntity {
   const factory _CustomerEntity({
     required final String customerCode,
     required final String customerName,
-    required final String address,
-    required final String contactPhone,
-    required final String mapCoords,
+    final String? address,
+    final String? contactPhone,
+    final String? mapCoords,
   }) = _$CustomerEntityImpl;
 
   factory _CustomerEntity.fromJson(Map<String, dynamic> json) =
@@ -268,11 +268,11 @@ abstract class _CustomerEntity implements CustomerEntity {
   @override
   String get customerName;
   @override
-  String get address;
+  String? get address;
   @override
-  String get contactPhone;
+  String? get contactPhone;
   @override
-  String get mapCoords;
+  String? get mapCoords;
 
   /// Create a copy of CustomerEntity
   /// with the given fields replaced by the non-null parameter values.

@@ -10,9 +10,9 @@ _$CustomerEntityImpl _$$CustomerEntityImplFromJson(Map<String, dynamic> json) =>
     _$CustomerEntityImpl(
       customerCode: json['customerCode'] as String,
       customerName: json['customerName'] as String,
-      address: json['address'] as String,
-      contactPhone: json['contactPhone'] as String,
-      mapCoords: json['mapCoords'] as String,
+      address: json['address'] as String?,
+      contactPhone: json['contactPhone'] as String?,
+      mapCoords: json['mapCoords'] as String?,
     );
 
 Map<String, dynamic> _$$CustomerEntityImplToJson(

@@ -448,6 +448,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Years'**
   String get years;
+
+  /// No description provided for @noLocationAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No location available for this customer'**
+  String get noLocationAvailable;
+
+  /// No description provided for @invalidCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid coordinates format'**
+  String get invalidCoordinates;
+
+  /// No description provided for @todayCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Customers'**
+  String get todayCustomers;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
