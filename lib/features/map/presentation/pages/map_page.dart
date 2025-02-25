@@ -696,6 +696,7 @@ class _MapPageState extends State<MapPage> {
                         color: AppColors.primary,
                       ),
                       onPressed: () {
+                        _hideCustomerInfo();
                         context.push('/customer-search');
                       },
                     ),
