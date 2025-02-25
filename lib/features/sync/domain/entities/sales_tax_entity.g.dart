@@ -10,8 +10,8 @@ _$SalesTaxEntityImpl _$$SalesTaxEntityImplFromJson(Map<String, dynamic> json) =>
     _$SalesTaxEntityImpl(
       id: (json['id'] as num?)?.toInt(),
       taxCode: json['sTax_cd'] as String,
-      description: json['sTax_desc'] as String,
-      taxRate: (json['mTax_rate'] as num).toDouble(),
+      description: json['sDescription'] as String,
+      taxRate: (json['fTotalTax_pc'] as num).toDouble(),
       createdAt: json['created_at'] as String?,
     );
 
@@ -20,7 +20,7 @@ Map<String, dynamic> _$$SalesTaxEntityImplToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'sTax_cd': instance.taxCode,
-  'sTax_desc': instance.description,
-  'mTax_rate': instance.taxRate,
+  'sDescription': instance.description,
+  'fTotalTax_pc': instance.taxRate,
   'created_at': instance.createdAt,
 };

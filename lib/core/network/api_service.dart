@@ -135,6 +135,7 @@ class ApiService {
         ApiParameters.userid: userid,
         ApiParameters.workspace: workspace,
         ApiParameters.password: password,
+        ApiParameters.warehouse: 'MAIN',
       },
     );
     return List<Map<String, dynamic>>.from(response.data);

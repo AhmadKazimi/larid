@@ -9,8 +9,8 @@ class SalesTaxesTable {
     CREATE TABLE IF NOT EXISTS $tableName (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sTax_cd TEXT NOT NULL,
-      sTax_desc TEXT NOT NULL,
-      mTax_rate REAL NOT NULL,
+      sDescription TEXT NOT NULL,
+      fTotalTax_pc REAL NOT NULL,
       created_at TEXT
     )
   ''';
@@ -34,8 +34,8 @@ class SalesTaxesTable {
           tableName,
           {
             'sTax_cd': tax.taxCode,
-            'sTax_desc': tax.description,
-            'mTax_rate': tax.taxRate,
+            'sDescription': tax.description,
+            'fTotalTax_pc': tax.taxRate,
             'created_at': DateTime.now().toIso8601String(),
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
@@ -58,8 +58,8 @@ class SalesTaxesTable {
       return taxesData.map((tax) => SalesTaxEntity(
         id: tax['id'] as int?,
         taxCode: tax['sTax_cd'] as String,
-        description: tax['sTax_desc'] as String,
-        taxRate: tax['mTax_rate'] as double,
+        description: tax['sDescription'] as String,
+        taxRate: tax['fTotalTax_pc'] as double,
         createdAt: tax['created_at'] as String?,
       )).toList();
     } catch (e) {
@@ -85,8 +85,8 @@ class SalesTaxesTable {
       return SalesTaxEntity(
         id: taxes.first['id'] as int?,
         taxCode: taxes.first['sTax_cd'] as String,
-        description: taxes.first['sTax_desc'] as String,
-        taxRate: taxes.first['mTax_rate'] as double,
+        description: taxes.first['sDescription'] as String,
+        taxRate: taxes.first['fTotalTax_pc'] as double,
         createdAt: taxes.first['created_at'] as String?,
       );
     } catch (e) {

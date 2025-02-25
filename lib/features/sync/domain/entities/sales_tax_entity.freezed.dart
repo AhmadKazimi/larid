@@ -25,9 +25,9 @@ mixin _$SalesTaxEntity {
   int? get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'sTax_cd')
   String get taxCode => throw _privateConstructorUsedError;
-  @JsonKey(name: 'sTax_desc')
+  @JsonKey(name: 'sDescription')
   String get description => throw _privateConstructorUsedError;
-  @JsonKey(name: 'mTax_rate')
+  @JsonKey(name: 'fTotalTax_pc')
   double get taxRate => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   String? get createdAt => throw _privateConstructorUsedError;
@@ -52,8 +52,8 @@ abstract class $SalesTaxEntityCopyWith<$Res> {
   $Res call({
     @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'sTax_cd') String taxCode,
-    @JsonKey(name: 'sTax_desc') String description,
-    @JsonKey(name: 'mTax_rate') double taxRate,
+    @JsonKey(name: 'sDescription') String description,
+    @JsonKey(name: 'fTotalTax_pc') double taxRate,
     @JsonKey(name: 'created_at') String? createdAt,
   });
 }
@@ -124,8 +124,8 @@ abstract class _$$SalesTaxEntityImplCopyWith<$Res>
   $Res call({
     @JsonKey(name: 'id') int? id,
     @JsonKey(name: 'sTax_cd') String taxCode,
-    @JsonKey(name: 'sTax_desc') String description,
-    @JsonKey(name: 'mTax_rate') double taxRate,
+    @JsonKey(name: 'sDescription') String description,
+    @JsonKey(name: 'fTotalTax_pc') double taxRate,
     @JsonKey(name: 'created_at') String? createdAt,
   });
 }
@@ -188,8 +188,8 @@ class _$SalesTaxEntityImpl implements _SalesTaxEntity {
   const _$SalesTaxEntityImpl({
     @JsonKey(name: 'id') this.id,
     @JsonKey(name: 'sTax_cd') required this.taxCode,
-    @JsonKey(name: 'sTax_desc') required this.description,
-    @JsonKey(name: 'mTax_rate') required this.taxRate,
+    @JsonKey(name: 'sDescription') required this.description,
+    @JsonKey(name: 'fTotalTax_pc') required this.taxRate,
     @JsonKey(name: 'created_at') this.createdAt,
   });
 
@@ -203,10 +203,10 @@ class _$SalesTaxEntityImpl implements _SalesTaxEntity {
   @JsonKey(name: 'sTax_cd')
   final String taxCode;
   @override
-  @JsonKey(name: 'sTax_desc')
+  @JsonKey(name: 'sDescription')
   final String description;
   @override
-  @JsonKey(name: 'mTax_rate')
+  @JsonKey(name: 'fTotalTax_pc')
   final double taxRate;
   @override
   @JsonKey(name: 'created_at')
@@ -257,8 +257,8 @@ abstract class _SalesTaxEntity implements SalesTaxEntity {
   const factory _SalesTaxEntity({
     @JsonKey(name: 'id') final int? id,
     @JsonKey(name: 'sTax_cd') required final String taxCode,
-    @JsonKey(name: 'sTax_desc') required final String description,
-    @JsonKey(name: 'mTax_rate') required final double taxRate,
+    @JsonKey(name: 'sDescription') required final String description,
+    @JsonKey(name: 'fTotalTax_pc') required final double taxRate,
     @JsonKey(name: 'created_at') final String? createdAt,
   }) = _$SalesTaxEntityImpl;
 
@@ -272,10 +272,10 @@ abstract class _SalesTaxEntity implements SalesTaxEntity {
   @JsonKey(name: 'sTax_cd')
   String get taxCode;
   @override
-  @JsonKey(name: 'sTax_desc')
+  @JsonKey(name: 'sDescription')
   String get description;
   @override
-  @JsonKey(name: 'mTax_rate')
+  @JsonKey(name: 'fTotalTax_pc')
   double get taxRate;
   @override
   @JsonKey(name: 'created_at')

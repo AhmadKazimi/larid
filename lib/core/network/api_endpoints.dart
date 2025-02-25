@@ -21,4 +21,5 @@ class ApiParameters {
   static const String userid = 'userid';
   static const String workspace = 'workspace';
   static const String password = 'password';
+  static const String warehouse = 'warehouse';
 }
