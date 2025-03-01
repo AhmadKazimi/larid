@@ -110,9 +110,7 @@ class _MapPageState extends State<MapPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                l10n.locationServicesRequired,
-              ),
+              content: Text(l10n.locationServicesRequired),
               duration: const Duration(seconds: 3),
             ),
           );
@@ -128,9 +126,7 @@ class _MapPageState extends State<MapPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                l10n.locationPermissionRequired,
-              ),
+              content: Text(l10n.locationPermissionRequired),
               duration: const Duration(seconds: 3),
             ),
           );
@@ -334,9 +330,10 @@ class _MapPageState extends State<MapPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: customer.mapCoords?.isNotEmpty ?? false
-                            ? () => _openInGoogleMaps(customer.mapCoords)
-                            : null,
+                        onPressed:
+                            customer.mapCoords?.isNotEmpty ?? false
+                                ? () => _openInGoogleMaps(customer.mapCoords)
+                                : null,
                         icon: const Icon(Icons.directions),
                         label: Text(l10n.getDirections),
                         style: ElevatedButton.styleFrom(
@@ -354,7 +351,7 @@ class _MapPageState extends State<MapPage> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () => {},
-                        icon: const Icon(Icons.start),
+                        icon: const Icon(Icons.play_arrow),
                         label: Text(l10n.startVisit),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
@@ -626,8 +623,7 @@ class _MapPageState extends State<MapPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.customerCode +
-                  ': ${customer.customerCode}',
+              l10n.customerCode + ': ${customer.customerCode}',
               style: GoogleFonts.notoKufiArabic(
                 fontSize: 14,
                 color: AppColors.textColor.withOpacity(0.8),
@@ -691,10 +687,7 @@ class _MapPageState extends State<MapPage> {
                       ],
                     ),
                     child: IconButton(
-                      icon: const Icon(
-                        Icons.search,
-                        color: AppColors.primary,
-                      ),
+                      icon: const Icon(Icons.search, color: AppColors.primary),
                       onPressed: () {
                         _hideCustomerInfo();
                         context.push('/customer-search');
