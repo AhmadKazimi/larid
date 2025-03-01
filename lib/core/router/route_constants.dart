@@ -13,6 +13,12 @@ class RouteConstants {
   static const String map = '/map';
   static const String sync = '/sync';
   static const String customerSearch = '/customer-search';
+  static const String customerActivity = '/customer-activity';
+
+  // Customer Activity Related Routes
+  static const String invoice = '/invoice';
+  static const String photoCapture = '/photo-capture';
+  static const String receiptVoucher = '/receipt-voucher';
 
   // Add more routes as needed for your features
 }

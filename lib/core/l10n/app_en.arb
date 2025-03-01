@@ -82,5 +82,16 @@
     "todayCustomers": "Today's Customers",
     "notExists": "Not exists",
     "todayCustomersTab": "Today's Customers",
-    "customersTab": "Customers"
+    "customersTab": "Customers",
+
+    "customerDetails": "Customer Details",
+    "activities": "Activities",
+    "createInvoice": "Create Invoice",
+    "createNewInvoiceOrReturn": "Create a new invoice or return",
+    "takePhoto": "Take Photo",
+    "captureAndSavePhoto": "Capture and save photos",
+    "receiptVoucher": "Receipt Voucher",
+    "createReceiptVoucher": "Create a receipt voucher",
+    "noExist": "Not Available",
+    "startCustomerVisit": "Start Customer Visit"
 }

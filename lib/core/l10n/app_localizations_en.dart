@@ -204,4 +204,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customersTab => 'Customers';
+
+  @override
+  String get customerDetails => 'Customer Details';
+
+  @override
+  String get activities => 'Activities';
+
+  @override
+  String get createInvoice => 'Create Invoice';
+
+  @override
+  String get createNewInvoiceOrReturn => 'Create a new invoice or return';
+
+  @override
+  String get takePhoto => 'Take Photo';
+
+  @override
+  String get captureAndSavePhoto => 'Capture and save photos';
+
+  @override
+  String get receiptVoucher => 'Receipt Voucher';
+
+  @override
+  String get createReceiptVoucher => 'Create a receipt voucher';
+
+  @override
+  String get noExist => 'Not Available';
+
+  @override
+  String get startCustomerVisit => 'Start Customer Visit';
 }

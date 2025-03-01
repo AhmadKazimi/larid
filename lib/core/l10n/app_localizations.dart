@@ -484,6 +484,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customers'**
   String get customersTab;
+
+  /// No description provided for @customerDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Details'**
+  String get customerDetails;
+
+  /// No description provided for @activities.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get activities;
+
+  /// No description provided for @createInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Invoice'**
+  String get createInvoice;
+
+  /// No description provided for @createNewInvoiceOrReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new invoice or return'**
+  String get createNewInvoiceOrReturn;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get takePhoto;
+
+  /// No description provided for @captureAndSavePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture and save photos'**
+  String get captureAndSavePhoto;
+
+  /// No description provided for @receiptVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Voucher'**
+  String get receiptVoucher;
+
+  /// No description provided for @createReceiptVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a receipt voucher'**
+  String get createReceiptVoucher;
+
+  /// No description provided for @noExist.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Available'**
+  String get noExist;
+
+  /// No description provided for @startCustomerVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Customer Visit'**
+  String get startCustomerVisit;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

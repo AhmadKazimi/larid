@@ -204,4 +204,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customersTab => 'العملاء';
+
+  @override
+  String get customerDetails => 'تفاصيل العميل';
+
+  @override
+  String get activities => 'الأنشطة';
+
+  @override
+  String get createInvoice => 'إنشاء فاتورة';
+
+  @override
+  String get createNewInvoiceOrReturn => 'إنشاء فاتورة جديدة أو مرتجع';
+
+  @override
+  String get takePhoto => 'التقاط صورة';
+
+  @override
+  String get captureAndSavePhoto => 'التقاط وحفظ الصور';
+
+  @override
+  String get receiptVoucher => 'سند قبض';
+
+  @override
+  String get createReceiptVoucher => 'إنشاء سند قبض';
+
+  @override
+  String get noExist => 'غير متوفر';
+
+  @override
+  String get startCustomerVisit => 'بدء زيارة العميل';
 }

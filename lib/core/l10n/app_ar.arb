@@ -82,5 +82,17 @@
     "todayCustomers": "عملاء اليوم",
     "notExists": "غير موجود",
     "todayCustomersTab": "عملاء اليوم",
-    "customersTab": "العملاء"
+    "customersTab": "العملاء",
+
+    "customerDetails": "تفاصيل العميل",
+    "activities": "الأنشطة",
+    "createInvoice": "إنشاء فاتورة",
+    "createNewInvoiceOrReturn": "إنشاء فاتورة جديدة أو مرتجع",
+    "takePhoto": "التقاط صورة",
+    "captureAndSavePhoto": "التقاط وحفظ الصور",
+    "receiptVoucher": "سند قبض",
+    "createReceiptVoucher": "إنشاء سند قبض",
+    "noExist": "غير متوفر",
+    "startCustomerVisit": "بدء زيارة العميل"
+    
 }

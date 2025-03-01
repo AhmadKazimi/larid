@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:larid/core/router/route_constants.dart';
 import 'package:location/location.dart';
+import 'package:go_router/go_router.dart';
 import 'package:larid/database/customer_table.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/core/di/service_locator.dart';
@@ -20,6 +22,7 @@ import '../widgets/session_clock_widget.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:larid/core/router/route_constants.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -347,10 +350,19 @@ class _MapPageState extends State<MapPage> {
                       ),
                     ),
                     const SizedBox(height: 8),
+
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () => {},
+                        onPressed:
+                            () => {
+                              _hideCustomerInfo(),
+                              context.push(
+                                RouteConstants.customerActivity,
+                                extra: customer,
+                              ),
+                            },
+
                         icon: const Icon(Icons.play_arrow),
                         label: Text(l10n.startVisit),
                         style: ElevatedButton.styleFrom(

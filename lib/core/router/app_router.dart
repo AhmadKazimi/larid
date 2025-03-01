@@ -9,6 +9,11 @@ import '../../features/api_config/presentation/pages/api_base_url_page.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/customer_search/presentation/pages/search_customer_page.dart';
 import '../../features/customer_search/presentation/bloc/customer_search_bloc.dart';
+import '../../features/customer_activity/presentation/pages/customer_activity_page.dart';
+import '../../features/invoice/presentation/pages/invoice_page.dart';
+import '../../features/photo_capture/presentation/pages/photo_capture_page.dart';
+import '../../features/receipt_voucher/presentation/pages/receipt_voucher_page.dart';
+import '../../features/sync/domain/entities/customer_entity.dart';
 import '../../database/user_table.dart';
 import '../di/service_locator.dart';
 import '../storage/shared_prefs.dart';
@@ -33,6 +38,7 @@ class AppRouter {
         final isSyncPage = state.matchedLocation == RouteConstants.sync;
         final isMapPage = state.matchedLocation == RouteConstants.map;
         final isCustomerSearchPage = state.matchedLocation == RouteConstants.customerSearch;
+        final isCustomerActivityPage = state.matchedLocation == RouteConstants.customerActivity;
 
         // If base URL is not set, redirect to API config page
         if ((baseUrl == null || baseUrl.isEmpty) && !isApiConfigPage) {
@@ -52,8 +58,8 @@ class AppRouter {
 
           // If logged in but not on a protected page
           if (isLoggedIn) {
-            // If data is synced and not on map or customer search page, go to map
-            if (isSynced && !isMapPage && !isCustomerSearchPage) {
+            // If data is synced and not on a permitted page, go to map
+            if (isSynced && !isMapPage && !isCustomerSearchPage && !isCustomerActivityPage) {
               return RouteConstants.map;
             }
             // If data is not synced and not on sync page, go to sync
@@ -119,6 +125,102 @@ class AppRouter {
             );
           },
         ),
+      ),
+
+      // Customer Activity Route
+      GoRoute(
+        path: RouteConstants.customerActivity,
+        name: 'customer-activity',
+        pageBuilder: (context, state) {
+          final customer = state.extra as CustomerEntity;
+          return CustomTransitionPage<void>(
+            key: state.pageKey,
+            child: CustomerActivityPage(customer: customer),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: animation.drive(
+                  Tween<Offset>(
+                    begin: const Offset(1.0, 0.0),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.easeInOut)),
+                ),
+                child: child,
+              );
+            },
+          );
+        },
+      ),
+
+      // Invoice Route
+      GoRoute(
+        path: RouteConstants.invoice,
+        name: 'invoice',
+        pageBuilder: (context, state) {
+          final customer = state.extra as CustomerEntity;
+          return CustomTransitionPage<void>(
+            key: state.pageKey,
+            child: InvoicePage(customer: customer),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: animation.drive(
+                  Tween<Offset>(
+                    begin: const Offset(1.0, 0.0),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.easeInOut)),
+                ),
+                child: child,
+              );
+            },
+          );
+        },
+      ),
+
+      // Photo Capture Route
+      GoRoute(
+        path: RouteConstants.photoCapture,
+        name: 'photo-capture',
+        pageBuilder: (context, state) {
+          final customer = state.extra as CustomerEntity;
+          return CustomTransitionPage<void>(
+            key: state.pageKey,
+            child: PhotoCapturePage(customer: customer),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: animation.drive(
+                  Tween<Offset>(
+                    begin: const Offset(1.0, 0.0),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.easeInOut)),
+                ),
+                child: child,
+              );
+            },
+          );
+        },
+      ),
+
+      // Receipt Voucher Route
+      GoRoute(
+        path: RouteConstants.receiptVoucher,
+        name: 'receipt-voucher',
+        pageBuilder: (context, state) {
+          final customer = state.extra as CustomerEntity;
+          return CustomTransitionPage<void>(
+            key: state.pageKey,
+            child: ReceiptVoucherPage(customer: customer),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: animation.drive(
+                  Tween<Offset>(
+                    begin: const Offset(1.0, 0.0),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.easeInOut)),
+                ),
+                child: child,
+              );
+            },
+          );
+        },
       ),
     ],
     errorBuilder: (context, state) =>
