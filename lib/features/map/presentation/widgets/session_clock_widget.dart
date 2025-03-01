@@ -75,45 +75,53 @@ class _SessionClockWidgetState extends State<SessionClockWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final dateFormat = DateFormat('EEEE, MMMM d, y');
+    AppLocalizations.of(context);
     final timeFormat = DateFormat('HH:mm:ss');
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       decoration: BoxDecoration(
-        color: widget.isSessionActive ? Colors.green : AppColors.primary,
+        color: widget.isSessionActive ? AppColors.primary : AppColors.primary,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.timer_outlined,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            if (widget.isSessionActive && widget.sessionStartTime != null)
-              Text(
-                _formatDuration(_elapsedTime),
-                style: GoogleFonts.notoKufiArabic(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              )
-            else
-              Text(
-                timeFormat.format(_now),
-                style: GoogleFonts.notoKufiArabic(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+            Text(
+              "عدد ساعات العمل",
+              style: GoogleFonts.notoKufiArabic(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
               ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.timer_outlined, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                if (widget.isSessionActive && widget.sessionStartTime != null)
+                  Text(
+                    _formatDuration(_elapsedTime),
+                    style: GoogleFonts.notoKufiArabic(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  )
+                else
+                  Text(
+                    timeFormat.format(_now),
+                    style: GoogleFonts.notoKufiArabic(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
       ),

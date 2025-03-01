@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:larid/core/l10n/app_localizations.dart';
 import 'package:larid/core/router/route_constants.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/core/theme/app_theme.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
+import 'package:larid/core/router/navigation_service.dart';
 
 class CustomerActivityPage extends StatefulWidget {
   final CustomerEntity customer;
@@ -112,7 +112,8 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                   isSelected: _selectedActivityIndex == 0,
                   onTap: () {
                     setState(() {
-                      _selectedActivityIndex = _selectedActivityIndex == 0 ? null : 0;
+                      _selectedActivityIndex =
+                          _selectedActivityIndex == 0 ? null : 0;
                     });
                   },
                 ),
@@ -122,7 +123,8 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                   isSelected: _selectedActivityIndex == 1,
                   onTap: () {
                     setState(() {
-                      _selectedActivityIndex = _selectedActivityIndex == 1 ? null : 1;
+                      _selectedActivityIndex =
+                          _selectedActivityIndex == 1 ? null : 1;
                     });
                   },
                 ),
@@ -132,13 +134,14 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                   isSelected: _selectedActivityIndex == 2,
                   onTap: () {
                     setState(() {
-                      _selectedActivityIndex = _selectedActivityIndex == 2 ? null : 2;
+                      _selectedActivityIndex =
+                          _selectedActivityIndex == 2 ? null : 2;
                     });
                   },
                 ),
               ],
             ),
-            
+
             // Start Visit Button - only shown when an activity is selected
             if (_selectedActivityIndex != null)
               Padding(
@@ -148,13 +151,18 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       // Handle starting visit with selected activity
-                      final activityType = _selectedActivityIndex == 0 
-                          ? RouteConstants.invoice
-                          : _selectedActivityIndex == 1
+                      final activityType =
+                          _selectedActivityIndex == 0
+                              ? RouteConstants.invoice
+                              : _selectedActivityIndex == 1
                               ? RouteConstants.photoCapture
                               : RouteConstants.receiptVoucher;
-                      
-                      context.push(activityType, extra: widget.customer);
+
+                      NavigationService.push(
+                        context,
+                        activityType,
+                        extra: widget.customer,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
@@ -211,9 +219,8 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: isSelected
-              ? Border.all(color: Colors.green, width: 2.5)
-              : null,
+          border:
+              isSelected ? Border.all(color: Colors.green, width: 2.5) : null,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),

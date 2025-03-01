@@ -39,6 +39,9 @@ class AppRouter {
         final isMapPage = state.matchedLocation == RouteConstants.map;
         final isCustomerSearchPage = state.matchedLocation == RouteConstants.customerSearch;
         final isCustomerActivityPage = state.matchedLocation == RouteConstants.customerActivity;
+        final isInvoicePage = state.matchedLocation == RouteConstants.invoice;
+        final isPhotoCaptureePage = state.matchedLocation == RouteConstants.photoCapture;
+        final isReceiptVoucherPage = state.matchedLocation == RouteConstants.receiptVoucher;
 
         // If base URL is not set, redirect to API config page
         if ((baseUrl == null || baseUrl.isEmpty) && !isApiConfigPage) {
@@ -59,7 +62,8 @@ class AppRouter {
           // If logged in but not on a protected page
           if (isLoggedIn) {
             // If data is synced and not on a permitted page, go to map
-            if (isSynced && !isMapPage && !isCustomerSearchPage && !isCustomerActivityPage) {
+            if (isSynced && !isMapPage && !isCustomerSearchPage && !isCustomerActivityPage && 
+                !isInvoicePage && !isPhotoCaptureePage && !isReceiptVoucherPage) {
               return RouteConstants.map;
             }
             // If data is not synced and not on sync page, go to sync
