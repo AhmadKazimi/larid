@@ -103,8 +103,6 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
                               labelText: l10n.baseUrl,
                               hintText: 'cloud.larid.net',
                               prefixIcon: const Icon(Icons.link),
-                              prefixText: _urlPrefix,
-                              suffixText: _urlSuffix,
                               helperText: 'Enter only the domain name',
                               alignLabelWithHint: true,
                             ),

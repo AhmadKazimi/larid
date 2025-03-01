@@ -24,10 +24,7 @@ class GradientPageLayout extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            AppColors.gradientStart,
-            AppColors.gradientEnd,
-          ],
+          colors: [AppColors.gradientStart, AppColors.gradientEnd],
         ),
       ),
       child: Builder(
@@ -46,9 +43,7 @@ class GradientPageLayout extends StatelessWidget {
 
           // Wrap with SingleChildScrollView if needed
           if (useScroll) {
-            content = SingleChildScrollView(
-              child: content,
-            );
+            content = SingleChildScrollView(child: content);
           }
 
           return content;
@@ -73,6 +68,7 @@ class GradientFormCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      clipBehavior: Clip.hardEdge,
       padding: padding,
       decoration: BoxDecoration(
         color: Colors.white,

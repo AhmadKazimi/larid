@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
     // TODO: remove for production
     text: "12345",
   );
-  
+
   @override
   void dispose() {
     _workspaceController.dispose();
@@ -74,7 +74,12 @@ class _LoginPageState extends State<LoginPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    const SizedBox(height: 32),
+                    GradientFormCard(
+                      padding: const EdgeInsets.all(0),
+
+                      child: Image.asset('assets/images/img_larid2.png'),
+                    ),
+                    const SizedBox(height: 16),
                     GradientFormCard(
                       child: Form(
                         key: _formKey,
