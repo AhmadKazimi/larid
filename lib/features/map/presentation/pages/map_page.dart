@@ -54,7 +54,7 @@ class _MapPageState extends State<MapPage> {
   // Track customer visit session
   CustomerEntity? _customerWithActiveVisit;
   bool _hasActiveCustomerVisit = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -70,21 +70,21 @@ class _MapPageState extends State<MapPage> {
     super.didChangeDependencies();
     l10n = AppLocalizations.of(context);
   }
-  
+
   @override
   void activate() {
     super.activate();
     // Refresh session data when the page becomes active again
     _checkActiveCustomerVisit();
   }
-  
+
   @override
   void didUpdateWidget(covariant MapPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Force refresh when widget is updated
     _checkActiveCustomerVisit();
   }
-  
+
   @override
   void reassemble() {
     super.reassemble();
@@ -185,14 +185,14 @@ class _MapPageState extends State<MapPage> {
         _customers = customers;
       });
       _addCustomerMarkers();
-      
+
       // Check for active visit sessions after loading customers
       _checkActiveCustomerVisit();
     } catch (e) {
       debugPrint('Error loading customers: $e');
     }
   }
-  
+
   // Check if there's an active customer visit session
   Future<void> _checkActiveCustomerVisit() async {
     try {
@@ -204,15 +204,18 @@ class _MapPageState extends State<MapPage> {
           _customerWithActiveVisit = null;
         });
       }
-      
+
       // Then check for active session
       final hasActiveVisit = await _customerTable.hasActiveVisitSession();
       debugPrint('MapPage: Has active visit: $hasActiveVisit');
-      
+
       if (hasActiveVisit) {
-        final customerWithVisit = await _customerTable.getCustomerWithActiveVisitSession();
-        debugPrint('MapPage: Found active visit for customer: ${customerWithVisit?.customerName}');
-        
+        final customerWithVisit =
+            await _customerTable.getCustomerWithActiveVisitSession();
+        debugPrint(
+          'MapPage: Found active visit for customer: ${customerWithVisit?.customerName}',
+        );
+
         if (mounted && customerWithVisit != null) {
           setState(() {
             _hasActiveCustomerVisit = true;
@@ -336,6 +339,12 @@ class _MapPageState extends State<MapPage> {
 
     final l10n = AppLocalizations.of(context);
 
+    // Check if this customer has an active visit session
+    final bool isActiveCustomerVisit =
+        _hasActiveCustomerVisit &&
+        _customerWithActiveVisit != null &&
+        _customerWithActiveVisit!.customerCode == customer.customerCode;
+
     _overlayEntry = OverlayEntry(
       builder:
           (context) => Positioned(
@@ -427,23 +436,36 @@ class _MapPageState extends State<MapPage> {
                             () => {
                               _hideCustomerInfo(),
                               // Use Navigator.push instead of GoRouter to properly handle the result
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => CustomerActivityPage(
-                                    customer: customer,
-                                  ),
-                                ),
-                              ).then((result) {
-                                // Process the result when returning from CustomerActivityPage
-                                debugPrint('Returned from customer dialog->activity page with result: $result');
-                                
-                                // Force a refresh of customer visit session status
-                                _checkActiveCustomerVisit();
-                              }),
+                              Navigator.of(context)
+                                  .push(
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => CustomerActivityPage(
+                                            customer: customer,
+                                          ),
+                                    ),
+                                  )
+                                  .then((result) {
+                                    // Process the result when returning from CustomerActivityPage
+                                    debugPrint(
+                                      'Returned from customer dialog->activity page with result: $result',
+                                    );
+
+                                    // Force a refresh of customer visit session status
+                                    _checkActiveCustomerVisit();
+                                  }),
                             },
 
-                        icon: const Icon(Icons.play_arrow),
-                        label: Text(l10n.startVisit),
+                        icon: Icon(
+                          isActiveCustomerVisit
+                              ? Icons.arrow_back
+                              : Icons.play_arrow,
+                        ),
+                        label: Text(
+                          isActiveCustomerVisit
+                              ? l10n.continueVisiting
+                              : l10n.startVisit,
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -607,10 +629,10 @@ class _MapPageState extends State<MapPage> {
                     _activeSession = false;
                     _sessionStartTime = null;
                   });
-                  
+
                   // Also check and update customer visit session status
                   await _checkActiveCustomerVisit();
-                  
+
                   _showStartSessionDialog(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -745,62 +767,84 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Show banner if there's an active customer visit session
-      bottomNavigationBar: _hasActiveCustomerVisit && _customerWithActiveVisit != null
-          ? Container(
-              color: Colors.green,
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              child: Row(
-                children: [
-                  Icon(Icons.person, color: Colors.white),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l10n.activeVisitWith(_customerWithActiveVisit!.customerName),
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to the customer activity page
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => CustomerActivityPage(
-                            customer: _customerWithActiveVisit!,
-                          ),
+      bottomNavigationBar:
+          _hasActiveCustomerVisit && _customerWithActiveVisit != null
+              ? Container(
+                color: Colors.green,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.activeVisitWith(
+                          _customerWithActiveVisit!.customerName,
                         ),
-                      ).then((result) {
-                        // Process the result from customer activity page
-                        debugPrint('Returned from customer activity page with result: $result');
-                        
-                        if (result != null && result is Map) {
-                          // Check if we have detailed session information
-                          final bool sessionChecked = result['sessionChecked'] == true;
-                          final bool sessionEnded = result['sessionEnded'] == true;
-                          final bool hasActiveSession = result['hasActiveSession'] == true;
-                          
-                          debugPrint('Session data: checked=$sessionChecked, ended=$sessionEnded, active=$hasActiveSession');
-                          
-                          // If we have complete session information from the result, use it
-                          // Otherwise fall back to database check
-                          if (sessionChecked) {
-                            // Force a refresh of customer visit session status
-                            _checkActiveCustomerVisit();
-                          }
-                        } else {
-                          // No result or incomplete result, do a full check
-                          _checkActiveCustomerVisit();
-                        }
-                      });
-                    },
-                    child: Text(
-                      l10n.continueVisiting,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          : null,
+                    TextButton(
+                      onPressed: () {
+                        // Navigate to the customer activity page
+                        Navigator.of(context)
+                            .push(
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => CustomerActivityPage(
+                                      customer: _customerWithActiveVisit!,
+                                    ),
+                              ),
+                            )
+                            .then((result) {
+                              // Process the result from customer activity page
+                              debugPrint(
+                                'Returned from customer activity page with result: $result',
+                              );
+
+                              if (result != null && result is Map) {
+                                // Check if we have detailed session information
+                                final bool sessionChecked =
+                                    result['sessionChecked'] == true;
+                                final bool sessionEnded =
+                                    result['sessionEnded'] == true;
+                                final bool hasActiveSession =
+                                    result['hasActiveSession'] == true;
+
+                                debugPrint(
+                                  'Session data: checked=$sessionChecked, ended=$sessionEnded, active=$hasActiveSession',
+                                );
+
+                                // If we have complete session information from the result, use it
+                                // Otherwise fall back to database check
+                                if (sessionChecked) {
+                                  // Force a refresh of customer visit session status
+                                  _checkActiveCustomerVisit();
+                                }
+                              } else {
+                                // No result or incomplete result, do a full check
+                                _checkActiveCustomerVisit();
+                              }
+                            });
+                      },
+                      child: Text(
+                        l10n.continueVisiting,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+              : null,
       body: Stack(
         children: [
           GoogleMap(

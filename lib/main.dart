@@ -18,6 +18,7 @@ import 'core/l10n/l10n.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import 'database/user_table.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupServiceLocator();
@@ -36,20 +37,20 @@ class MyApp extends StatelessWidget {
         BlocProvider<ApiConfigBloc>(
           create:
               (context) => ApiConfigBloc(
-                repository: ApiConfigRepositoryImpl(
-                  userDB: getIt<UserTable>(),
-                ),
+                repository: ApiConfigRepositoryImpl(userDB: getIt<UserTable>()),
               )..add(const ApiConfigEvent.checkBaseUrl()),
         ),
         BlocProvider<SyncBloc>(
-          create: (context) => SyncBloc(
-            syncCustomersUseCase: getIt<SyncCustomersUseCase>(),
-            syncSalesRepCustomersUseCase: getIt<SyncSalesRepCustomersUseCase>(),
-            syncPricesUseCase: getIt<SyncPricesUseCase>(),
-            syncInventoryItemsUseCase: getIt<SyncInventoryItemsUseCase>(),
-            syncInventoryUnitsUseCase: getIt<SyncInventoryUnitsUseCase>(),
-            syncSalesTaxesUseCase: getIt<SyncSalesTaxesUseCase>(),
-          ),
+          create:
+              (context) => SyncBloc(
+                syncCustomersUseCase: getIt<SyncCustomersUseCase>(),
+                syncSalesRepCustomersUseCase:
+                    getIt<SyncSalesRepCustomersUseCase>(),
+                syncPricesUseCase: getIt<SyncPricesUseCase>(),
+                syncInventoryItemsUseCase: getIt<SyncInventoryItemsUseCase>(),
+                syncInventoryUnitsUseCase: getIt<SyncInventoryUnitsUseCase>(),
+                syncSalesTaxesUseCase: getIt<SyncSalesTaxesUseCase>(),
+              ),
         ),
       ],
       child: MaterialApp.router(
