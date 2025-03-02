@@ -234,4 +234,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get startCustomerVisit => 'Start Customer Visit';
+
+  @override
+  String visitStartedAt(String time) {
+    return 'Visit started at: $time';
+  }
+
+  @override
+  String get visitSessionInfo => 'You can perform multiple activities during this visit session. The session will end only when you click \"End Visit Session\" button.';
+
+  @override
+  String get endVisitSession => 'End Visit Session';
+
+  @override
+  String get visitSessionEnded => 'Visit session ended';
+
+  @override
+  String get visitSessionStarted => 'Visit session started successfully';
+
+  @override
+  String activeVisitWith(String customerName) {
+    return 'Active visit with $customerName';
+  }
+
+  @override
+  String get activeVisit => 'Active Visit';
+
+  @override
+  String get continueVisiting => 'CONTINUE';
+
+  @override
+  String otherCustomerActiveVisit(String customerName) {
+    return 'There is already an active visit for $customerName. Please end that visit first.';
+  }
 }

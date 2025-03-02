@@ -93,6 +93,36 @@
     "receiptVoucher": "سند قبض",
     "createReceiptVoucher": "إنشاء سند قبض",
     "noExist": "غير متوفر",
-    "startCustomerVisit": "بدء زيارة العميل"
+    "startCustomerVisit": "بدء زيارة العميل",
     
+    "visitStartedAt": "بدأت الزيارة في: {time}",
+    "@visitStartedAt": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "visitSessionInfo": "يمكنك تنفيذ أنشطة متعددة خلال جلسة الزيارة هذه. ستنتهي الجلسة فقط عند النقر على زر \"إنهاء جلسة الزيارة\".",
+    "endVisitSession": "إنهاء جلسة الزيارة",
+    "visitSessionEnded": "تم إنهاء جلسة الزيارة",
+    "visitSessionStarted": "تم بدء جلسة الزيارة بنجاح",
+    "activeVisitWith": "زيارة نشطة مع {customerName}",
+    "@activeVisitWith": {
+        "placeholders": {
+            "customerName": {
+                "type": "String"
+            }
+        }
+    },
+    "activeVisit": "زيارة نشطة",
+    "continueVisiting": "متابعة",
+    "otherCustomerActiveVisit": "هناك بالفعل زيارة نشطة لـ {customerName}. يرجى إنهاء تلك الزيارة أولاً.",
+    "@otherCustomerActiveVisit": {
+        "placeholders": {
+            "customerName": {
+                "type": "String"
+            }
+        }
+    }
 }

@@ -11,6 +11,8 @@ class CustomerEntity with _$CustomerEntity {
     String? address,
     String? contactPhone,
     String? mapCoords,
+    String? visitStartTime,
+    String? visitEndTime,
   }) = _CustomerEntity;
 
   factory CustomerEntity.fromJson(Map<String, dynamic> json) => _$CustomerEntityFromJson({
@@ -19,5 +21,7 @@ class CustomerEntity with _$CustomerEntity {
         'address': json['sAddress1'] as String?,
         'contactPhone': json['sContactPhone'] as String?,
         'mapCoords': json['sMapCoords'] as String?,
+        'visitStartTime': json['visitStartTime'] as String?,
+        'visitEndTime': json['visitEndTime'] as String?,
       });
 }

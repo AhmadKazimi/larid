@@ -26,6 +26,8 @@ mixin _$CustomerEntity {
   String? get address => throw _privateConstructorUsedError;
   String? get contactPhone => throw _privateConstructorUsedError;
   String? get mapCoords => throw _privateConstructorUsedError;
+  String? get visitStartTime => throw _privateConstructorUsedError;
+  String? get visitEndTime => throw _privateConstructorUsedError;
 
   /// Serializes this CustomerEntity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -50,6 +52,8 @@ abstract class $CustomerEntityCopyWith<$Res> {
     String? address,
     String? contactPhone,
     String? mapCoords,
+    String? visitStartTime,
+    String? visitEndTime,
   });
 }
 
@@ -73,6 +77,8 @@ class _$CustomerEntityCopyWithImpl<$Res, $Val extends CustomerEntity>
     Object? address = freezed,
     Object? contactPhone = freezed,
     Object? mapCoords = freezed,
+    Object? visitStartTime = freezed,
+    Object? visitEndTime = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -101,6 +107,16 @@ class _$CustomerEntityCopyWithImpl<$Res, $Val extends CustomerEntity>
                     ? _value.mapCoords
                     : mapCoords // ignore: cast_nullable_to_non_nullable
                         as String?,
+            visitStartTime:
+                freezed == visitStartTime
+                    ? _value.visitStartTime
+                    : visitStartTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            visitEndTime:
+                freezed == visitEndTime
+                    ? _value.visitEndTime
+                    : visitEndTime // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -122,6 +138,8 @@ abstract class _$$CustomerEntityImplCopyWith<$Res>
     String? address,
     String? contactPhone,
     String? mapCoords,
+    String? visitStartTime,
+    String? visitEndTime,
   });
 }
 
@@ -144,6 +162,8 @@ class __$$CustomerEntityImplCopyWithImpl<$Res>
     Object? address = freezed,
     Object? contactPhone = freezed,
     Object? mapCoords = freezed,
+    Object? visitStartTime = freezed,
+    Object? visitEndTime = freezed,
   }) {
     return _then(
       _$CustomerEntityImpl(
@@ -172,6 +192,16 @@ class __$$CustomerEntityImplCopyWithImpl<$Res>
                 ? _value.mapCoords
                 : mapCoords // ignore: cast_nullable_to_non_nullable
                     as String?,
+        visitStartTime:
+            freezed == visitStartTime
+                ? _value.visitStartTime
+                : visitStartTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        visitEndTime:
+            freezed == visitEndTime
+                ? _value.visitEndTime
+                : visitEndTime // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -186,6 +216,8 @@ class _$CustomerEntityImpl implements _CustomerEntity {
     this.address,
     this.contactPhone,
     this.mapCoords,
+    this.visitStartTime,
+    this.visitEndTime,
   });
 
   factory _$CustomerEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -201,10 +233,14 @@ class _$CustomerEntityImpl implements _CustomerEntity {
   final String? contactPhone;
   @override
   final String? mapCoords;
+  @override
+  final String? visitStartTime;
+  @override
+  final String? visitEndTime;
 
   @override
   String toString() {
-    return 'CustomerEntity(customerCode: $customerCode, customerName: $customerName, address: $address, contactPhone: $contactPhone, mapCoords: $mapCoords)';
+    return 'CustomerEntity(customerCode: $customerCode, customerName: $customerName, address: $address, contactPhone: $contactPhone, mapCoords: $mapCoords, visitStartTime: $visitStartTime, visitEndTime: $visitEndTime)';
   }
 
   @override
@@ -220,7 +256,11 @@ class _$CustomerEntityImpl implements _CustomerEntity {
             (identical(other.contactPhone, contactPhone) ||
                 other.contactPhone == contactPhone) &&
             (identical(other.mapCoords, mapCoords) ||
-                other.mapCoords == mapCoords));
+                other.mapCoords == mapCoords) &&
+            (identical(other.visitStartTime, visitStartTime) ||
+                other.visitStartTime == visitStartTime) &&
+            (identical(other.visitEndTime, visitEndTime) ||
+                other.visitEndTime == visitEndTime));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -232,6 +272,8 @@ class _$CustomerEntityImpl implements _CustomerEntity {
     address,
     contactPhone,
     mapCoords,
+    visitStartTime,
+    visitEndTime,
   );
 
   /// Create a copy of CustomerEntity
@@ -258,6 +300,8 @@ abstract class _CustomerEntity implements CustomerEntity {
     final String? address,
     final String? contactPhone,
     final String? mapCoords,
+    final String? visitStartTime,
+    final String? visitEndTime,
   }) = _$CustomerEntityImpl;
 
   factory _CustomerEntity.fromJson(Map<String, dynamic> json) =
@@ -273,6 +317,10 @@ abstract class _CustomerEntity implements CustomerEntity {
   String? get contactPhone;
   @override
   String? get mapCoords;
+  @override
+  String? get visitStartTime;
+  @override
+  String? get visitEndTime;
 
   /// Create a copy of CustomerEntity
   /// with the given fields replaced by the non-null parameter values.

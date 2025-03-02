@@ -23,6 +23,29 @@ class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
   static GoRouter get router => _router;
+  
+  // Helper method to create a standard slide transition
+  static CustomTransitionPage<void> _buildSlideTransition({
+    required BuildContext context,
+    required GoRouterState state,
+    required Widget child,
+  }) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return SlideTransition(
+          position: animation.drive(
+            Tween<Offset>(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).chain(CurveTween(curve: Curves.easeInOut)),
+          ),
+          child: child,
+        );
+      },
+    );
+  }
 
   static final _router = GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -83,51 +106,57 @@ class AppRouter {
       GoRoute(
         path: RouteConstants.apiConfig,
         name: 'api-config',
-        builder: (context, state) => const ApiBaseUrlPage(),
+        pageBuilder: (context, state) => _buildSlideTransition(
+          context: context,
+          state: state,
+          child: const ApiBaseUrlPage(),
+        ),
       ),
 
       // Login Route
       GoRoute(
         path: RouteConstants.login,
         name: 'login',
-        builder: (context, state) => const LoginPage(),
+        pageBuilder: (context, state) => _buildSlideTransition(
+          context: context,
+          state: state,
+          child: const LoginPage(),
+        ),
       ),
 
       // Sync Route
       GoRoute(
         path: RouteConstants.sync,
         name: 'sync',
-        builder: (context, state) => const SyncPage(),
+        pageBuilder: (context, state) => _buildSlideTransition(
+          context: context,
+          state: state,
+          child: const SyncPage(),
+        ),
       ),
 
       // Map Route
       GoRoute(
         path: RouteConstants.map,
         name: 'map',
-        builder: (context, state) => const MapPage(),
+        pageBuilder: (context, state) => _buildSlideTransition(
+          context: context,
+          state: state,
+          child: const MapPage(),
+        ),
       ),
 
       // Customer Search Route
       GoRoute(
         path: RouteConstants.customerSearch,
         name: 'customer-search',
-        pageBuilder: (context, state) => CustomTransitionPage<void>(
-          key: state.pageKey,
+        pageBuilder: (context, state) => _buildSlideTransition(
+          context: context,
+          state: state,
           child: BlocProvider(
             create: (context) => CustomerSearchBloc(),
             child: const SearchCustomerPage(),
           ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position: animation.drive(
-                Tween<Offset>(
-                  begin: const Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).chain(CurveTween(curve: Curves.easeInOut)),
-              ),
-              child: child,
-            );
-          },
         ),
       ),
 
@@ -137,20 +166,10 @@ class AppRouter {
         name: 'customer-activity',
         pageBuilder: (context, state) {
           final customer = state.extra as CustomerEntity;
-          return CustomTransitionPage<void>(
-            key: state.pageKey,
+          return _buildSlideTransition(
+            context: context,
+            state: state,
             child: CustomerActivityPage(customer: customer),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(1.0, 0.0),
-                    end: Offset.zero,
-                  ).chain(CurveTween(curve: Curves.easeInOut)),
-                ),
-                child: child,
-              );
-            },
           );
         },
       ),
@@ -161,20 +180,10 @@ class AppRouter {
         name: 'invoice',
         pageBuilder: (context, state) {
           final customer = state.extra as CustomerEntity;
-          return CustomTransitionPage<void>(
-            key: state.pageKey,
+          return _buildSlideTransition(
+            context: context,
+            state: state,
             child: InvoicePage(customer: customer),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(1.0, 0.0),
-                    end: Offset.zero,
-                  ).chain(CurveTween(curve: Curves.easeInOut)),
-                ),
-                child: child,
-              );
-            },
           );
         },
       ),
@@ -185,20 +194,10 @@ class AppRouter {
         name: 'photo-capture',
         pageBuilder: (context, state) {
           final customer = state.extra as CustomerEntity;
-          return CustomTransitionPage<void>(
-            key: state.pageKey,
+          return _buildSlideTransition(
+            context: context,
+            state: state,
             child: PhotoCapturePage(customer: customer),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(1.0, 0.0),
-                    end: Offset.zero,
-                  ).chain(CurveTween(curve: Curves.easeInOut)),
-                ),
-                child: child,
-              );
-            },
           );
         },
       ),
@@ -209,20 +208,10 @@ class AppRouter {
         name: 'receipt-voucher',
         pageBuilder: (context, state) {
           final customer = state.extra as CustomerEntity;
-          return CustomTransitionPage<void>(
-            key: state.pageKey,
+          return _buildSlideTransition(
+            context: context,
+            state: state,
             child: ReceiptVoucherPage(customer: customer),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: animation.drive(
-                  Tween<Offset>(
-                    begin: const Offset(1.0, 0.0),
-                    end: Offset.zero,
-                  ).chain(CurveTween(curve: Curves.easeInOut)),
-                ),
-                child: child,
-              );
-            },
           );
         },
       ),

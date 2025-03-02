@@ -544,6 +544,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start Customer Visit'**
   String get startCustomerVisit;
+
+  /// No description provided for @visitStartedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit started at: {time}'**
+  String visitStartedAt(String time);
+
+  /// No description provided for @visitSessionInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'You can perform multiple activities during this visit session. The session will end only when you click \"End Visit Session\" button.'**
+  String get visitSessionInfo;
+
+  /// No description provided for @endVisitSession.
+  ///
+  /// In en, this message translates to:
+  /// **'End Visit Session'**
+  String get endVisitSession;
+
+  /// No description provided for @visitSessionEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit session ended'**
+  String get visitSessionEnded;
+
+  /// No description provided for @visitSessionStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit session started successfully'**
+  String get visitSessionStarted;
+
+  /// No description provided for @activeVisitWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Active visit with {customerName}'**
+  String activeVisitWith(String customerName);
+
+  /// No description provided for @activeVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Visit'**
+  String get activeVisit;
+
+  /// No description provided for @continueVisiting.
+  ///
+  /// In en, this message translates to:
+  /// **'CONTINUE'**
+  String get continueVisiting;
+
+  /// No description provided for @otherCustomerActiveVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'There is already an active visit for {customerName}. Please end that visit first.'**
+  String otherCustomerActiveVisit(String customerName);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

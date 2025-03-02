@@ -93,5 +93,36 @@
     "receiptVoucher": "Receipt Voucher",
     "createReceiptVoucher": "Create a receipt voucher",
     "noExist": "Not Available",
-    "startCustomerVisit": "Start Customer Visit"
+    "startCustomerVisit": "Start Customer Visit",
+    
+    "visitStartedAt": "Visit started at: {time}",
+    "@visitStartedAt": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "visitSessionInfo": "You can perform multiple activities during this visit session. The session will end only when you click \"End Visit Session\" button.",
+    "endVisitSession": "End Visit Session",
+    "visitSessionEnded": "Visit session ended",
+    "visitSessionStarted": "Visit session started successfully",
+    "activeVisitWith": "Active visit with {customerName}",
+    "@activeVisitWith": {
+        "placeholders": {
+            "customerName": {
+                "type": "String"
+            }
+        }
+    },
+    "activeVisit": "Active Visit",
+    "continueVisiting": "CONTINUE",
+    "otherCustomerActiveVisit": "There is already an active visit for {customerName}. Please end that visit first.",
+    "@otherCustomerActiveVisit": {
+        "placeholders": {
+            "customerName": {
+                "type": "String"
+            }
+        }
+    }
 }

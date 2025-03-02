@@ -234,4 +234,37 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get startCustomerVisit => 'بدء زيارة العميل';
+
+  @override
+  String visitStartedAt(String time) {
+    return 'بدأت الزيارة في: $time';
+  }
+
+  @override
+  String get visitSessionInfo => 'يمكنك تنفيذ أنشطة متعددة خلال جلسة الزيارة هذه. ستنتهي الجلسة فقط عند النقر على زر \"إنهاء جلسة الزيارة\".';
+
+  @override
+  String get endVisitSession => 'إنهاء جلسة الزيارة';
+
+  @override
+  String get visitSessionEnded => 'تم إنهاء جلسة الزيارة';
+
+  @override
+  String get visitSessionStarted => 'تم بدء جلسة الزيارة بنجاح';
+
+  @override
+  String activeVisitWith(String customerName) {
+    return 'زيارة نشطة مع $customerName';
+  }
+
+  @override
+  String get activeVisit => 'زيارة نشطة';
+
+  @override
+  String get continueVisiting => 'متابعة';
+
+  @override
+  String otherCustomerActiveVisit(String customerName) {
+    return 'هناك بالفعل زيارة نشطة لـ $customerName. يرجى إنهاء تلك الزيارة أولاً.';
+  }
 }
