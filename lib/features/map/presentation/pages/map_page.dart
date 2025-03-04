@@ -11,6 +11,8 @@ import 'package:larid/core/l10n/app_localizations.dart';
 import 'package:flutter/services.dart' show rootBundle, SystemNavigator;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:larid/core/storage/shared_prefs.dart';
+import 'package:larid/core/router/navigation_service.dart';
+import 'package:larid/core/state/visit_session_state.dart';
 import '../../domain/usecases/check_active_session_usecase.dart';
 import '../../domain/usecases/start_session_usecase.dart';
 import '../../domain/usecases/end_session_usecase.dart';
@@ -32,7 +34,7 @@ class MapPage extends StatefulWidget {
   State<MapPage> createState() => _MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
   GoogleMapController? _mapController;
   final Location _location = Location();
   LatLng _currentPosition = const LatLng(24.7136, 46.6753); // Default to Riyadh
@@ -58,6 +60,11 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
+    // Register observer for app lifecycle changes
+    WidgetsBinding.instance.addObserver(this);
+    // Listen for visit session state changes
+    visitSessionState.addListener(_handleSessionStateChange);
+    
     _loadMapStyle();
     _getCurrentLocation();
     _loadCustomers();
@@ -91,11 +98,32 @@ class _MapPageState extends State<MapPage> {
     // Refresh when hot reload occurs during development
     _checkActiveCustomerVisit();
   }
+  
+  // Handle session state changes notified by CustomerActivityPage
+  void _handleSessionStateChange() {
+    if (visitSessionState.visitSessionChanged) {
+      debugPrint('MapPage: Detected visit session change notification, refreshing state');
+      _checkActiveCustomerVisit();
+      visitSessionState.consumeSessionChange();
+    }
+  }
+  
+  // Also implement app lifecycle handling to refresh on resume
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      debugPrint('MapPage: App resumed, checking session state');
+      _checkActiveCustomerVisit();
+    }
+  }
 
   @override
   void dispose() {
     _hideCustomerInfo();
     _mapController?.dispose();
+    // Remove observers and listeners
+    WidgetsBinding.instance.removeObserver(this);
+    visitSessionState.removeListener(_handleSessionStateChange);
     super.dispose();
   }
 
@@ -423,23 +451,11 @@ class _MapPageState extends State<MapPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed:
-                            () => {
-                              _hideCustomerInfo(),
-                              // Use Navigator.push instead of GoRouter to properly handle the result
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => CustomerActivityPage(
-                                    customer: customer,
-                                  ),
-                                ),
-                              ).then((result) {
-                                // Process the result when returning from CustomerActivityPage
-                                debugPrint('Returned from customer dialog->activity page with result: $result');
-                                
-                                // Force a refresh of customer visit session status
-                                _checkActiveCustomerVisit();
-                              }),
+                        onPressed: () {
+                              _hideCustomerInfo();
+                              // Use NavigationService with GoRouter
+                              NavigationService.push(context, RouteConstants.customerActivity, extra: customer);
+                              // Session checking will be handled in didChangeDependencies
                             },
 
                         icon: const Icon(Icons.play_arrow),
@@ -761,36 +777,8 @@ class _MapPageState extends State<MapPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      // Navigate to the customer activity page
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => CustomerActivityPage(
-                            customer: _customerWithActiveVisit!,
-                          ),
-                        ),
-                      ).then((result) {
-                        // Process the result from customer activity page
-                        debugPrint('Returned from customer activity page with result: $result');
-                        
-                        if (result != null && result is Map) {
-                          // Check if we have detailed session information
-                          final bool sessionChecked = result['sessionChecked'] == true;
-                          final bool sessionEnded = result['sessionEnded'] == true;
-                          final bool hasActiveSession = result['hasActiveSession'] == true;
-                          
-                          debugPrint('Session data: checked=$sessionChecked, ended=$sessionEnded, active=$hasActiveSession');
-                          
-                          // If we have complete session information from the result, use it
-                          // Otherwise fall back to database check
-                          if (sessionChecked) {
-                            // Force a refresh of customer visit session status
-                            _checkActiveCustomerVisit();
-                          }
-                        } else {
-                          // No result or incomplete result, do a full check
-                          _checkActiveCustomerVisit();
-                        }
-                      });
+                      // Navigate to the customer activity page using GoRouter
+                      NavigationService.push(context, RouteConstants.customerActivity, extra: _customerWithActiveVisit!);
                     },
                     child: Text(
                       l10n.continueVisiting,
@@ -846,10 +834,8 @@ class _MapPageState extends State<MapPage> {
                       icon: const Icon(Icons.search, color: AppColors.primary),
                       onPressed: () {
                         _hideCustomerInfo();
-                        context.push('/customer-search').then((_) {
-                          // Check for session updates when returning from search
-                          _checkActiveCustomerVisit();
-                        });
+                        NavigationService.push(context, RouteConstants.customerSearch);
+                        // Session checking will be handled in didChangeDependencies
                       },
                     ),
                   ),

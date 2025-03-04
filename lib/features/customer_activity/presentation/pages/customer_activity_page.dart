@@ -7,6 +7,7 @@ import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:larid/core/router/navigation_service.dart';
 import 'package:larid/database/customer_table.dart';
 import 'package:larid/core/di/service_locator.dart';
+import 'package:larid/core/state/visit_session_state.dart';
 
 class CustomerActivityPage extends StatefulWidget {
   final CustomerEntity customer;
@@ -72,19 +73,17 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    // Wrap with WillPopScope to handle back button presses
     return WillPopScope(
       onWillPop: () async {
         debugPrint(
           'Back button pressed in CustomerActivityPage, active session: $_hasActiveSession',
         );
 
-        // Return session data to the map page with information about current session state
-        Navigator.of(context).pop({
-          'sessionChecked': true,
-          'hasActiveSession': _hasActiveSession,
-          'customerCode': _customer.customerCode,
-        });
+        // Notify session state change before popping
+        visitSessionState.markSessionChanged();
+
+        // Pop back to map page
+        NavigationService.pop(context);
 
         return false;
       },
@@ -260,6 +259,9 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                             _customer.customerCode,
                           );
                           await _checkVisitSession(); // Update the UI
+
+                          // Notify that session state has changed
+                          visitSessionState.markSessionChanged();
                         } else if (!_hasActiveSession &&
                             customerWithActiveSession != null &&
                             customerWithActiveSession.customerCode !=
@@ -268,7 +270,9 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                l10n.otherCustomerActiveVisit(customerWithActiveSession.customerName),
+                                l10n.otherCustomerActiveVisit(
+                                  customerWithActiveSession.customerName,
+                                ),
                               ),
                               backgroundColor: Colors.red,
                             ),
@@ -349,6 +353,9 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                         );
                         await _checkVisitSession(); // Update the UI
 
+                        // Notify that session state has changed
+                        visitSessionState.markSessionChanged();
+
                         // Show success message
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -357,14 +364,9 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                           ),
                         );
 
-                        // Pass back detailed session information to map page
-                        // This helps the map page correctly update its UI
-                        Navigator.of(context).pop({
-                          'sessionChecked': true,
-                          'sessionEnded': true,
-                          'hasActiveSession': false,
-                          'customerCode': _customer.customerCode,
-                        });
+                        // With GoRouter, we don't need to pass back a result
+                        // Just navigate back to the map page
+                        NavigationService.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
