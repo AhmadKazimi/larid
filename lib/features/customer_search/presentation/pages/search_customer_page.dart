@@ -11,6 +11,9 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import 'package:larid/core/router/navigation_service.dart';
 import '../../../../features/sync/domain/entities/customer_entity.dart';
+import '../../../../database/customer_table.dart';
+import '../../../../core/di/service_locator.dart';
+import '../../../../core/state/visit_session_state.dart';
 
 class SearchCustomerPage extends StatefulWidget {
   const SearchCustomerPage({super.key});
@@ -23,6 +26,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounceTimer;
   bool _showTodayCustomers = true;
+  String? _activeVisitCustomerCode; // Track the active visit customer code
 
   @override
   void initState() {
@@ -30,12 +34,37 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
     context.read<CustomerSearchBloc>().add(
       const SwitchCustomerList(showTodayCustomers: true),
     );
+    _checkActiveVisitCustomer(); // Check for active visit customer on init
+    
+    // Listen for visit session changes
+    visitSessionState.addListener(_onVisitSessionChanged);
+  }
+  
+  // Check for active visit customer
+  Future<void> _checkActiveVisitCustomer() async {
+    final customerTable = getIt<CustomerTable>();
+    final activeCustomer = await customerTable.getCustomerWithActiveVisitSession();
+    
+    if (mounted) {
+      setState(() {
+        _activeVisitCustomerCode = activeCustomer?.customerCode;
+      });
+    }
+  }
+  
+  // Listen for visit session changes
+  void _onVisitSessionChanged() {
+    if (visitSessionState.visitSessionChanged) {
+      _checkActiveVisitCustomer();
+      visitSessionState.consumeSessionChange();
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _debounceTimer?.cancel();
+    visitSessionState.removeListener(_onVisitSessionChanged);
     super.dispose();
   }
 
@@ -296,8 +325,13 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: customer.customerCode == _activeVisitCustomerCode 
+                ? Colors.green.shade50  // Light green background for active session
+                : Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: customer.customerCode == _activeVisitCustomerCode
+                ? Border.all(color: Colors.green, width: 2) // Green border for active session
+                : null,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
