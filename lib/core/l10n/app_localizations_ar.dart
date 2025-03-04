@@ -315,4 +315,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get print => 'طباعة';
+
+  @override
+  String get addItem => 'إضافة عنصر';
+
+  @override
+  String get returnItem => 'إرجاع عنصر';
 }

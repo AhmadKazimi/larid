@@ -141,5 +141,8 @@
     "netGrandTotal": "صافي المجموع الكلي",
     "addComment": "إضافة تعليق",
     "submit": "تقديم",
-    "print": "طباعة"
+    "print": "طباعة",
+    "addItem": "إضافة عنصر",
+    "returnItem": "إرجاع عنصر",
+    "sync": "مزامنة"
 }

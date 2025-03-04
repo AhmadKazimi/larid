@@ -315,4 +315,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get print => 'Print';
+
+  @override
+  String get addItem => 'Add Item';
+
+  @override
+  String get returnItem => 'Return Item';
 }

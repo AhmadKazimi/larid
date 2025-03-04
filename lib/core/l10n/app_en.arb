@@ -141,5 +141,8 @@
     "netGrandTotal": "Net Grand Total",
     "addComment": "Add comment",
     "submit": "Submit",
-    "print": "Print"
+    "print": "Print",
+    "addItem": "Add Item",
+    "returnItem": "Return Item",
+    "sync": "Sync"
 }
