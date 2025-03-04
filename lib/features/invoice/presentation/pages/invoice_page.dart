@@ -406,7 +406,7 @@ class _InvoicePageState extends State<InvoicePage> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child:
+              child: 
                   state.isSubmitting
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Builder(
