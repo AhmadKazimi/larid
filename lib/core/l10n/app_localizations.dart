@@ -598,6 +598,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There is already an active visit for {customerName}. Please end that visit first.'**
   String otherCustomerActiveVisit(String customerName);
+
+  /// No description provided for @invoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice'**
+  String get invoice;
+
+  /// No description provided for @subTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal'**
+  String get subTotal;
+
+  /// No description provided for @discount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get discount;
+
+  /// No description provided for @total.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
+
+  /// No description provided for @salesTax.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales Tax'**
+  String get salesTax;
+
+  /// No description provided for @grandTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Grand Total'**
+  String get grandTotal;
+
+  /// No description provided for @returnItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Returns'**
+  String get returnItems;
+
+  /// No description provided for @summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get summary;
+
+  /// No description provided for @netSubTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Subtotal'**
+  String get netSubTotal;
+
+  /// No description provided for @netDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Discount'**
+  String get netDiscount;
+
+  /// No description provided for @netTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Total'**
+  String get netTotal;
+
+  /// No description provided for @netSalesTax.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Sales Tax'**
+  String get netSalesTax;
+
+  /// No description provided for @netGrandTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Grand Total'**
+  String get netGrandTotal;
+
+  /// No description provided for @addComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add comment'**
+  String get addComment;
+
+  /// No description provided for @submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submit;
+
+  /// No description provided for @print.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get print;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

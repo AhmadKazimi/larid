@@ -267,4 +267,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String otherCustomerActiveVisit(String customerName) {
     return 'There is already an active visit for $customerName. Please end that visit first.';
   }
+
+  @override
+  String get invoice => 'Invoice';
+
+  @override
+  String get subTotal => 'Subtotal';
+
+  @override
+  String get discount => 'Discount';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String get salesTax => 'Sales Tax';
+
+  @override
+  String get grandTotal => 'Grand Total';
+
+  @override
+  String get returnItems => 'Returns';
+
+  @override
+  String get summary => 'Summary';
+
+  @override
+  String get netSubTotal => 'Net Subtotal';
+
+  @override
+  String get netDiscount => 'Net Discount';
+
+  @override
+  String get netTotal => 'Net Total';
+
+  @override
+  String get netSalesTax => 'Net Sales Tax';
+
+  @override
+  String get netGrandTotal => 'Net Grand Total';
+
+  @override
+  String get addComment => 'Add comment';
+
+  @override
+  String get submit => 'Submit';
+
+  @override
+  String get print => 'Print';
 }

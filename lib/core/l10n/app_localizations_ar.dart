@@ -267,4 +267,52 @@ class AppLocalizationsAr extends AppLocalizations {
   String otherCustomerActiveVisit(String customerName) {
     return 'هناك بالفعل زيارة نشطة لـ $customerName. يرجى إنهاء تلك الزيارة أولاً.';
   }
+
+  @override
+  String get invoice => 'الفاتورة';
+
+  @override
+  String get subTotal => 'المجموع الفرعي';
+
+  @override
+  String get discount => 'الخصم';
+
+  @override
+  String get total => 'المجموع';
+
+  @override
+  String get salesTax => 'ضريبة المبيعات';
+
+  @override
+  String get grandTotal => 'المجموع الكلي';
+
+  @override
+  String get returnItems => 'المرتجعات';
+
+  @override
+  String get summary => 'الملخص';
+
+  @override
+  String get netSubTotal => 'صافي المجموع الفرعي';
+
+  @override
+  String get netDiscount => 'صافي الخصم';
+
+  @override
+  String get netTotal => 'صافي المجموع';
+
+  @override
+  String get netSalesTax => 'صافي ضريبة المبيعات';
+
+  @override
+  String get netGrandTotal => 'صافي المجموع الكلي';
+
+  @override
+  String get addComment => 'إضافة تعليق';
+
+  @override
+  String get submit => 'تقديم';
+
+  @override
+  String get print => 'طباعة';
 }

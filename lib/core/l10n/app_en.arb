@@ -124,5 +124,22 @@
                 "type": "String"
             }
         }
-    }
+    },
+
+    "invoice": "Invoice",
+    "subTotal": "Subtotal",
+    "discount": "Discount",
+    "total": "Total",
+    "salesTax": "Sales Tax",
+    "grandTotal": "Grand Total",
+    "returnItems": "Returns",
+    "summary": "Summary",
+    "netSubTotal": "Net Subtotal",
+    "netDiscount": "Net Discount",
+    "netTotal": "Net Total",
+    "netSalesTax": "Net Sales Tax",
+    "netGrandTotal": "Net Grand Total",
+    "addComment": "Add comment",
+    "submit": "Submit",
+    "print": "Print"
 }

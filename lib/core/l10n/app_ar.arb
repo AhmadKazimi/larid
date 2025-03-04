@@ -124,5 +124,22 @@
                 "type": "String"
             }
         }
-    }
+    },
+
+    "invoice": "الفاتورة",
+    "subTotal": "المجموع الفرعي",
+    "discount": "الخصم",
+    "total": "المجموع",
+    "salesTax": "ضريبة المبيعات",
+    "grandTotal": "المجموع الكلي",
+    "returnItems": "المرتجعات",
+    "summary": "الملخص",
+    "netSubTotal": "صافي المجموع الفرعي",
+    "netDiscount": "صافي الخصم",
+    "netTotal": "صافي المجموع",
+    "netSalesTax": "صافي ضريبة المبيعات",
+    "netGrandTotal": "صافي المجموع الكلي",
+    "addComment": "إضافة تعليق",
+    "submit": "تقديم",
+    "print": "طباعة"
 }

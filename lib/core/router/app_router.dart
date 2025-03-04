@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:larid/features/sync/presentation/pages/sync_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
-import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/map/presentation/pages/map_page.dart';
 import '../../features/api_config/presentation/pages/api_base_url_page.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
