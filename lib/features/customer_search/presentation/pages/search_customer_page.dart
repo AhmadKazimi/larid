@@ -10,6 +10,7 @@ import '../bloc/customer_search_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import 'package:larid/core/router/navigation_service.dart';
+import '../../../../features/sync/domain/entities/customer_entity.dart';
 
 class SearchCustomerPage extends StatefulWidget {
   const SearchCustomerPage({super.key});
@@ -49,18 +50,22 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
 
   void _onTabChanged(bool showTodayCustomers) {
     if (_showTodayCustomers == showTodayCustomers) return;
-
+    
+    // Update the state before triggering the bloc event to make UI feel more responsive
     setState(() {
       _showTodayCustomers = showTodayCustomers;
     });
 
-    if (_searchController.text.isEmpty) {
-      context.read<CustomerSearchBloc>().add(
-        SwitchCustomerList(showTodayCustomers: showTodayCustomers),
-      );
-    } else {
-      _onSearchChanged(_searchController.text);
-    }
+    // Use Future.microtask to ensure the UI updates before starting the potentially heavy operation
+    Future.microtask(() {
+      if (_searchController.text.isEmpty) {
+        context.read<CustomerSearchBloc>().add(
+          SwitchCustomerList(showTodayCustomers: showTodayCustomers),
+        );
+      } else {
+        _onSearchChanged(_searchController.text);
+      }
+    });
   }
 
   @override
@@ -114,60 +119,74 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
                       ),
                     ),
                   ),
-                  // Tabs
+                  // Tabs with improved interaction
                   Row(
                     children: [
                       Expanded(
-                        child: GestureDetector(
-                          onTap:
-                              _showTodayCustomers
-                                  ? null
-                                  : () => _onTabChanged(true),
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 300),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color:
-                                    _showTodayCustomers
-                                        ? AppColors.primary
-                                        : AppColors.background,
-                                fontFamily:
-                                    Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.fontFamily,
-                              ),
-                              child: Text(
-                                AppLocalizations.of(context).todayCustomersTab,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            // Always respond to tap, even when active
+                            onTap: () => _onTabChanged(true),
+                            // Add a custom splash color that matches the design
+                            splashColor: AppColors.primary.withOpacity(0.1),
+                            highlightColor: Colors.transparent,
+                            borderRadius: BorderRadius.horizontal(
+                              left: Radius.circular(25),
+                            ),
+                            child: Container(
+                              alignment: Alignment.center,
+                              height: 45,
+                              child: AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 300),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: _showTodayCustomers
+                                      ? AppColors.primary
+                                      : AppColors.background,
+                                  fontWeight: _showTodayCustomers 
+                                      ? FontWeight.bold 
+                                      : FontWeight.normal,
+                                  fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                                ),
+                                child: Text(
+                                  AppLocalizations.of(context).todayCustomersTab,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                       Expanded(
-                        child: GestureDetector(
-                          onTap:
-                              _showTodayCustomers
-                                  ? () => _onTabChanged(false)
-                                  : null,
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 300),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color:
-                                    !_showTodayCustomers
-                                        ? AppColors.primary
-                                        : AppColors.background,
-                                fontFamily:
-                                    Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.fontFamily,
-                              ),
-                              child: Text(
-                                AppLocalizations.of(context).customersTab,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            // Always respond to tap, even when active
+                            onTap: () => _onTabChanged(false),
+                            // Add a custom splash color that matches the design
+                            splashColor: AppColors.primary.withOpacity(0.1),
+                            highlightColor: Colors.transparent,
+                            borderRadius: BorderRadius.horizontal(
+                              right: Radius.circular(25),
+                            ),
+                            child: Container(
+                              alignment: Alignment.center,
+                              height: 45,
+                              child: AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 300),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: !_showTodayCustomers
+                                      ? AppColors.primary
+                                      : AppColors.background,
+                                  fontWeight: !_showTodayCustomers 
+                                      ? FontWeight.bold 
+                                      : FontWeight.normal,
+                                  fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
+                                ),
+                                child: Text(
+                                  AppLocalizations.of(context).customersTab,
+                                ),
                               ),
                             ),
                           ),
@@ -230,169 +249,25 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
                         () => const Center(
                           child: Text('Start typing to search for customers'),
                         ),
-                    loading:
-                        () => const Center(child: CircularProgressIndicator()),
-                    loaded:
-                        (customers) =>
-                            customers.isEmpty
-                                ? const Center(
-                                  child: Text('No customers found'),
-                                )
-                                : ListView.builder(
-                                  padding: const EdgeInsets.all(16),
-                                  itemCount: customers.length,
-                                  itemBuilder: (context, index) {
-                                    final customer = customers[index];
-                                    return Container(
-                                      margin: const EdgeInsets.only(bottom: 12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(
-                                              0.05,
-                                            ),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: ListTile(
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 12,
-                                            ),
-                                        title: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              customer.customerName,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            _buildInfoRow(
-                                              Icons.location_on_outlined,
-                                              AppLocalizations.of(
-                                                context,
-                                              )!.address,
-                                              customer.address?.isNotEmpty ==
-                                                      true
-                                                  ? customer.address!
-                                                  : AppLocalizations.of(
-                                                    context,
-                                                  )!.notExists,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            _buildInfoRow(
-                                              Icons.phone_outlined,
-                                              AppLocalizations.of(
-                                                context,
-                                              )!.phone,
-                                              customer
-                                                          .contactPhone
-                                                          ?.isNotEmpty ==
-                                                      true
-                                                  ? customer.contactPhone!
-                                                  : AppLocalizations.of(
-                                                    context,
-                                                  )!.notExists,
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Row(
-                                              children: [
-                                                if (customer.mapCoords != null)
-                                                  Container(
-                                                    height: 36,
-                                                    decoration: BoxDecoration(
-                                                      color: AppColors.primary
-                                                          .withOpacity(0.1),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                    child: IconButton(
-                                                      onPressed: () async {
-                                                        final coords = customer
-                                                            .mapCoords!
-                                                            .split(',');
-                                                        if (coords.length ==
-                                                            2) {
-                                                          final lat =
-                                                              double.tryParse(
-                                                                coords[0],
-                                                              );
-                                                          final lng =
-                                                              double.tryParse(
-                                                                coords[1],
-                                                              );
-                                                          if (lat != null &&
-                                                              lng != null) {
-                                                            final url = Uri.parse(
-                                                              'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
-                                                            );
-                                                            if (await canLaunchUrl(
-                                                              url,
-                                                            )) {
-                                                              await launchUrl(
-                                                                url,
-                                                                mode:
-                                                                    LaunchMode
-                                                                        .externalApplication,
-                                                              );
-                                                            }
-                                                          }
-                                                        }
-                                                      },
-                                                      icon: Icon(
-                                                        Icons.directions,
-                                                        color:
-                                                            AppColors.primary,
-                                                        size: 20,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                const SizedBox(width: 8),
-                                                Container(
-                                                  height: 36,
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.primary
-                                                        .withOpacity(0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                  ),
-                                                  child: IconButton(
-                                                    onPressed: () {
-                                                      NavigationService.push(
-                                                        context,
-                                                        RouteConstants
-                                                            .customerActivity,
-                                                        extra: customer,
-                                                      );
-                                                    },
-                                                    icon: Icon(
-                                                      Icons.play_arrow_rounded,
-                                                      color: AppColors.primary,
-                                                      size: 20,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
+                    loading: () {
+                      // Show a more subtle loading indicator that doesn't replace content
+                      return Stack(
+                        children: [
+                          // Show faded previous content if available
+                          Opacity(
+                            opacity: 0.5,
+                            child: _buildCustomerList(_showTodayCustomers ? 
+                                context.read<CustomerSearchBloc>().todayCustomersCache : 
+                                context.read<CustomerSearchBloc>().allCustomersCache),
+                          ),
+                          // Centered progress indicator
+                          const Center(child: CircularProgressIndicator()),
+                        ],
+                      );
+                    },
+                    loaded: (customers) => customers.isEmpty
+                        ? const Center(child: Text('No customers found'))
+                        : _buildCustomerList(customers),
                     error: (message) => Center(child: Text('Error: $message')),
                   );
                 },
@@ -401,6 +276,132 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
           ),
         ],
       ),
+    );
+  }
+
+  // Extracted customer list building to a separate method
+  Widget _buildCustomerList(List<CustomerEntity> customers) {
+    // If list is empty, don't try to build it
+    if (customers.isEmpty) {
+      return const Center(child: Text('No customers found'));
+    }
+    
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: customers.length,
+      // Using a key to ensure proper recycling
+      key: PageStorageKey(_showTodayCustomers ? 'today_customers' : 'all_customers'),
+      itemBuilder: (context, index) {
+        final customer = customers[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  customer.customerName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildInfoRow(
+                  Icons.location_on_outlined,
+                  AppLocalizations.of(context)!.address,
+                  customer.address?.isNotEmpty == true
+                      ? customer.address!
+                      : AppLocalizations.of(context)!.notExists,
+                ),
+                const SizedBox(height: 4),
+                _buildInfoRow(
+                  Icons.phone_outlined,
+                  AppLocalizations.of(context)!.phone,
+                  customer.contactPhone?.isNotEmpty == true
+                      ? customer.contactPhone!
+                      : AppLocalizations.of(context)!.notExists,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    if (customer.mapCoords != null)
+                      Container(
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: IconButton(
+                          onPressed: () async {
+                            final coords = customer.mapCoords!.split(',');
+                            if (coords.length == 2) {
+                              final lat = double.tryParse(coords[0]);
+                              final lng = double.tryParse(coords[1]);
+                              if (lat != null && lng != null) {
+                                final url = Uri.parse(
+                                  'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng',
+                                );
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(
+                                    url,
+                                    mode: LaunchMode.externalApplication,
+                                  );
+                                }
+                              }
+                            }
+                          },
+                          icon: Icon(
+                            Icons.directions,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+                    Container(
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          NavigationService.push(
+                            context,
+                            RouteConstants.customerActivity,
+                            extra: customer,
+                          );
+                        },
+                        icon: Icon(
+                          Icons.play_arrow_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
