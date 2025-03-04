@@ -72,6 +72,11 @@ class _ApiBaseUrlPageState extends State<ApiBaseUrlPage> {
           child: SafeArea(
             child: Column(
               children: [
+                GradientFormCard(
+                  padding: const EdgeInsets.all(0),
+                  child: Image.asset('assets/images/img_larid2.png'),
+                ),
+                const SizedBox(height: 16),
                 const SizedBox(height: 32),
                 GradientFormCard(
                   child: Form(

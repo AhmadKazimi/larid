@@ -73,10 +73,21 @@ class _LoginPageState extends State<LoginPage> {
             child: SafeArea(
               child: SingleChildScrollView(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16.0, bottom: 16.0),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: AppColors.background,
+                          size: 28,
+                        ),
+                        onPressed: () => context.go(RouteConstants.apiConfig),
+                      ),
+                    ),
                     GradientFormCard(
                       padding: const EdgeInsets.all(0),
-
                       child: Image.asset('assets/images/img_larid2.png'),
                     ),
                     const SizedBox(height: 16),
