@@ -330,4 +330,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get returnItem => 'Return Item';
+
+  @override
+  String get items => 'Items';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get searchHint => 'Search by code or description';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get price => 'Price';
+
+  @override
+  String get saveItems => 'Save Items';
+
+  @override
+  String get cancelItems => 'Cancel';
+
+  @override
+  String get noItemsFound => 'No items found';
+
+  @override
+  String get loadingItems => 'Loading items...';
+
+  @override
+  String get loadMore => 'Load More';
+
+  @override
+  String itemsSelected(int count) {
+    return '$count items selected';
+  }
+
+  @override
+  String get invoiceItems => 'Invoice Items';
+
+  @override
+  String get paymentType => 'Payment Type';
+
+  @override
+  String get cash => 'Cash';
+
+  @override
+  String get credit => 'Credit';
+
+  @override
+  String get cheque => 'Cheque';
+
+  @override
+  String get invoiceDetails => 'Invoice Details';
+
+  @override
+  String get returnDetails => 'Return Details';
+
+  @override
+  String get invoiceSavedSuccessfully => 'Invoice saved successfully';
+
+  @override
+  String get returnSavedSuccessfully => 'Return saved successfully';
 }

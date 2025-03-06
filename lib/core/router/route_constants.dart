@@ -19,6 +19,7 @@ class RouteConstants {
   static const String invoice = '/invoice';
   static const String photoCapture = '/photo-capture';
   static const String receiptVoucher = '/receipt-voucher';
+  static const String items = '/items';
 
   // Add more routes as needed for your features
 }

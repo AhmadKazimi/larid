@@ -724,6 +724,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Return Item'**
   String get returnItem;
+
+  /// No description provided for @items.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get items;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by code or description'**
+  String get searchHint;
+
+  /// No description provided for @quantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// No description provided for @price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// No description provided for @saveItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Items'**
+  String get saveItems;
+
+  /// No description provided for @cancelItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelItems;
+
+  /// No description provided for @noItemsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No items found'**
+  String get noItemsFound;
+
+  /// No description provided for @loadingItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading items...'**
+  String get loadingItems;
+
+  /// No description provided for @loadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get loadMore;
+
+  /// No description provided for @itemsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items selected'**
+  String itemsSelected(int count);
+
+  /// No description provided for @invoiceItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Items'**
+  String get invoiceItems;
+
+  /// No description provided for @paymentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Type'**
+  String get paymentType;
+
+  /// No description provided for @cash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// No description provided for @credit.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit'**
+  String get credit;
+
+  /// No description provided for @cheque.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheque'**
+  String get cheque;
+
+  /// No description provided for @invoiceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Details'**
+  String get invoiceDetails;
+
+  /// No description provided for @returnDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Return Details'**
+  String get returnDetails;
+
+  /// No description provided for @invoiceSavedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice saved successfully'**
+  String get invoiceSavedSuccessfully;
+
+  /// No description provided for @returnSavedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Return saved successfully'**
+  String get returnSavedSuccessfully;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

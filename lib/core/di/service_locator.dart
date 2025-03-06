@@ -16,6 +16,7 @@ import '../../database/sales_taxes_table.dart';
 import '../../database/inventory_items_table.dart';
 import '../../database/inventory_units_table.dart';
 import '../../database/working_session_table.dart';
+import '../../database/invoice_table.dart';
 import '../../features/sync/data/repositories/sync_repository_impl.dart';
 import '../../features/sync/domain/repositories/sync_repository.dart';
 import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
@@ -57,6 +58,8 @@ Future<void> setupServiceLocator() async {
       await db.execute(InventoryUnitsTable.createTableQuery);
       await db.execute(SalesTaxesTable.createTableQuery);
       await db.execute(WorkingSessionTable.createTableQuery);
+      await db.execute(InvoiceTable.createTableQuery);
+      await db.execute(InvoiceTable.createInvoiceItemsTableQuery);
     },
   );
 
@@ -68,6 +71,7 @@ Future<void> setupServiceLocator() async {
   final inventoryUnitsTable = InventoryUnitsTable(database);
   final salesTaxesTable = SalesTaxesTable(database);
   final workingSessionTable = WorkingSessionTable(database);
+  final invoiceTable = InvoiceTable(database);
 
   getIt.registerSingleton<UserTable>(userTable);
   getIt.registerSingleton<CustomerTable>(customerTable);
@@ -76,6 +80,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerSingleton<InventoryUnitsTable>(inventoryUnitsTable);
   getIt.registerSingleton<SalesTaxesTable>(salesTaxesTable);
   getIt.registerSingleton<WorkingSessionTable>(workingSessionTable);
+  getIt.registerSingleton<InvoiceTable>(invoiceTable);
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();

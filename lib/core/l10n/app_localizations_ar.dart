@@ -330,4 +330,66 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get returnItem => 'إرجاع عنصر';
+
+  @override
+  String get items => 'العناصر';
+
+  @override
+  String get search => 'بحث';
+
+  @override
+  String get searchHint => 'البحث بالرمز أو الوصف';
+
+  @override
+  String get quantity => 'الكمية';
+
+  @override
+  String get price => 'السعر';
+
+  @override
+  String get saveItems => 'حفظ العناصر';
+
+  @override
+  String get cancelItems => 'إلغاء';
+
+  @override
+  String get noItemsFound => 'لم يتم العثور على عناصر';
+
+  @override
+  String get loadingItems => 'جاري تحميل العناصر...';
+
+  @override
+  String get loadMore => 'تحميل المزيد';
+
+  @override
+  String itemsSelected(int count) {
+    return 'تم اختيار $count عنصر';
+  }
+
+  @override
+  String get invoiceItems => 'عناصر الفاتورة';
+
+  @override
+  String get paymentType => 'طريقة الدفع';
+
+  @override
+  String get cash => 'نقداً';
+
+  @override
+  String get credit => 'ائتمان';
+
+  @override
+  String get cheque => 'شيك';
+
+  @override
+  String get invoiceDetails => 'تفاصيل الفاتورة';
+
+  @override
+  String get returnDetails => 'تفاصيل المرتجع';
+
+  @override
+  String get invoiceSavedSuccessfully => 'تم حفظ الفاتورة بنجاح';
+
+  @override
+  String get returnSavedSuccessfully => 'تم حفظ المرتجع بنجاح';
 }

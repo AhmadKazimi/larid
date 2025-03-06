@@ -147,5 +147,33 @@
     "print": "طباعة",
     "addItem": "إضافة عنصر",
     "returnItem": "إرجاع عنصر",
-    "sync": "مزامنة"
+    "sync": "مزامنة",
+    
+    "items": "العناصر",
+    "search": "بحث",
+    "searchHint": "البحث بالرمز أو الوصف",
+    "quantity": "الكمية",
+    "price": "السعر",
+    "saveItems": "حفظ العناصر",
+    "cancelItems": "إلغاء",
+    "noItemsFound": "لم يتم العثور على عناصر",
+    "loadingItems": "جاري تحميل العناصر...",
+    "loadMore": "تحميل المزيد",
+    "itemsSelected": "تم اختيار {count} عنصر",
+    "@itemsSelected": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "invoiceItems": "عناصر الفاتورة",
+    "paymentType": "طريقة الدفع",
+    "cash": "نقداً",
+    "credit": "ائتمان",
+    "cheque": "شيك",
+    "invoiceDetails": "تفاصيل الفاتورة",
+    "returnDetails": "تفاصيل المرتجع",
+    "invoiceSavedSuccessfully": "تم حفظ الفاتورة بنجاح",
+    "returnSavedSuccessfully": "تم حفظ المرتجع بنجاح"
 }

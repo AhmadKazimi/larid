@@ -10,6 +10,8 @@ import '../../features/customer_search/presentation/pages/search_customer_page.d
 import '../../features/customer_search/presentation/bloc/customer_search_bloc.dart';
 import '../../features/customer_activity/presentation/pages/customer_activity_page.dart';
 import '../../features/invoice/presentation/pages/invoice_page.dart';
+import '../../features/invoice/presentation/pages/items_page.dart';
+import '../../features/invoice/presentation/bloc/items_bloc.dart';
 import '../../features/photo_capture/presentation/pages/photo_capture_page.dart';
 import '../../features/receipt_voucher/presentation/pages/receipt_voucher_page.dart';
 import '../../features/sync/domain/entities/customer_entity.dart';
@@ -19,10 +21,12 @@ import '../storage/shared_prefs.dart';
 import 'route_constants.dart';
 
 class AppRouter {
-  static final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'root',
+  );
 
   static GoRouter get router => _router;
-  
+
   // Helper method to create a standard slide transition
   static CustomTransitionPage<void> _buildSlideTransition({
     required BuildContext context,
@@ -55,15 +59,21 @@ class AppRouter {
         final userDB = getIt<UserTable>();
         final baseUrl = await userDB.getBaseUrl();
 
-        final isApiConfigPage = state.matchedLocation == RouteConstants.apiConfig;
+        final isApiConfigPage =
+            state.matchedLocation == RouteConstants.apiConfig;
         final isLoginPage = state.matchedLocation == RouteConstants.login;
         final isSyncPage = state.matchedLocation == RouteConstants.sync;
         final isMapPage = state.matchedLocation == RouteConstants.map;
-        final isCustomerSearchPage = state.matchedLocation == RouteConstants.customerSearch;
-        final isCustomerActivityPage = state.matchedLocation == RouteConstants.customerActivity;
+        final isCustomerSearchPage =
+            state.matchedLocation == RouteConstants.customerSearch;
+        final isCustomerActivityPage =
+            state.matchedLocation == RouteConstants.customerActivity;
         final isInvoicePage = state.matchedLocation == RouteConstants.invoice;
-        final isPhotoCaptureePage = state.matchedLocation == RouteConstants.photoCapture;
-        final isReceiptVoucherPage = state.matchedLocation == RouteConstants.receiptVoucher;
+        final isItemsPage = state.matchedLocation == RouteConstants.items;
+        final isPhotoCaptureePage =
+            state.matchedLocation == RouteConstants.photoCapture;
+        final isReceiptVoucherPage =
+            state.matchedLocation == RouteConstants.receiptVoucher;
 
         // If base URL is not set, redirect to API config page
         if ((baseUrl == null || baseUrl.isEmpty) && !isApiConfigPage) {
@@ -84,8 +94,14 @@ class AppRouter {
           // If logged in but not on a protected page
           if (isLoggedIn) {
             // If data is synced and not on a permitted page, go to map
-            if (isSynced && !isMapPage && !isCustomerSearchPage && !isCustomerActivityPage && 
-                !isInvoicePage && !isPhotoCaptureePage && !isReceiptVoucherPage) {
+            if (isSynced &&
+                !isMapPage &&
+                !isCustomerSearchPage &&
+                !isCustomerActivityPage &&
+                !isInvoicePage &&
+                !isItemsPage &&
+                !isPhotoCaptureePage &&
+                !isReceiptVoucherPage) {
               return RouteConstants.map;
             }
             // If data is not synced and not on sync page, go to sync
@@ -105,58 +121,63 @@ class AppRouter {
       GoRoute(
         path: RouteConstants.apiConfig,
         name: 'api-config',
-        pageBuilder: (context, state) => _buildSlideTransition(
-          context: context,
-          state: state,
-          child: const ApiBaseUrlPage(),
-        ),
+        pageBuilder:
+            (context, state) => _buildSlideTransition(
+              context: context,
+              state: state,
+              child: const ApiBaseUrlPage(),
+            ),
       ),
 
       // Login Route
       GoRoute(
         path: RouteConstants.login,
         name: 'login',
-        pageBuilder: (context, state) => _buildSlideTransition(
-          context: context,
-          state: state,
-          child: const LoginPage(),
-        ),
+        pageBuilder:
+            (context, state) => _buildSlideTransition(
+              context: context,
+              state: state,
+              child: const LoginPage(),
+            ),
       ),
 
       // Sync Route
       GoRoute(
         path: RouteConstants.sync,
         name: 'sync',
-        pageBuilder: (context, state) => _buildSlideTransition(
-          context: context,
-          state: state,
-          child: const SyncPage(),
-        ),
+        pageBuilder:
+            (context, state) => _buildSlideTransition(
+              context: context,
+              state: state,
+              child: const SyncPage(),
+            ),
       ),
 
       // Map Route
       GoRoute(
         path: RouteConstants.map,
         name: 'map',
-        pageBuilder: (context, state) => _buildSlideTransition(
-          context: context,
-          state: state,
-          child: const MapPage(),
-        ),
+        pageBuilder:
+            (context, state) => _buildSlideTransition(
+              context: context,
+              state: state,
+              child: const MapPage(),
+            ),
       ),
 
       // Customer Search Route
       GoRoute(
         path: RouteConstants.customerSearch,
         name: 'customer-search',
-        pageBuilder: (context, state) => _buildSlideTransition(
-          context: context,
-          state: state,
-          child: BlocProvider(
-            create: (context) => CustomerSearchBloc(),
-            child: const SearchCustomerPage(),
-          ),
-        ),
+        pageBuilder:
+            (context, state) => _buildSlideTransition(
+              context: context,
+              state: state,
+              child: BlocProvider(
+                create: (context) => CustomerSearchBloc(),
+                child: const SearchCustomerPage(),
+              ),
+            ),
       ),
 
       // Customer Activity Route
@@ -181,7 +202,7 @@ class AppRouter {
           // Handle both direct CustomerEntity and Map with isReturn flag
           CustomerEntity customer;
           bool isReturn = false;
-          
+
           if (state.extra is Map) {
             final extraMap = state.extra as Map;
             customer = extraMap['customer'] as CustomerEntity;
@@ -189,11 +210,30 @@ class AppRouter {
           } else {
             customer = state.extra as CustomerEntity;
           }
-          
+
           return _buildSlideTransition(
             context: context,
             state: state,
             child: InvoicePage(customer: customer, isReturn: isReturn),
+          );
+        },
+      ),
+
+      // Items Route
+      GoRoute(
+        path: RouteConstants.items,
+        name: 'items',
+        pageBuilder: (context, state) {
+          final extraMap = state.extra as Map<String, dynamic>;
+          final isReturn = extraMap['isReturn'] as bool? ?? false;
+
+          return _buildSlideTransition(
+            context: context,
+            state: state,
+            child: BlocProvider(
+              create: (context) => ItemsBloc(),
+              child: ItemsPage(isReturn: isReturn),
+            ),
           );
         },
       ),
@@ -226,7 +266,8 @@ class AppRouter {
         },
       ),
     ],
-    errorBuilder: (context, state) =>
-        Scaffold(body: Center(child: Text('Error: ${state.error}'))),
+    errorBuilder:
+        (context, state) =>
+            Scaffold(body: Center(child: Text('Error: ${state.error}'))),
   );
 }

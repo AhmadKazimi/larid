@@ -18,6 +18,8 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$InvoiceState {
   CustomerEntity get customer => throw _privateConstructorUsedError;
+  List<InvoiceItemModel> get items => throw _privateConstructorUsedError;
+  List<InvoiceItemModel> get returnItems => throw _privateConstructorUsedError;
   int get itemCount => throw _privateConstructorUsedError;
   int get returnCount => throw _privateConstructorUsedError;
   double get subtotal => throw _privateConstructorUsedError;
@@ -34,7 +36,9 @@ mixin _$InvoiceState {
   bool get isSubmitting => throw _privateConstructorUsedError;
   bool get isSyncing => throw _privateConstructorUsedError;
   bool get isPrinting => throw _privateConstructorUsedError;
+  bool get isSubmitted => throw _privateConstructorUsedError;
   String get paymentType => throw _privateConstructorUsedError;
+  String? get invoiceNumber => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
 
   /// Create a copy of InvoiceState
@@ -53,6 +57,8 @@ abstract class $InvoiceStateCopyWith<$Res> {
   @useResult
   $Res call({
     CustomerEntity customer,
+    List<InvoiceItemModel> items,
+    List<InvoiceItemModel> returnItems,
     int itemCount,
     int returnCount,
     double subtotal,
@@ -69,7 +75,9 @@ abstract class $InvoiceStateCopyWith<$Res> {
     bool isSubmitting,
     bool isSyncing,
     bool isPrinting,
+    bool isSubmitted,
     String paymentType,
+    String? invoiceNumber,
     String? errorMessage,
   });
 
@@ -92,6 +100,8 @@ class _$InvoiceStateCopyWithImpl<$Res, $Val extends InvoiceState>
   @override
   $Res call({
     Object? customer = null,
+    Object? items = null,
+    Object? returnItems = null,
     Object? itemCount = null,
     Object? returnCount = null,
     Object? subtotal = null,
@@ -108,7 +118,9 @@ class _$InvoiceStateCopyWithImpl<$Res, $Val extends InvoiceState>
     Object? isSubmitting = null,
     Object? isSyncing = null,
     Object? isPrinting = null,
+    Object? isSubmitted = null,
     Object? paymentType = null,
+    Object? invoiceNumber = freezed,
     Object? errorMessage = freezed,
   }) {
     return _then(
@@ -118,6 +130,16 @@ class _$InvoiceStateCopyWithImpl<$Res, $Val extends InvoiceState>
                     ? _value.customer
                     : customer // ignore: cast_nullable_to_non_nullable
                         as CustomerEntity,
+            items:
+                null == items
+                    ? _value.items
+                    : items // ignore: cast_nullable_to_non_nullable
+                        as List<InvoiceItemModel>,
+            returnItems:
+                null == returnItems
+                    ? _value.returnItems
+                    : returnItems // ignore: cast_nullable_to_non_nullable
+                        as List<InvoiceItemModel>,
             itemCount:
                 null == itemCount
                     ? _value.itemCount
@@ -198,11 +220,21 @@ class _$InvoiceStateCopyWithImpl<$Res, $Val extends InvoiceState>
                     ? _value.isPrinting
                     : isPrinting // ignore: cast_nullable_to_non_nullable
                         as bool,
+            isSubmitted:
+                null == isSubmitted
+                    ? _value.isSubmitted
+                    : isSubmitted // ignore: cast_nullable_to_non_nullable
+                        as bool,
             paymentType:
                 null == paymentType
                     ? _value.paymentType
                     : paymentType // ignore: cast_nullable_to_non_nullable
                         as String,
+            invoiceNumber:
+                freezed == invoiceNumber
+                    ? _value.invoiceNumber
+                    : invoiceNumber // ignore: cast_nullable_to_non_nullable
+                        as String?,
             errorMessage:
                 freezed == errorMessage
                     ? _value.errorMessage
@@ -235,6 +267,8 @@ abstract class _$$InvoiceStateImplCopyWith<$Res>
   @useResult
   $Res call({
     CustomerEntity customer,
+    List<InvoiceItemModel> items,
+    List<InvoiceItemModel> returnItems,
     int itemCount,
     int returnCount,
     double subtotal,
@@ -251,7 +285,9 @@ abstract class _$$InvoiceStateImplCopyWith<$Res>
     bool isSubmitting,
     bool isSyncing,
     bool isPrinting,
+    bool isSubmitted,
     String paymentType,
+    String? invoiceNumber,
     String? errorMessage,
   });
 
@@ -274,6 +310,8 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? customer = null,
+    Object? items = null,
+    Object? returnItems = null,
     Object? itemCount = null,
     Object? returnCount = null,
     Object? subtotal = null,
@@ -290,7 +328,9 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
     Object? isSubmitting = null,
     Object? isSyncing = null,
     Object? isPrinting = null,
+    Object? isSubmitted = null,
     Object? paymentType = null,
+    Object? invoiceNumber = freezed,
     Object? errorMessage = freezed,
   }) {
     return _then(
@@ -300,6 +340,16 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
                 ? _value.customer
                 : customer // ignore: cast_nullable_to_non_nullable
                     as CustomerEntity,
+        items:
+            null == items
+                ? _value._items
+                : items // ignore: cast_nullable_to_non_nullable
+                    as List<InvoiceItemModel>,
+        returnItems:
+            null == returnItems
+                ? _value._returnItems
+                : returnItems // ignore: cast_nullable_to_non_nullable
+                    as List<InvoiceItemModel>,
         itemCount:
             null == itemCount
                 ? _value.itemCount
@@ -380,11 +430,21 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
                 ? _value.isPrinting
                 : isPrinting // ignore: cast_nullable_to_non_nullable
                     as bool,
+        isSubmitted:
+            null == isSubmitted
+                ? _value.isSubmitted
+                : isSubmitted // ignore: cast_nullable_to_non_nullable
+                    as bool,
         paymentType:
             null == paymentType
                 ? _value.paymentType
                 : paymentType // ignore: cast_nullable_to_non_nullable
                     as String,
+        invoiceNumber:
+            freezed == invoiceNumber
+                ? _value.invoiceNumber
+                : invoiceNumber // ignore: cast_nullable_to_non_nullable
+                    as String?,
         errorMessage:
             freezed == errorMessage
                 ? _value.errorMessage
@@ -400,6 +460,8 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
 class _$InvoiceStateImpl implements _InvoiceState {
   const _$InvoiceStateImpl({
     required this.customer,
+    final List<InvoiceItemModel> items = const <InvoiceItemModel>[],
+    final List<InvoiceItemModel> returnItems = const <InvoiceItemModel>[],
     this.itemCount = 0,
     this.returnCount = 0,
     this.subtotal = 0.0,
@@ -416,12 +478,33 @@ class _$InvoiceStateImpl implements _InvoiceState {
     this.isSubmitting = false,
     this.isSyncing = false,
     this.isPrinting = false,
+    this.isSubmitted = false,
     this.paymentType = 'Cash',
+    this.invoiceNumber,
     this.errorMessage,
-  });
+  }) : _items = items,
+       _returnItems = returnItems;
 
   @override
   final CustomerEntity customer;
+  final List<InvoiceItemModel> _items;
+  @override
+  @JsonKey()
+  List<InvoiceItemModel> get items {
+    if (_items is EqualUnmodifiableListView) return _items;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_items);
+  }
+
+  final List<InvoiceItemModel> _returnItems;
+  @override
+  @JsonKey()
+  List<InvoiceItemModel> get returnItems {
+    if (_returnItems is EqualUnmodifiableListView) return _returnItems;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_returnItems);
+  }
+
   @override
   @JsonKey()
   final int itemCount;
@@ -472,13 +555,18 @@ class _$InvoiceStateImpl implements _InvoiceState {
   final bool isPrinting;
   @override
   @JsonKey()
+  final bool isSubmitted;
+  @override
+  @JsonKey()
   final String paymentType;
+  @override
+  final String? invoiceNumber;
   @override
   final String? errorMessage;
 
   @override
   String toString() {
-    return 'InvoiceState(customer: $customer, itemCount: $itemCount, returnCount: $returnCount, subtotal: $subtotal, discount: $discount, total: $total, salesTax: $salesTax, grandTotal: $grandTotal, returnSubtotal: $returnSubtotal, returnDiscount: $returnDiscount, returnTotal: $returnTotal, returnSalesTax: $returnSalesTax, returnGrandTotal: $returnGrandTotal, comment: $comment, isSubmitting: $isSubmitting, isSyncing: $isSyncing, isPrinting: $isPrinting, paymentType: $paymentType, errorMessage: $errorMessage)';
+    return 'InvoiceState(customer: $customer, items: $items, returnItems: $returnItems, itemCount: $itemCount, returnCount: $returnCount, subtotal: $subtotal, discount: $discount, total: $total, salesTax: $salesTax, grandTotal: $grandTotal, returnSubtotal: $returnSubtotal, returnDiscount: $returnDiscount, returnTotal: $returnTotal, returnSalesTax: $returnSalesTax, returnGrandTotal: $returnGrandTotal, comment: $comment, isSubmitting: $isSubmitting, isSyncing: $isSyncing, isPrinting: $isPrinting, isSubmitted: $isSubmitted, paymentType: $paymentType, invoiceNumber: $invoiceNumber, errorMessage: $errorMessage)';
   }
 
   @override
@@ -488,6 +576,11 @@ class _$InvoiceStateImpl implements _InvoiceState {
             other is _$InvoiceStateImpl &&
             (identical(other.customer, customer) ||
                 other.customer == customer) &&
+            const DeepCollectionEquality().equals(other._items, _items) &&
+            const DeepCollectionEquality().equals(
+              other._returnItems,
+              _returnItems,
+            ) &&
             (identical(other.itemCount, itemCount) ||
                 other.itemCount == itemCount) &&
             (identical(other.returnCount, returnCount) ||
@@ -518,8 +611,12 @@ class _$InvoiceStateImpl implements _InvoiceState {
                 other.isSyncing == isSyncing) &&
             (identical(other.isPrinting, isPrinting) ||
                 other.isPrinting == isPrinting) &&
+            (identical(other.isSubmitted, isSubmitted) ||
+                other.isSubmitted == isSubmitted) &&
             (identical(other.paymentType, paymentType) ||
                 other.paymentType == paymentType) &&
+            (identical(other.invoiceNumber, invoiceNumber) ||
+                other.invoiceNumber == invoiceNumber) &&
             (identical(other.errorMessage, errorMessage) ||
                 other.errorMessage == errorMessage));
   }
@@ -528,6 +625,8 @@ class _$InvoiceStateImpl implements _InvoiceState {
   int get hashCode => Object.hashAll([
     runtimeType,
     customer,
+    const DeepCollectionEquality().hash(_items),
+    const DeepCollectionEquality().hash(_returnItems),
     itemCount,
     returnCount,
     subtotal,
@@ -544,7 +643,9 @@ class _$InvoiceStateImpl implements _InvoiceState {
     isSubmitting,
     isSyncing,
     isPrinting,
+    isSubmitted,
     paymentType,
+    invoiceNumber,
     errorMessage,
   ]);
 
@@ -560,6 +661,8 @@ class _$InvoiceStateImpl implements _InvoiceState {
 abstract class _InvoiceState implements InvoiceState {
   const factory _InvoiceState({
     required final CustomerEntity customer,
+    final List<InvoiceItemModel> items,
+    final List<InvoiceItemModel> returnItems,
     final int itemCount,
     final int returnCount,
     final double subtotal,
@@ -576,12 +679,18 @@ abstract class _InvoiceState implements InvoiceState {
     final bool isSubmitting,
     final bool isSyncing,
     final bool isPrinting,
+    final bool isSubmitted,
     final String paymentType,
+    final String? invoiceNumber,
     final String? errorMessage,
   }) = _$InvoiceStateImpl;
 
   @override
   CustomerEntity get customer;
+  @override
+  List<InvoiceItemModel> get items;
+  @override
+  List<InvoiceItemModel> get returnItems;
   @override
   int get itemCount;
   @override
@@ -615,7 +724,11 @@ abstract class _InvoiceState implements InvoiceState {
   @override
   bool get isPrinting;
   @override
+  bool get isSubmitted;
+  @override
   String get paymentType;
+  @override
+  String? get invoiceNumber;
   @override
   String? get errorMessage;
 
@@ -624,5 +737,263 @@ abstract class _InvoiceState implements InvoiceState {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$InvoiceStateImplCopyWith<_$InvoiceStateImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$InvoiceItemModel {
+  InventoryItemEntity get item => throw _privateConstructorUsedError;
+  int get quantity => throw _privateConstructorUsedError;
+  double get totalPrice => throw _privateConstructorUsedError;
+  double get discount => throw _privateConstructorUsedError;
+  double get tax => throw _privateConstructorUsedError;
+
+  /// Create a copy of InvoiceItemModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $InvoiceItemModelCopyWith<InvoiceItemModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $InvoiceItemModelCopyWith<$Res> {
+  factory $InvoiceItemModelCopyWith(
+    InvoiceItemModel value,
+    $Res Function(InvoiceItemModel) then,
+  ) = _$InvoiceItemModelCopyWithImpl<$Res, InvoiceItemModel>;
+  @useResult
+  $Res call({
+    InventoryItemEntity item,
+    int quantity,
+    double totalPrice,
+    double discount,
+    double tax,
+  });
+
+  $InventoryItemEntityCopyWith<$Res> get item;
+}
+
+/// @nodoc
+class _$InvoiceItemModelCopyWithImpl<$Res, $Val extends InvoiceItemModel>
+    implements $InvoiceItemModelCopyWith<$Res> {
+  _$InvoiceItemModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of InvoiceItemModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? item = null,
+    Object? quantity = null,
+    Object? totalPrice = null,
+    Object? discount = null,
+    Object? tax = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            item:
+                null == item
+                    ? _value.item
+                    : item // ignore: cast_nullable_to_non_nullable
+                        as InventoryItemEntity,
+            quantity:
+                null == quantity
+                    ? _value.quantity
+                    : quantity // ignore: cast_nullable_to_non_nullable
+                        as int,
+            totalPrice:
+                null == totalPrice
+                    ? _value.totalPrice
+                    : totalPrice // ignore: cast_nullable_to_non_nullable
+                        as double,
+            discount:
+                null == discount
+                    ? _value.discount
+                    : discount // ignore: cast_nullable_to_non_nullable
+                        as double,
+            tax:
+                null == tax
+                    ? _value.tax
+                    : tax // ignore: cast_nullable_to_non_nullable
+                        as double,
+          )
+          as $Val,
+    );
+  }
+
+  /// Create a copy of InvoiceItemModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $InventoryItemEntityCopyWith<$Res> get item {
+    return $InventoryItemEntityCopyWith<$Res>(_value.item, (value) {
+      return _then(_value.copyWith(item: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$InvoiceItemModelImplCopyWith<$Res>
+    implements $InvoiceItemModelCopyWith<$Res> {
+  factory _$$InvoiceItemModelImplCopyWith(
+    _$InvoiceItemModelImpl value,
+    $Res Function(_$InvoiceItemModelImpl) then,
+  ) = __$$InvoiceItemModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    InventoryItemEntity item,
+    int quantity,
+    double totalPrice,
+    double discount,
+    double tax,
+  });
+
+  @override
+  $InventoryItemEntityCopyWith<$Res> get item;
+}
+
+/// @nodoc
+class __$$InvoiceItemModelImplCopyWithImpl<$Res>
+    extends _$InvoiceItemModelCopyWithImpl<$Res, _$InvoiceItemModelImpl>
+    implements _$$InvoiceItemModelImplCopyWith<$Res> {
+  __$$InvoiceItemModelImplCopyWithImpl(
+    _$InvoiceItemModelImpl _value,
+    $Res Function(_$InvoiceItemModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of InvoiceItemModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? item = null,
+    Object? quantity = null,
+    Object? totalPrice = null,
+    Object? discount = null,
+    Object? tax = null,
+  }) {
+    return _then(
+      _$InvoiceItemModelImpl(
+        item:
+            null == item
+                ? _value.item
+                : item // ignore: cast_nullable_to_non_nullable
+                    as InventoryItemEntity,
+        quantity:
+            null == quantity
+                ? _value.quantity
+                : quantity // ignore: cast_nullable_to_non_nullable
+                    as int,
+        totalPrice:
+            null == totalPrice
+                ? _value.totalPrice
+                : totalPrice // ignore: cast_nullable_to_non_nullable
+                    as double,
+        discount:
+            null == discount
+                ? _value.discount
+                : discount // ignore: cast_nullable_to_non_nullable
+                    as double,
+        tax:
+            null == tax
+                ? _value.tax
+                : tax // ignore: cast_nullable_to_non_nullable
+                    as double,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$InvoiceItemModelImpl implements _InvoiceItemModel {
+  const _$InvoiceItemModelImpl({
+    required this.item,
+    required this.quantity,
+    required this.totalPrice,
+    this.discount = 0.0,
+    this.tax = 0.0,
+  });
+
+  @override
+  final InventoryItemEntity item;
+  @override
+  final int quantity;
+  @override
+  final double totalPrice;
+  @override
+  @JsonKey()
+  final double discount;
+  @override
+  @JsonKey()
+  final double tax;
+
+  @override
+  String toString() {
+    return 'InvoiceItemModel(item: $item, quantity: $quantity, totalPrice: $totalPrice, discount: $discount, tax: $tax)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$InvoiceItemModelImpl &&
+            (identical(other.item, item) || other.item == item) &&
+            (identical(other.quantity, quantity) ||
+                other.quantity == quantity) &&
+            (identical(other.totalPrice, totalPrice) ||
+                other.totalPrice == totalPrice) &&
+            (identical(other.discount, discount) ||
+                other.discount == discount) &&
+            (identical(other.tax, tax) || other.tax == tax));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, item, quantity, totalPrice, discount, tax);
+
+  /// Create a copy of InvoiceItemModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$InvoiceItemModelImplCopyWith<_$InvoiceItemModelImpl> get copyWith =>
+      __$$InvoiceItemModelImplCopyWithImpl<_$InvoiceItemModelImpl>(
+        this,
+        _$identity,
+      );
+}
+
+abstract class _InvoiceItemModel implements InvoiceItemModel {
+  const factory _InvoiceItemModel({
+    required final InventoryItemEntity item,
+    required final int quantity,
+    required final double totalPrice,
+    final double discount,
+    final double tax,
+  }) = _$InvoiceItemModelImpl;
+
+  @override
+  InventoryItemEntity get item;
+  @override
+  int get quantity;
+  @override
+  double get totalPrice;
+  @override
+  double get discount;
+  @override
+  double get tax;
+
+  /// Create a copy of InvoiceItemModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$InvoiceItemModelImplCopyWith<_$InvoiceItemModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

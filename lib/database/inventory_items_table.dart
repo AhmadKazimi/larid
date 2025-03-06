@@ -86,4 +86,75 @@ class InventoryItemsTable {
       rethrow;
     }
   }
+  
+  Future<List<InventoryItemEntity>> getAllItems() async {
+    try {
+      final List<Map<String, dynamic>> maps = await db.query(
+        tableName,
+        orderBy: 'sItem_cd ASC',
+      );
+      dev.log('Retrieved ${maps.length} inventory items from database');
+      return maps.map((map) => InventoryItemEntity.fromJson(map)).toList();
+    } catch (e) {
+      dev.log('Error getting all inventory items: $e');
+      rethrow;
+    }
+  }
+  
+  Future<List<InventoryItemEntity>> getPaginatedItems({
+    required int page,
+    required int pageSize,
+    String? searchQuery,
+  }) async {
+    try {
+      String? whereClause;
+      List<dynamic>? whereArgs;
+      
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        whereClause = 'sItem_cd LIKE ? OR sDescription LIKE ?';
+        whereArgs = ['%$searchQuery%', '%$searchQuery%'];
+      }
+      
+      final int offset = (page - 1) * pageSize;
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        tableName,
+        where: whereClause,
+        whereArgs: whereArgs,
+        orderBy: 'sItem_cd ASC',
+        limit: pageSize,
+        offset: offset,
+      );
+      
+      dev.log('Retrieved ${maps.length} paginated inventory items from database (page: $page, pageSize: $pageSize)');
+      return maps.map((map) => InventoryItemEntity.fromJson(map)).toList();
+    } catch (e) {
+      dev.log('Error getting paginated inventory items: $e');
+      rethrow;
+    }
+  }
+  
+  Future<int> getItemsCount({String? searchQuery}) async {
+    try {
+      String? whereClause;
+      List<dynamic>? whereArgs;
+      
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        whereClause = 'sItem_cd LIKE ? OR sDescription LIKE ?';
+        whereArgs = ['%$searchQuery%', '%$searchQuery%'];
+      }
+      
+      final result = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM $tableName ${whereClause != null ? 'WHERE $whereClause' : ''}',
+        whereArgs,
+      );
+      
+      final count = Sqflite.firstIntValue(result) ?? 0;
+      dev.log('Counted $count inventory items in database');
+      return count;
+    } catch (e) {
+      dev.log('Error counting inventory items: $e');
+      rethrow;
+    }
+  }
 }

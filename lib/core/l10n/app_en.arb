@@ -147,5 +147,33 @@
     "print": "Print",
     "addItem": "Add Item",
     "returnItem": "Return Item",
-    "sync": "Sync"
+    "sync": "Sync",
+    
+    "items": "Items",
+    "search": "Search",
+    "searchHint": "Search by code or description",
+    "quantity": "Quantity",
+    "price": "Price",
+    "saveItems": "Save Items",
+    "cancelItems": "Cancel",
+    "noItemsFound": "No items found",
+    "loadingItems": "Loading items...",
+    "loadMore": "Load More",
+    "itemsSelected": "{count} items selected",
+    "@itemsSelected": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "invoiceItems": "Invoice Items",
+    "paymentType": "Payment Type",
+    "cash": "Cash",
+    "credit": "Credit",
+    "cheque": "Cheque",
+    "invoiceDetails": "Invoice Details",
+    "returnDetails": "Return Details",
+    "invoiceSavedSuccessfully": "Invoice saved successfully",
+    "returnSavedSuccessfully": "Return saved successfully"
 }

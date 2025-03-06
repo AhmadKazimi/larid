@@ -312,16 +312,16 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                             customerWithActiveSession.customerCode !=
                                 _customer.customerCode) {
                           // Another customer has an active session
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.otherCustomerActiveVisit(
-                                  customerWithActiveSession.customerName,
-                                ),
-                              ),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          // ScaffoldMessenger.of(context).showSnackBar(
+                          //   SnackBar(
+                          //     content: Text(
+                          //       l10n.otherCustomerActiveVisit(
+                          //         customerWithActiveSession.customerName,
+                          //       ),
+                          //     ),
+                          //     backgroundColor: Colors.red,
+                          //   ),
+                          // );
                           return; // Don't proceed
                         }
 
@@ -402,12 +402,12 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                         visitSessionState.markSessionChanged();
 
                         // Show success message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.visitSessionEnded),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   SnackBar(
+                        //     content: Text(l10n.visitSessionEnded),
+                        //     backgroundColor: Colors.green,
+                        //   ),
+                        // );
 
                         // With GoRouter, we don't need to pass back a result
                         // Just navigate back to the map page
