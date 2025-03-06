@@ -81,6 +81,9 @@
     "invalidCoordinates": "تنسيق إحداثيات غير صالح",
     "todayCustomers": "عملاء اليوم",
     "notExists": "غير موجود",
+    "visitRestriction": "قيود الزيارة",
+    "alreadyVisitedToday": "لقد قمت بزيارة هذا العميل اليوم. يرجى العودة غداً.",
+    "ok": "موافق",
     "todayCustomersTab": "عملاء اليوم",
     "customersTab": "العملاء",
 

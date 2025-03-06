@@ -200,6 +200,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notExists => 'غير موجود';
 
   @override
+  String get visitRestriction => 'قيود الزيارة';
+
+  @override
+  String get alreadyVisitedToday => 'لقد قمت بزيارة هذا العميل اليوم. يرجى العودة غداً.';
+
+  @override
+  String get ok => 'موافق';
+
+  @override
   String get todayCustomersTab => 'عملاء اليوم';
 
   @override

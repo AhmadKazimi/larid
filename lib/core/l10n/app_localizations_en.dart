@@ -200,6 +200,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notExists => 'Not exists';
 
   @override
+  String get visitRestriction => 'Visit Restriction';
+
+  @override
+  String get alreadyVisitedToday => 'You already visited this customer today. Please come back tomorrow.';
+
+  @override
+  String get ok => 'OK';
+
+  @override
   String get todayCustomersTab => 'Today\'s Customers';
 
   @override

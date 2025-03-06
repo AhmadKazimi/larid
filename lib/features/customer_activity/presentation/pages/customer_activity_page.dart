@@ -251,6 +251,33 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                                 ? RouteConstants.photoCapture
                                 : RouteConstants.receiptVoucher;
 
+                        // First, check if the customer was visited within the last 24 hours
+                        final wasVisitedToday = await _customerTable.wasVisitedToday(
+                          _customer.customerCode,
+                        );
+                        
+                        if (wasVisitedToday) {
+                          // Show dialog if customer was already visited today
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text(l10n.visitRestriction),
+                                content: Text(l10n.alreadyVisitedToday),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text(l10n.ok),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          return; // Don't proceed with visit
+                        }
+                        
                         // If this customer doesn't have an active session and there is no active session for any customer
                         if (!_hasActiveSession &&
                             customerWithActiveSession == null) {

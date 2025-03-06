@@ -145,7 +145,6 @@ class CustomerTable {
   // Get the customer with an active visit session
   Future<CustomerEntity?> getCustomerWithActiveVisitSession() async {
     try {
-      print('Checking for customer with active visit session...');
       
       final List<Map<String, dynamic>> maps = await db.query(
         salesrepCustomerTableName,
@@ -154,14 +153,10 @@ class CustomerTable {
       );
       
       if (maps.isEmpty) {
-        print('No customer found with active visit session');
         return null;
       }
       
-      // Debug print to understand what data we're getting back
-      print('Customer with active visit: ${maps[0]}');
-      print('Active visit start time: ${maps[0]['visitStartTime']}');
-      
+    
       return CustomerEntity.fromJson({
         'sCustomer_cd': maps[0]['customerCode'],
         'sCustomer_nm': maps[0]['customerName'],
@@ -193,11 +188,9 @@ class CustomerTable {
     
     // If no rows were updated, the customer might not exist or there's another issue
     if (updatedRows == 0) {
-      print('Warning: Failed to start visit session for customer code: $customerCode. No rows updated.');
       
       // Let's verify if the customer exists
       final customerExists = await _customerExists(customerCode);
-      print('Customer exists check: $customerExists for code $customerCode');
       
       if (customerExists) {
         // Retry with a raw query for debugging
@@ -206,13 +199,10 @@ class CustomerTable {
             'UPDATE $salesrepCustomerTableName SET visitStartTime = ?, visitEndTime = NULL WHERE customerCode = ?',
             [formattedTime, customerCode]
           );
-          print('Raw update attempted for customer code: $customerCode');
         } catch (e) {
           print('Error in raw update: $e');
         }
       }
-    } else {
-      print('Successfully started visit session for customer code: $customerCode');
     }
   }
   
@@ -229,32 +219,30 @@ class CustomerTable {
 
   // End a visit session for a customer
   Future<void> endVisitSession(String customerCode) async {
-    // Generate timestamp in HH:MM:SS format
+    // Generate timestamp in ISO 8601 format with date and time
     final now = DateTime.now();
-    final formattedTime = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+    final formattedDateTime = now.toIso8601String();
     
     // First, check if this update is successful
     int updatedRows = await db.update(
       salesrepCustomerTableName,
-      {'visitEndTime': formattedTime},
+      {'visitEndTime': formattedDateTime},
       where: 'customerCode = ?',
       whereArgs: [customerCode],
     );
     
     // If no rows were updated, the customer might not exist or there's another issue
     if (updatedRows == 0) {
-      print('Warning: Failed to end visit session for customer code: $customerCode. No rows updated.');
       
       // Let's verify if the customer exists
       final customerExists = await _customerExists(customerCode);
-      print('Customer exists check: $customerExists for code $customerCode');
       
       if (customerExists) {
         // Retry with a raw query for debugging
         try {
           await db.rawUpdate(
             'UPDATE $salesrepCustomerTableName SET visitEndTime = ? WHERE customerCode = ?',
-            [formattedTime, customerCode]
+            [formattedDateTime, customerCode]
           );
           print('Raw update attempted for ending visit for customer code: $customerCode');
         } catch (e) {
@@ -262,7 +250,7 @@ class CustomerTable {
         }
       }
     } else {
-      print('Successfully ended visit session for customer code: $customerCode');
+      print('Successfully ended visit session for customer code: $customerCode with timestamp: $formattedDateTime');
     }
   }
 
@@ -282,10 +270,6 @@ class CustomerTable {
       }
       
       // Debug print to understand what data we're getting back
-      print('Customer data from DB: ${maps[0]}');
-      print('Visit start time from DB: ${maps[0]['visitStartTime']}');
-      print('Visit end time from DB: ${maps[0]['visitEndTime']}');
-      
       return CustomerEntity.fromJson({
         'sCustomer_cd': maps[0]['customerCode'],
         'sCustomer_nm': maps[0]['customerName'],
@@ -296,8 +280,65 @@ class CustomerTable {
         'visitEndTime': maps[0]['visitEndTime'],
       });
     } catch (e) {
-      print('Error getting customer by code: $e');
       return null;
+    }
+  }
+  
+  // Check if a customer was visited within the last 24 hours
+  Future<bool> wasVisitedToday(String customerCode) async {
+    try {
+      final List<Map<String, dynamic>> maps = await db.query(
+        salesrepCustomerTableName,
+        where: 'customerCode = ?',
+        whereArgs: [customerCode],
+        limit: 1,
+      );
+      
+      if (maps.isEmpty) {
+        return false;
+      }
+      
+      final String? visitStartTime = maps[0]['visitStartTime'] as String?;
+      final String? visitEndTime = maps[0]['visitEndTime'] as String?;
+      
+      // If no visit has been completed (both start and end times must exist)
+      if (visitStartTime == null || visitEndTime == null) {
+        return false;
+      }
+      
+      // Get current date and time
+      final now = DateTime.now();
+      
+      try {
+        // If visitEndTime is in ISO 8601 format (from new implementation)
+        if (visitEndTime.contains('T')) {
+          // Parse the ISO 8601 timestamp
+          final lastVisitDate = DateTime.parse(visitEndTime);
+          
+          // Get the timestamp for 24 hours ago
+          final twentyFourHoursAgo = now.subtract(const Duration(hours: 24));
+          
+          // Check if the last visit was less than 24 hours ago
+          final bool isWithin24Hours = lastVisitDate.isAfter(twentyFourHoursAgo);
+
+          
+          return isWithin24Hours;
+        } else {
+
+          // Get today's start
+          final todayStart = DateTime(now.year, now.month, now.day);
+          
+          // For backward compatibility, assume it's today if using the old time-only format
+          return true;
+        }
+      } catch (e) {
+        print('Error parsing visit date: $e');
+        // If there's any error parsing the date, assume it's today for safety
+        return true;
+      }
+    } catch (e) {
+      print('Error checking if customer was visited today: $e');
+      return false;
     }
   }
 }

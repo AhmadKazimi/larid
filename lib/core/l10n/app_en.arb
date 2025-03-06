@@ -81,6 +81,9 @@
     "invalidCoordinates": "Invalid coordinates format",
     "todayCustomers": "Today's Customers",
     "notExists": "Not exists",
+    "visitRestriction": "Visit Restriction",
+    "alreadyVisitedToday": "You already visited this customer today. Please come back tomorrow.",
+    "ok": "OK",
     "todayCustomersTab": "Today's Customers",
     "customersTab": "Customers",
 

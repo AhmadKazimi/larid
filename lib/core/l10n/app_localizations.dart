@@ -473,6 +473,24 @@ abstract class AppLocalizations {
   /// **'Not exists'**
   String get notExists;
 
+  /// No description provided for @visitRestriction.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit Restriction'**
+  String get visitRestriction;
+
+  /// No description provided for @alreadyVisitedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'You already visited this customer today. Please come back tomorrow.'**
+  String get alreadyVisitedToday;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
   /// No description provided for @todayCustomersTab.
   ///
   /// In en, this message translates to:
