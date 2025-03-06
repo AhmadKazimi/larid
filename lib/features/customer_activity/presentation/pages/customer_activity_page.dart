@@ -223,6 +223,17 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                       });
                     },
                   ),
+                  _buildSquareActivityButton(
+                    icon: Icons.assignment_return,
+                    title: l10n.returnItem,
+                    isSelected: _selectedActivityIndex == 3,
+                    onTap: () {
+                      setState(() {
+                        _selectedActivityIndex =
+                            _selectedActivityIndex == 3 ? null : 3;
+                      });
+                    },
+                  ),
                 ],
               ),
 
@@ -249,13 +260,20 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                                 ? RouteConstants.invoice
                                 : _selectedActivityIndex == 1
                                 ? RouteConstants.photoCapture
-                                : RouteConstants.receiptVoucher;
+                                : _selectedActivityIndex == 2
+                                ? RouteConstants.receiptVoucher
+                                : RouteConstants.invoice;
+
+                        // If this is a return creation, prepare the extra parameter
+                        final extra =
+                            _selectedActivityIndex == 3
+                                ? {'customer': _customer, 'isReturn': true}
+                                : _customer;
 
                         // First, check if the customer was visited within the last 24 hours
-                        final wasVisitedToday = await _customerTable.wasVisitedToday(
-                          _customer.customerCode,
-                        );
-                        
+                        final wasVisitedToday = await _customerTable
+                            .wasVisitedToday(_customer.customerCode);
+
                         if (wasVisitedToday) {
                           // Show dialog if customer was already visited today
                           showDialog(
@@ -277,7 +295,7 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                           );
                           return; // Don't proceed with visit
                         }
-                        
+
                         // If this customer doesn't have an active session and there is no active session for any customer
                         if (!_hasActiveSession &&
                             customerWithActiveSession == null) {
@@ -311,7 +329,7 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                         NavigationService.push(
                           context,
                           activityType,
-                          extra: _customer,
+                          extra: extra,
                         );
                       },
                       style: ElevatedButton.styleFrom(

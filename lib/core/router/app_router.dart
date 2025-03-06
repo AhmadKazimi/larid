@@ -178,11 +178,22 @@ class AppRouter {
         path: RouteConstants.invoice,
         name: 'invoice',
         pageBuilder: (context, state) {
-          final customer = state.extra as CustomerEntity;
+          // Handle both direct CustomerEntity and Map with isReturn flag
+          CustomerEntity customer;
+          bool isReturn = false;
+          
+          if (state.extra is Map) {
+            final extraMap = state.extra as Map;
+            customer = extraMap['customer'] as CustomerEntity;
+            isReturn = extraMap['isReturn'] as bool? ?? false;
+          } else {
+            customer = state.extra as CustomerEntity;
+          }
+          
           return _buildSlideTransition(
             context: context,
             state: state,
-            child: InvoicePage(customer: customer),
+            child: InvoicePage(customer: customer, isReturn: isReturn),
           );
         },
       ),

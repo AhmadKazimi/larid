@@ -13,8 +13,10 @@ import '../bloc/invoice_state.dart';
 
 class InvoicePage extends StatefulWidget {
   final CustomerEntity customer;
+  final bool isReturn;
 
-  const InvoicePage({Key? key, required this.customer}) : super(key: key);
+  const InvoicePage({Key? key, required this.customer, this.isReturn = false})
+    : super(key: key);
 
   @override
   State<InvoicePage> createState() => _InvoicePageState();
@@ -23,10 +25,12 @@ class InvoicePage extends StatefulWidget {
 class _InvoicePageState extends State<InvoicePage> {
   final TextEditingController _commentController = TextEditingController();
   late final InvoiceBloc _invoiceBloc;
+  late final bool _isReturn;
 
   @override
   void initState() {
     super.initState();
+    _isReturn = widget.isReturn;
     _invoiceBloc = InvoiceBloc();
     _invoiceBloc.add(
       InitializeInvoice(customerCode: widget.customer.customerCode),
@@ -98,9 +102,9 @@ class _InvoicePageState extends State<InvoicePage> {
           Chip(
             label: Text(
               state.paymentType,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Colors.white,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: Colors.white),
             ),
             backgroundColor: AppColors.secondary,
           ),
@@ -118,85 +122,90 @@ class _InvoicePageState extends State<InvoicePage> {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       children: [
-        // Invoice section
-        _buildSectionCard(
-          title: localizations.invoice,
-          child: Column(
-            children: [
-              _buildAmountRow(localizations.subTotal, state.subtotal),
-              _buildAmountRow(localizations.discount, state.discount),
-              const Divider(),
-              _buildAmountRow(localizations.total, state.total, isBold: true),
-              _buildAmountRow(localizations.salesTax, state.salesTax),
-              const Divider(),
-              _buildAmountRow(
-                localizations.grandTotal,
-                state.grandTotal,
-                isPrimary: true,
-              ),
-            ],
+        // Invoice section - only show if not in return mode
+        if (!_isReturn)
+          _buildSectionCard(
+            title: localizations.invoice,
+            child: Column(
+              children: [
+                _buildAmountRow(localizations.subTotal, state.subtotal),
+                _buildAmountRow(localizations.discount, state.discount),
+                const Divider(),
+                _buildAmountRow(localizations.total, state.total, isBold: true),
+                _buildAmountRow(localizations.salesTax, state.salesTax),
+                const Divider(),
+                _buildAmountRow(
+                  localizations.grandTotal,
+                  state.grandTotal,
+                  isPrimary: true,
+                ),
+              ],
+            ),
           ),
-        ),
+        if (!_isReturn) const SizedBox(height: 16),
+
+        // Return section - always show in return mode, otherwise show conditionally
+        if (_isReturn)
+          _buildSectionCard(
+            title: localizations.returnItems,
+            child: Column(
+              children: [
+                _buildAmountRow(localizations.subTotal, state.returnSubtotal),
+                _buildAmountRow(localizations.discount, state.returnDiscount),
+                const Divider(),
+                _buildAmountRow(
+                  localizations.total,
+                  state.returnTotal,
+                  isBold: true,
+                ),
+                _buildAmountRow(localizations.salesTax, state.returnSalesTax),
+                const Divider(),
+                _buildAmountRow(
+                  localizations.grandTotal,
+                  state.returnGrandTotal,
+                  isPrimary: true,
+                ),
+              ],
+            ),
+          ),
+
         const SizedBox(height: 16),
 
-        // Return section
-        _buildSectionCard(
-          title: localizations.returnItems,
-          child: Column(
-            children: [
-              _buildAmountRow(localizations.subTotal, state.returnSubtotal),
-              _buildAmountRow(localizations.discount, state.returnDiscount),
-              const Divider(),
-              _buildAmountRow(
-                localizations.total,
-                state.returnTotal,
-                isBold: true,
-              ),
-              _buildAmountRow(localizations.salesTax, state.returnSalesTax),
-              const Divider(),
-              _buildAmountRow(
-                localizations.grandTotal,
-                state.returnGrandTotal,
-                isPrimary: true,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Summary section
-        _buildSectionCard(
-          title: localizations.summary,
-          child: Column(
-            children: [
-              _buildAmountRow(
-                localizations.netSubTotal,
-                state.subtotal - state.returnSubtotal,
-              ),
-              _buildAmountRow(
-                localizations.netDiscount,
-                state.discount - state.returnDiscount,
-              ),
-              const Divider(),
-              _buildAmountRow(
-                localizations.netTotal,
-                state.total - state.returnTotal,
-                isBold: true,
-              ),
-              _buildAmountRow(
-                localizations.netSalesTax,
-                state.salesTax - state.returnSalesTax,
-              ),
-              const Divider(),
-              _buildAmountRow(
-                localizations.netGrandTotal,
-                state.grandTotal - state.returnGrandTotal,
-                isPrimary: true,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
+        // // Summary section - only show if not in return mode
+        // if (!_isReturn)
+        //   _buildSectionCard(
+        //     title: localizations.summary,
+        //     child: Column(
+        //       children: [
+        //         _buildAmountRow(
+        //           localizations.netSubTotal,
+        //           state.subtotal - state.returnSubtotal,
+        //         ),
+        //         _buildAmountRow(
+        //           localizations.netDiscount,
+        //           state.discount - state.returnDiscount,
+        //         ),
+        //         const Divider(),
+        //         _buildAmountRow(
+        //           localizations.netTotal,
+        //           state.total - state.returnTotal,
+        //           isBold: true,
+        //         ),
+        //         _buildAmountRow(
+        //           localizations.netSalesTax,
+        //           state.salesTax - state.returnSalesTax,
+        //         ),
+        //         const Divider(),
+        //         _buildAmountRow(
+        //           localizations.netGrandTotal,
+        //           state.grandTotal - state.returnGrandTotal,
+        //           isPrimary: true,
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // if (!_isReturn) const SizedBox(height: 16),
+        // const SizedBox(height: 16),
 
         // Comment field
         TextField(
@@ -224,9 +233,9 @@ class _InvoicePageState extends State<InvoicePage> {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: AppColors.primary,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: AppColors.primary),
           ),
           const SizedBox(height: 16),
           child,
@@ -258,12 +267,14 @@ class _InvoicePageState extends State<InvoicePage> {
               Text(
                 '${amount.toStringAsFixed(2)} JOD',
                 style: (isBold || isPrimary
-                        ? textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)
+                        ? textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        )
                         : textTheme.bodyMedium)
                     ?.copyWith(
-                  color: isPrimary ? AppColors.primary : null,
-                  letterSpacing: -0.5, // Tighten spacing for numbers
-                ),
+                      color: isPrimary ? AppColors.primary : null,
+                      letterSpacing: -0.5, // Tighten spacing for numbers
+                    ),
               ),
             ],
           ),
@@ -290,17 +301,7 @@ class _InvoicePageState extends State<InvoicePage> {
               icon: Icons.add_shopping_cart,
               label: localizations.addItem,
               count: state.itemCount,
-              color: AppColors.primary,
-            ),
-
-            // Return item button
-            _buildActionButton(
-              onPressed:
-                  () => context.read<InvoiceBloc>().add(const ReturnItem()),
-              icon: Icons.assignment_return,
-              label: localizations.returnItem,
-              count: state.returnCount,
-              color: Colors.orange,
+              color: AppColors.secondary,
             ),
 
             // Sync button
@@ -377,7 +378,9 @@ class _InvoicePageState extends State<InvoicePage> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: color),
             textAlign: TextAlign.center,
           ),
         ],
@@ -406,17 +409,18 @@ class _InvoicePageState extends State<InvoicePage> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: 
+              child:
                   state.isSubmitting
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Builder(
-                          builder: (context) {
-                            return Text(
-                              localizations.submit,
-                              style: Theme.of(context).textTheme.labelLarge,
-                            );
-                          },
-                        ),
+                        builder: (context) {
+                          return Text(
+                            localizations.submit,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(color: Colors.white),
+                          );
+                        },
+                      ),
             ),
           ),
           const SizedBox(width: 8),
