@@ -88,350 +88,212 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
         return false;
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.customer.customerName),
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          actions: [
-            if (_hasActiveSession)
-              Container(
-                margin: const EdgeInsets.only(right: 16),
-                child: Chip(
-                  label: Text(
-                    l10n.activeVisit,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 0,
-                  ),
-                ),
-              ),
-          ],
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+        body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Compact Customer Details Card
-              GradientFormCard(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          l10n.customerDetails,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        Text(
-                          widget.customer.customerCode.isNotEmpty
-                              ? widget.customer.customerCode
-                              : l10n.noExist,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 16),
-                    Column(
-                      children: [
-                        _buildCompactInfoRow(
-                          Icons.location_on,
-                          (widget.customer.address?.isNotEmpty ?? false)
-                              ? widget.customer.address!
-                              : l10n.noExist,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildCompactInfoRow(
-                          Icons.phone,
-                          (widget.customer.contactPhone?.isNotEmpty ?? false)
-                              ? widget.customer.contactPhone!
-                              : l10n.noExist,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Activity Options
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 12),
-                child: Text(
-                  l10n.activities,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-              // Square Activity Buttons Grid
-              GridView.count(
-                crossAxisCount: 3,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.75, // Add aspect ratio to make cells taller
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildSquareActivityButton(
-                    icon: Icons.receipt_long,
-                    title: l10n.createInvoice,
-                    isSelected: _selectedActivityIndex == 0,
-                    onTap: () {
-                      setState(() {
-                        _selectedActivityIndex =
-                            _selectedActivityIndex == 0 ? null : 0;
-                      });
-                    },
-                  ),
-                  _buildSquareActivityButton(
-                    icon: Icons.camera_alt,
-                    title: l10n.takePhoto,
-                    isSelected: _selectedActivityIndex == 1,
-                    onTap: () {
-                      setState(() {
-                        _selectedActivityIndex =
-                            _selectedActivityIndex == 1 ? null : 1;
-                      });
-                    },
-                  ),
-                  _buildSquareActivityButton(
-                    icon: Icons.receipt,
-                    title: l10n.receiptVoucher,
-                    isSelected: _selectedActivityIndex == 2,
-                    onTap: () {
-                      setState(() {
-                        _selectedActivityIndex =
-                            _selectedActivityIndex == 2 ? null : 2;
-                      });
-                    },
-                  ),
-                  _buildSquareActivityButton(
-                    icon: Icons.assignment_return,
-                    title: l10n.returnItem,
-                    isSelected: _selectedActivityIndex == 3,
-                    onTap: () {
-                      setState(() {
-                        _selectedActivityIndex =
-                            _selectedActivityIndex == 3 ? null : 3;
-                      });
-                    },
-                  ),
-                ],
-              ),
-
-              // Start Visit Button - only shown when an activity is selected
-              if (_selectedActivityIndex != null)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        // Get the current active session if any
-                        final hasActiveSession =
-                            await _customerTable.hasActiveVisitSession();
-                        final customerWithActiveSession =
-                            hasActiveSession
-                                ? await _customerTable
-                                    .getCustomerWithActiveVisitSession()
-                                : null;
-
-                        // Handle starting visit with selected activity
-                        final activityType =
-                            _selectedActivityIndex == 0
-                                ? RouteConstants.invoice
-                                : _selectedActivityIndex == 1
-                                ? RouteConstants.photoCapture
-                                : _selectedActivityIndex == 2
-                                ? RouteConstants.receiptVoucher
-                                : RouteConstants.invoice;
-
-                        // If this is a return creation, prepare the extra parameter
-                        final extra =
-                            _selectedActivityIndex == 3
-                                ? {'customer': _customer, 'isReturn': true}
-                                : _customer;
-
-                        // First, check if the customer was visited within the last 24 hours
-                        final wasVisitedToday = await _customerTable
-                            .wasVisitedToday(_customer.customerCode);
-
-                        if (wasVisitedToday) {
-                          // Show dialog if customer was already visited today
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text(l10n.visitRestriction),
-                                content: Text(l10n.alreadyVisitedToday),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                    child: Text(l10n.ok),
-                                  ),
-                                ],
-                              );
-                            },
-                          );
-                          return; // Don't proceed with visit
-                        }
-
-                        // If this customer doesn't have an active session and there is no active session for any customer
-                        if (!_hasActiveSession &&
-                            customerWithActiveSession == null) {
-                          // Start a new visit session
-                          await _customerTable.startVisitSession(
-                            _customer.customerCode,
-                          );
-                          await _checkVisitSession(); // Update the UI
-
-                          // Notify that session state has changed
-                          visitSessionState.markSessionChanged();
-                        } else if (!_hasActiveSession &&
-                            customerWithActiveSession != null &&
-                            customerWithActiveSession.customerCode !=
-                                _customer.customerCode) {
-                          // Another customer has an active session
-                          // ScaffoldMessenger.of(context).showSnackBar(
-                          //   SnackBar(
-                          //     content: Text(
-                          //       l10n.otherCustomerActiveVisit(
-                          //         customerWithActiveSession.customerName,
-                          //       ),
-                          //     ),
-                          //     backgroundColor: Colors.red,
-                          //   ),
-                          // );
-                          return; // Don't proceed
-                        }
-
-                        // Now navigate to the selected activity
-                        NavigationService.push(
-                          context,
-                          activityType,
-                          extra: extra,
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        l10n.startCustomerVisit,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-              // Session info and End Visit Button - only shown when there's an active session
-              if (_hasActiveSession) ...[
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
+              _buildHeader(context, l10n),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Compact Customer Details Card
+                      GradientFormCard(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.access_time, color: Colors.green),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n.visitStartedAt(_sessionStartTime ?? ''),
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  l10n.customerDetails,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                Text(
+                                  widget.customer.customerCode.isNotEmpty
+                                      ? widget.customer.customerCode
+                                      : l10n.noExist,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                              ],
                             ),
+                            const Divider(height: 16),
+                            // ... the rest of the customer details content stays the same
+                            // Address
+                            if (_customer.address != null &&
+                                _customer.address!.isNotEmpty)
+                              _buildDetailRow(
+                                label: l10n.address,
+                                value: _customer.address!,
+                              ),
+                            // Phone
+                            if (_customer.contactPhone != null &&
+                                _customer.contactPhone!.isNotEmpty)
+                              _buildDetailRow(
+                                label: l10n.phone,
+                                value: _customer.contactPhone!,
+                              ),
                           ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.visitSessionInfo,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[700],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Visit Session Information
+                      if (_hasActiveSession) ...[
+                        GradientFormCard(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.timer,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _sessionStartTime != null
+                                          ? l10n.visitStartedAt(
+                                            _sessionStartTime!,
+                                          )
+                                          : l10n.visitSessionStarted,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                l10n.visitSessionInfo,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () => _endVisitSession(context),
+                                icon: const Icon(Icons.exit_to_app),
+                                label: Text(l10n.endVisitSession),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size(double.infinity, 40),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        const SizedBox(height: 16),
                       ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        // End the visit session
-                        await _customerTable.endVisitSession(
-                          _customer.customerCode,
-                        );
-                        await _checkVisitSession(); // Update the UI
 
-                        // Notify that session state has changed
-                        visitSessionState.markSessionChanged();
-
-                        // Show success message
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text(l10n.visitSessionEnded),
-                        //     backgroundColor: Colors.green,
-                        //   ),
-                        // );
-
-                        // With GoRouter, we don't need to pass back a result
-                        // Just navigate back to the map page
-                        NavigationService.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      // Activities Section Title
+                      Text(
+                        l10n.activities,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
                         ),
                       ),
-                      child: Text(
-                        l10n.endVisitSession,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ),
+                      const SizedBox(height: 12),
+
+                      // Activities Grid
+                      _buildActivitiesGrid(context, l10n),
+
+                      const SizedBox(height: 16),
+
+                      // Start Visit Session Button (only if no active session)
+                      if (!_hasActiveSession)
+                        ElevatedButton.icon(
+                          onPressed: () => _startVisitSession(context),
+                          icon: const Icon(Icons.play_arrow),
+                          label: Text(l10n.startCustomerVisit),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 48),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () {
+              // Notify session state change before popping
+              visitSessionState.markSessionChanged();
+              NavigationService.pop(context);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.arrow_back, color: AppColors.primary),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.customer.customerName,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (_hasActiveSession)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                l10n.activeVisit,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -509,5 +371,197 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildDetailRow({required String label, required String value}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 14),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _startVisitSession(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+
+    // Check for existing active session
+    final hasActiveSession = await _customerTable.hasActiveVisitSession();
+    final customerWithActiveSession =
+        hasActiveSession
+            ? await _customerTable.getCustomerWithActiveVisitSession()
+            : null;
+
+    if (customerWithActiveSession != null &&
+        customerWithActiveSession.customerCode != _customer.customerCode) {
+      // Another customer has an active session
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.otherCustomerActiveVisit(
+              customerWithActiveSession.customerName,
+            ),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Check if customer was visited today
+    final wasVisitedToday = await _customerTable.wasVisitedToday(
+      _customer.customerCode,
+    );
+    if (wasVisitedToday) {
+      // Show dialog if customer was already visited today
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(l10n.visitRestriction),
+            content: Text(l10n.alreadyVisitedToday),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(l10n.ok),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    // Start visit session
+    await _customerTable.startVisitSession(_customer.customerCode);
+    await _checkVisitSession(); // Update the UI
+
+    // Notify that session state has changed
+    visitSessionState.markSessionChanged();
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.visitSessionStarted),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _endVisitSession(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+
+    // End the visit session
+    await _customerTable.endVisitSession(_customer.customerCode);
+    await _checkVisitSession(); // Update the UI
+
+    // Notify that session state has changed
+    visitSessionState.markSessionChanged();
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.visitSessionEnded),
+        backgroundColor: Colors.green,
+      ),
+    );
+
+    // Navigate back to map
+    NavigationService.pop(context);
+  }
+
+  Widget _buildActivitiesGrid(BuildContext context, AppLocalizations l10n) {
+    return GridView.count(
+      crossAxisCount: 3,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 0.75, // Add aspect ratio to make cells taller
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        _buildSquareActivityButton(
+          icon: Icons.receipt_long,
+          title: l10n.createInvoice,
+          isSelected: _selectedActivityIndex == 0,
+          onTap:
+              () => _handleActivitySelection(0, RouteConstants.invoice, false),
+        ),
+        _buildSquareActivityButton(
+          icon: Icons.camera_alt,
+          title: l10n.takePhoto,
+          isSelected: _selectedActivityIndex == 1,
+          onTap:
+              () => _handleActivitySelection(
+                1,
+                RouteConstants.photoCapture,
+                false,
+              ),
+        ),
+        _buildSquareActivityButton(
+          icon: Icons.receipt,
+          title: l10n.receiptVoucher,
+          isSelected: _selectedActivityIndex == 2,
+          onTap:
+              () => _handleActivitySelection(
+                2,
+                RouteConstants.receiptVoucher,
+                false,
+              ),
+        ),
+        _buildSquareActivityButton(
+          icon: Icons.assignment_return,
+          title: l10n.returnItem,
+          isSelected: _selectedActivityIndex == 3,
+          onTap:
+              () => _handleActivitySelection(3, RouteConstants.invoice, true),
+        ),
+      ],
+    );
+  }
+
+  void _handleActivitySelection(
+    int index,
+    String routeName,
+    bool isReturn,
+  ) async {
+    // First, toggle selection state
+    setState(() {
+      _selectedActivityIndex = _selectedActivityIndex == index ? null : index;
+    });
+
+    // If not selected (toggled off), just return
+    if (_selectedActivityIndex != index) return;
+
+    // Check if we can navigate to the activity
+    if (!_hasActiveSession) {
+      // We need to start a session first
+      _startVisitSession(context);
+
+      // Wait a moment for the session to start
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Refresh the session status
+      await _checkVisitSession();
+
+      // If starting the session failed, return
+      if (!_hasActiveSession) return;
+    }
+
+    // Navigate to the selected activity
+    final extra =
+        isReturn ? {'customer': _customer, 'isReturn': true} : _customer;
+
+    NavigationService.push(context, routeName, extra: extra);
   }
 }
