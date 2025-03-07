@@ -5,12 +5,14 @@ import '../../domain/entities/inventory/inventory_item_entity.dart';
 import '../../domain/entities/inventory/inventory_unit_entity.dart';
 import '../../domain/entities/prices/prices_entity.dart';
 import '../../domain/entities/sales_tax_entity.dart';
+import '../../domain/entities/warehouse/warehouse_entity.dart';
 import '../../domain/usecases/sync_customers_usecase.dart';
 import '../../domain/usecases/sync_inventory_items_usecase.dart';
 import '../../domain/usecases/sync_inventory_units_usecase.dart';
 import '../../domain/usecases/sync_prices_usecase.dart';
 import '../../domain/usecases/sync_sales_rep_customers_usecase.dart';
 import '../../domain/usecases/sync_sales_taxes_usecase.dart';
+import '../../domain/usecases/sync_user_warehouse_usecase.dart';
 import 'sync_event.dart';
 import 'sync_state.dart';
 
@@ -21,6 +23,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
   final SyncInventoryItemsUseCase _syncInventoryItemsUseCase;
   final SyncInventoryUnitsUseCase _syncInventoryUnitsUseCase;
   final SyncSalesTaxesUseCase _syncSalesTaxesUseCase;
+  final SyncUserWarehouseUseCase _syncUserWarehouseUseCase;
 
   SyncBloc({
     required SyncCustomersUseCase syncCustomersUseCase,
@@ -29,13 +32,15 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
     required SyncInventoryItemsUseCase syncInventoryItemsUseCase,
     required SyncInventoryUnitsUseCase syncInventoryUnitsUseCase,
     required SyncSalesTaxesUseCase syncSalesTaxesUseCase,
-  })  : _syncCustomersUseCase = syncCustomersUseCase,
-        _syncSalesRepCustomersUseCase = syncSalesRepCustomersUseCase,
-        _syncPricesUseCase = syncPricesUseCase,
-        _syncInventoryItemsUseCase = syncInventoryItemsUseCase,
-        _syncInventoryUnitsUseCase = syncInventoryUnitsUseCase,
-        _syncSalesTaxesUseCase = syncSalesTaxesUseCase,
-        super(SyncState()) {
+    required SyncUserWarehouseUseCase syncUserWarehouseUseCase,
+  }) : _syncCustomersUseCase = syncCustomersUseCase,
+       _syncSalesRepCustomersUseCase = syncSalesRepCustomersUseCase,
+       _syncPricesUseCase = syncPricesUseCase,
+       _syncInventoryItemsUseCase = syncInventoryItemsUseCase,
+       _syncInventoryUnitsUseCase = syncInventoryUnitsUseCase,
+       _syncSalesTaxesUseCase = syncSalesTaxesUseCase,
+       _syncUserWarehouseUseCase = syncUserWarehouseUseCase,
+       super(SyncState()) {
     on<SyncEvent>((event, emit) async {
       await event.when(
         syncCustomers: () => _onSyncCustomers(emit),
@@ -44,243 +49,342 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
         syncInventoryItems: () => _onSyncInventoryItems(emit),
         syncInventoryUnits: () => _onSyncInventoryUnits(emit),
         syncSalesTaxes: () => _onSyncSalesTaxes(emit),
+        syncUserWarehouse: () => _onSyncUserWarehouse(emit),
       );
     });
   }
 
   Future<void> _onSyncCustomers(Emitter<SyncState> emit) async {
     try {
-      emit(state.copyWith(
-        customersState: state.customersState.copyWith(isLoading: true),
-      ));
+      emit(
+        state.copyWith(
+          customersState: state.customersState.copyWith(isLoading: true),
+        ),
+      );
 
       final response = await _syncCustomersUseCase();
-      
+
       if (response.isSuccess) {
-        emit(state.copyWith(
-          customersState: ApiCallState<CustomerEntity>(
-            isLoading: false,
-            isSuccess: true,
-            data: response.data,
+        emit(
+          state.copyWith(
+            customersState: ApiCallState<CustomerEntity>(
+              isLoading: false,
+              isSuccess: true,
+              data: response.data,
+            ),
           ),
-        ));
+        );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
+            customersState: ApiCallState<CustomerEntity>(
+              isLoading: false,
+              isSuccess: false,
+              errorCode: response.errorCode,
+              errorMessage: response.message,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
           customersState: ApiCallState<CustomerEntity>(
             isLoading: false,
             isSuccess: false,
-            errorCode: response.errorCode,
-            errorMessage: response.message,
+            errorCode: ApiErrorCode.unknown.message,
+            errorMessage: e.toString(),
           ),
-        ));
-      }
-    } catch (e) {
-      emit(state.copyWith(
-        customersState: ApiCallState<CustomerEntity>(
-          isLoading: false,
-          isSuccess: false,
-          errorCode: ApiErrorCode.unknown.message,
-          errorMessage: e.toString(),
         ),
-      ));
+      );
     }
   }
 
   Future<void> _onSyncSalesRepCustomers(Emitter<SyncState> emit) async {
     try {
-      emit(state.copyWith(
-        salesRepState: state.salesRepState.copyWith(isLoading: true),
-      ));
+      emit(
+        state.copyWith(
+          salesRepState: state.salesRepState.copyWith(isLoading: true),
+        ),
+      );
 
       final response = await _syncSalesRepCustomersUseCase();
-      
+
       if (response.isSuccess) {
-        emit(state.copyWith(
-          salesRepState: ApiCallState<CustomerEntity>(
-            isLoading: false,
-            isSuccess: true,
-            data: response.data,
+        emit(
+          state.copyWith(
+            salesRepState: ApiCallState<CustomerEntity>(
+              isLoading: false,
+              isSuccess: true,
+              data: response.data,
+            ),
           ),
-        ));
+        );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
+            salesRepState: ApiCallState<CustomerEntity>(
+              isLoading: false,
+              isSuccess: false,
+              errorCode: response.errorCode,
+              errorMessage: response.message,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
           salesRepState: ApiCallState<CustomerEntity>(
             isLoading: false,
             isSuccess: false,
-            errorCode: response.errorCode,
-            errorMessage: response.message,
+            errorCode: ApiErrorCode.unknown.message,
+            errorMessage: e.toString(),
           ),
-        ));
-      }
-    } catch (e) {
-      emit(state.copyWith(
-        salesRepState: ApiCallState<CustomerEntity>(
-          isLoading: false,
-          isSuccess: false,
-          errorCode: ApiErrorCode.unknown.message,
-          errorMessage: e.toString(),
         ),
-      ));
+      );
     }
   }
 
   Future<void> _onSyncPrices(Emitter<SyncState> emit) async {
     try {
-      emit(state.copyWith(
-        pricesState: state.pricesState.copyWith(isLoading: true),
-      ));
+      emit(
+        state.copyWith(
+          pricesState: state.pricesState.copyWith(isLoading: true),
+        ),
+      );
 
       final response = await _syncPricesUseCase();
-      
+
       if (response.isSuccess && response.data != null) {
-        emit(state.copyWith(
-          pricesState: ApiCallState<PriceEntity>(
-            isLoading: false,
-            isSuccess: true,
-            data: response.data,
+        emit(
+          state.copyWith(
+            pricesState: ApiCallState<PriceEntity>(
+              isLoading: false,
+              isSuccess: true,
+              data: response.data,
+            ),
           ),
-        ));
+        );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
+            pricesState: ApiCallState<PriceEntity>(
+              isLoading: false,
+              isSuccess: false,
+              errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
+              errorMessage: response.message ?? 'Unknown error occurred',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
           pricesState: ApiCallState<PriceEntity>(
             isLoading: false,
             isSuccess: false,
-            errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
-            errorMessage: response.message ?? 'Unknown error occurred',
+            errorCode: ApiErrorCode.unknown.message,
+            errorMessage: e.toString(),
           ),
-        ));
-      }
-    } catch (e) {
-      emit(state.copyWith(
-        pricesState: ApiCallState<PriceEntity>(
-          isLoading: false,
-          isSuccess: false,
-          errorCode: ApiErrorCode.unknown.message,
-          errorMessage: e.toString(),
         ),
-      ));
+      );
     }
   }
 
   Future<void> _onSyncInventoryItems(Emitter<SyncState> emit) async {
     try {
-      emit(state.copyWith(
-        inventoryItemsState: state.inventoryItemsState.copyWith(isLoading: true),
-      ));
+      emit(
+        state.copyWith(
+          inventoryItemsState: state.inventoryItemsState.copyWith(
+            isLoading: true,
+          ),
+        ),
+      );
 
       final response = await _syncInventoryItemsUseCase();
-      
+
       if (response.isSuccess && response.data != null) {
-        emit(state.copyWith(
-          inventoryItemsState: ApiCallState<InventoryItemEntity>(
-            isLoading: false,
-            isSuccess: true,
-            data: response.data,
+        emit(
+          state.copyWith(
+            inventoryItemsState: ApiCallState<InventoryItemEntity>(
+              isLoading: false,
+              isSuccess: true,
+              data: response.data,
+            ),
           ),
-        ));
+        );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
+            inventoryItemsState: ApiCallState<InventoryItemEntity>(
+              isLoading: false,
+              isSuccess: false,
+              errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
+              errorMessage: response.message ?? 'Unknown error occurred',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
           inventoryItemsState: ApiCallState<InventoryItemEntity>(
             isLoading: false,
             isSuccess: false,
-            errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
-            errorMessage: response.message ?? 'Unknown error occurred',
+            errorCode: ApiErrorCode.unknown.message,
+            errorMessage: e.toString(),
           ),
-        ));
-      }
-    } catch (e) {
-      emit(state.copyWith(
-        inventoryItemsState: ApiCallState<InventoryItemEntity>(
-          isLoading: false,
-          isSuccess: false,
-          errorCode: ApiErrorCode.unknown.message,
-          errorMessage: e.toString(),
         ),
-      ));
+      );
     }
   }
 
   Future<void> _onSyncInventoryUnits(Emitter<SyncState> emit) async {
     try {
-      emit(state.copyWith(
-        inventoryUnitsState: state.inventoryUnitsState.copyWith(isLoading: true),
-      ));
-
-    final response = await _syncInventoryUnitsUseCase();
-
-    if (response.isSuccess) {
-        emit(state.copyWith(
-          inventoryUnitsState: ApiCallState<InventoryUnitEntity>(
-            isLoading: false,
-            isSuccess: true,
-            data: response.data,
+      emit(
+        state.copyWith(
+          inventoryUnitsState: state.inventoryUnitsState.copyWith(
+            isLoading: true,
           ),
-        ));
-    } else {
-      emit(state.copyWith(
-          inventoryUnitsState: ApiCallState<InventoryUnitEntity>(
-            isLoading: false,
-            errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
-            errorMessage: response.message ?? 'Unknown error occurred',
+        ),
+      );
+
+      final response = await _syncInventoryUnitsUseCase();
+
+      if (response.isSuccess) {
+        emit(
+          state.copyWith(
+            inventoryUnitsState: ApiCallState<InventoryUnitEntity>(
+              isLoading: false,
+              isSuccess: true,
+              data: response.data,
+            ),
           ),
-        ));
+        );
+      } else {
+        emit(
+          state.copyWith(
+            inventoryUnitsState: ApiCallState<InventoryUnitEntity>(
+              isLoading: false,
+              errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
+              errorMessage: response.message ?? 'Unknown error occurred',
+            ),
+          ),
+        );
       }
     } catch (e) {
-      emit(state.copyWith(
-        inventoryUnitsState: ApiCallState<InventoryUnitEntity>(
-          isLoading: false,
-          errorCode: ApiErrorCode.unknown.message,
-          errorMessage: e.toString(),
+      emit(
+        state.copyWith(
+          inventoryUnitsState: ApiCallState<InventoryUnitEntity>(
+            isLoading: false,
+            errorCode: ApiErrorCode.unknown.message,
+            errorMessage: e.toString(),
+          ),
         ),
-      ));
+      );
     }
   }
 
   Future<void> _onSyncSalesTaxes(Emitter<SyncState> emit) async {
-    
     try {
-      emit(state.copyWith(
-        salesTaxesState: state.salesTaxesState.copyWith(
-          isLoading: true,
-          errorCode: null,
-          errorMessage: null,
+      emit(
+        state.copyWith(
+          salesTaxesState: state.salesTaxesState.copyWith(
+            isLoading: true,
+            errorCode: null,
+            errorMessage: null,
+          ),
         ),
-      ));
+      );
 
       final response = await _syncSalesTaxesUseCase();
 
       if (response.isSuccess) {
-        emit(state.copyWith(
-          salesTaxesState: ApiCallState<SalesTaxEntity>(
-            isLoading: false,
-            isSuccess: true,
-            data: response.data,
-            errorCode: null,
-            errorMessage: null,
+        emit(
+          state.copyWith(
+            salesTaxesState: ApiCallState<SalesTaxEntity>(
+              isLoading: false,
+              isSuccess: true,
+              data: response.data,
+              errorCode: null,
+              errorMessage: null,
+            ),
           ),
-        ));
+        );
       } else {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
+            salesTaxesState: ApiCallState<SalesTaxEntity>(
+              isLoading: false,
+              isSuccess: false,
+              data: null,
+              errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
+              errorMessage: response.message ?? 'Unknown error occurred',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
           salesTaxesState: ApiCallState<SalesTaxEntity>(
             isLoading: false,
             isSuccess: false,
             data: null,
-            errorCode: response.errorCode ?? ApiErrorCode.unknown.message,
-            errorMessage: response.message ?? 'Unknown error occurred',
+            errorCode: ApiErrorCode.unknown.message,
+            errorMessage: 'Failed to sync sales taxes: ${e.toString()}',
           ),
-        ));
-      }
-    } catch (e) {
-      emit(state.copyWith(
-        salesTaxesState: ApiCallState<SalesTaxEntity>(
-          isLoading: false,
-          isSuccess: false,
-          data: null,
-          errorCode: ApiErrorCode.unknown.message,
-          errorMessage: 'Failed to sync sales taxes: ${e.toString()}',
         ),
-      ));
+      );
     }
   }
 
+  Future<void> _onSyncUserWarehouse(Emitter<SyncState> emit) async {
+    try {
+      emit(
+        state.copyWith(
+          warehouseState: const ApiCallState(isLoading: true, isSuccess: false),
+        ),
+      );
+
+      final response = await _syncUserWarehouseUseCase();
+
+      if (response.isSuccess) {
+        emit(
+          state.copyWith(
+            warehouseState: ApiCallState(
+              isLoading: false,
+              isSuccess: true,
+              data: response.data,
+            ),
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            warehouseState: ApiCallState(
+              isLoading: false,
+              isSuccess: false,
+              errorCode: response.errorCode,
+              errorMessage: response.message,
+              data: const [],
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
+          warehouseState: ApiCallState(
+            isLoading: false,
+            isSuccess: false,
+            errorCode: ApiErrorCode.unknown.message,
+            errorMessage: e.toString(),
+            data: const [],
+          ),
+        ),
+      );
+    }
+  }
 }

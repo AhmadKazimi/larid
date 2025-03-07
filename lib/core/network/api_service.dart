@@ -4,9 +4,17 @@ import 'api_endpoints.dart';
 
 class ApiService {
   final DioClient _dioClient;
+  String? _warehouse;
 
   ApiService(this._dioClient);
 
+  // Method to set warehouse value
+  void setWarehouse(String warehouse) {
+    _warehouse = warehouse;
+  }
+
+  // Method to get current warehouse value
+  String? get warehouse => _warehouse;
 
   /// Checks user credentials against the server
   /// Returns true if authentication is successful (response is "1"),
@@ -135,7 +143,7 @@ class ApiService {
         ApiParameters.userid: userid,
         ApiParameters.workspace: workspace,
         ApiParameters.password: password,
-        ApiParameters.warehouse: 'MAIN',
+        ApiParameters.warehouse: _warehouse,
       },
     );
     return List<Map<String, dynamic>>.from(response.data);
@@ -146,7 +154,7 @@ class ApiService {
     required String workspace,
     required String password,
   }) async {
-    try {   
+    try {
       final response = await _dioClient.get(
         ApiEndpoints.getInventoryUnits,
         queryParameters: {
@@ -166,7 +174,7 @@ class ApiService {
     required String workspace,
     required String password,
   }) async {
-    try {   
+    try {
       final response = await _dioClient.get(
         ApiEndpoints.getSalesTaxes,
         queryParameters: {
@@ -180,5 +188,4 @@ class ApiService {
       throw Exception('Network error: ${e.toString()}');
     }
   }
-
 }

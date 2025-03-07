@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                         icon: const Icon(
                           Icons.arrow_back,
                           color: AppColors.background,
-                          size: 28,
+                          size: 24,
                         ),
                         onPressed: () => context.go(RouteConstants.apiConfig),
                       ),
@@ -101,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                               l10n.welcomeBack,
                               style: Theme.of(
                                 context,
-                              ).textTheme.headlineMedium?.copyWith(
+                              ).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
@@ -109,16 +109,26 @@ class _LoginPageState extends State<LoginPage> {
                             const SizedBox(height: 8),
                             Text(
                               l10n.signInToContinue,
-                              style: Theme.of(context).textTheme.bodyLarge
+                              style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(color: Colors.grey[600]),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 16),
                             TextFormField(
                               controller: _workspaceController,
                               decoration: InputDecoration(
                                 labelText: l10n.workspace,
-                                prefixIcon: const Icon(Icons.business),
+                                prefixIcon: const Icon(
+                                  Icons.business,
+                                  size: 20,
+                                ),
+                                labelStyle: TextStyle(fontSize: 14),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
+                                isDense: true,
                               ),
+                              style: TextStyle(fontSize: 14),
                               validator: (value) {
                                 if (value?.isEmpty ?? true) {
                                   return l10n.pleaseEnterWorkspace;
@@ -131,8 +141,18 @@ class _LoginPageState extends State<LoginPage> {
                               controller: _useridController,
                               decoration: InputDecoration(
                                 labelText: l10n.userId,
-                                prefixIcon: const Icon(Icons.person_outline),
+                                prefixIcon: const Icon(
+                                  Icons.person_outline,
+                                  size: 20,
+                                ),
+                                labelStyle: TextStyle(fontSize: 14),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
+                                isDense: true,
                               ),
+                              style: TextStyle(fontSize: 14),
                               validator: (value) {
                                 if (value?.isEmpty ?? true) {
                                   return l10n.pleaseEnterUserId;
@@ -145,8 +165,18 @@ class _LoginPageState extends State<LoginPage> {
                               controller: _passwordController,
                               decoration: InputDecoration(
                                 labelText: l10n.password,
-                                prefixIcon: const Icon(Icons.lock_outline),
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline,
+                                  size: 20,
+                                ),
+                                labelStyle: TextStyle(fontSize: 14),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 16,
+                                ),
+                                isDense: true,
                               ),
+                              style: TextStyle(fontSize: 14),
                               obscureText: true,
                               validator: (value) {
                                 if (value?.isEmpty ?? true) {
@@ -155,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 16),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
@@ -164,16 +194,19 @@ class _LoginPageState extends State<LoginPage> {
                                         ? null
                                         : _onLoginPressed,
                                 style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                                 child:
                                     state is AuthLoading
                                         ? const SizedBox(
-                                          height: 24,
-                                          width: 24,
+                                          height: 20,
+                                          width: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
                                             valueColor:
@@ -185,7 +218,7 @@ class _LoginPageState extends State<LoginPage> {
                                         : Text(
                                           l10n.login,
                                           style: const TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),

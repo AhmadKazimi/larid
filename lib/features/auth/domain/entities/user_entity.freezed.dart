@@ -24,6 +24,8 @@ mixin _$UserEntity {
   String get userid => throw _privateConstructorUsedError;
   String get workspace => throw _privateConstructorUsedError;
   String get password => throw _privateConstructorUsedError;
+  String? get warehouse => throw _privateConstructorUsedError;
+  String? get currency => throw _privateConstructorUsedError;
 
   /// Serializes this UserEntity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -42,7 +44,13 @@ abstract class $UserEntityCopyWith<$Res> {
     $Res Function(UserEntity) then,
   ) = _$UserEntityCopyWithImpl<$Res, UserEntity>;
   @useResult
-  $Res call({String userid, String workspace, String password});
+  $Res call({
+    String userid,
+    String workspace,
+    String password,
+    String? warehouse,
+    String? currency,
+  });
 }
 
 /// @nodoc
@@ -63,6 +71,8 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
     Object? userid = null,
     Object? workspace = null,
     Object? password = null,
+    Object? warehouse = freezed,
+    Object? currency = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -81,6 +91,16 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
                     ? _value.password
                     : password // ignore: cast_nullable_to_non_nullable
                         as String,
+            warehouse:
+                freezed == warehouse
+                    ? _value.warehouse
+                    : warehouse // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            currency:
+                freezed == currency
+                    ? _value.currency
+                    : currency // ignore: cast_nullable_to_non_nullable
+                        as String?,
           )
           as $Val,
     );
@@ -96,7 +116,13 @@ abstract class _$$UserEntityImplCopyWith<$Res>
   ) = __$$UserEntityImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String userid, String workspace, String password});
+  $Res call({
+    String userid,
+    String workspace,
+    String password,
+    String? warehouse,
+    String? currency,
+  });
 }
 
 /// @nodoc
@@ -116,6 +142,8 @@ class __$$UserEntityImplCopyWithImpl<$Res>
     Object? userid = null,
     Object? workspace = null,
     Object? password = null,
+    Object? warehouse = freezed,
+    Object? currency = freezed,
   }) {
     return _then(
       _$UserEntityImpl(
@@ -134,6 +162,16 @@ class __$$UserEntityImplCopyWithImpl<$Res>
                 ? _value.password
                 : password // ignore: cast_nullable_to_non_nullable
                     as String,
+        warehouse:
+            freezed == warehouse
+                ? _value.warehouse
+                : warehouse // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        currency:
+            freezed == currency
+                ? _value.currency
+                : currency // ignore: cast_nullable_to_non_nullable
+                    as String?,
       ),
     );
   }
@@ -146,6 +184,8 @@ class _$UserEntityImpl implements _UserEntity {
     required this.userid,
     required this.workspace,
     required this.password,
+    this.warehouse,
+    this.currency,
   });
 
   factory _$UserEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -157,10 +197,14 @@ class _$UserEntityImpl implements _UserEntity {
   final String workspace;
   @override
   final String password;
+  @override
+  final String? warehouse;
+  @override
+  final String? currency;
 
   @override
   String toString() {
-    return 'UserEntity(userid: $userid, workspace: $workspace, password: $password)';
+    return 'UserEntity(userid: $userid, workspace: $workspace, password: $password, warehouse: $warehouse, currency: $currency)';
   }
 
   @override
@@ -172,12 +216,23 @@ class _$UserEntityImpl implements _UserEntity {
             (identical(other.workspace, workspace) ||
                 other.workspace == workspace) &&
             (identical(other.password, password) ||
-                other.password == password));
+                other.password == password) &&
+            (identical(other.warehouse, warehouse) ||
+                other.warehouse == warehouse) &&
+            (identical(other.currency, currency) ||
+                other.currency == currency));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, userid, workspace, password);
+  int get hashCode => Object.hash(
+    runtimeType,
+    userid,
+    workspace,
+    password,
+    warehouse,
+    currency,
+  );
 
   /// Create a copy of UserEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -198,6 +253,8 @@ abstract class _UserEntity implements UserEntity {
     required final String userid,
     required final String workspace,
     required final String password,
+    final String? warehouse,
+    final String? currency,
   }) = _$UserEntityImpl;
 
   factory _UserEntity.fromJson(Map<String, dynamic> json) =
@@ -209,6 +266,10 @@ abstract class _UserEntity implements UserEntity {
   String get workspace;
   @override
   String get password;
+  @override
+  String? get warehouse;
+  @override
+  String? get currency;
 
   /// Create a copy of UserEntity
   /// with the given fields replaced by the non-null parameter values.

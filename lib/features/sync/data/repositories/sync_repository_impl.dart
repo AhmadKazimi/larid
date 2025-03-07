@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 import 'package:larid/core/network/api_service.dart';
+import 'package:larid/core/network/api_client.dart';
 import 'package:larid/database/customer_table.dart';
 import 'package:larid/database/inventory_items_table.dart';
 import 'package:larid/database/inventory_units_table.dart';
@@ -13,9 +14,13 @@ import 'package:larid/features/sync/domain/entities/inventory/inventory_item_ent
 import 'package:larid/features/sync/domain/entities/inventory/inventory_unit_entity.dart';
 import 'package:larid/features/sync/domain/entities/prices/prices_entity.dart';
 import 'package:larid/features/sync/domain/entities/sales_tax_entity.dart';
+import 'package:larid/features/sync/domain/entities/warehouse/warehouse_entity.dart';
 
 import 'package:larid/core/models/api_response.dart';
 import '../../../sync/domain/repositories/sync_repository.dart';
+import 'package:larid/core/network/api_endpoints.dart';
+import 'package:larid/core/error/error_codes.dart';
+import 'package:dio/dio.dart';
 
 class SyncRepositoryImpl implements SyncRepository {
   final ApiService _apiService;
@@ -25,6 +30,7 @@ class SyncRepositoryImpl implements SyncRepository {
   final InventoryItemsTable _inventoryItemsTable;
   final InventoryUnitsTable _inventoryUnitsTable;
   final SalesTaxesTable _salesTaxesTable;
+  final DioClient _dioClient;
   UserEntity? _user;
 
   SyncRepositoryImpl({
@@ -35,13 +41,15 @@ class SyncRepositoryImpl implements SyncRepository {
     required InventoryItemsTable inventoryItemsTable,
     required InventoryUnitsTable inventoryUnitsTable,
     required SalesTaxesTable salesTaxesTable,
+    required DioClient dioClient,
   }) : _apiService = apiService,
        _customerTable = customerTable,
        _userTable = userTable,
        _pricesTable = pricesTable,
        _inventoryItemsTable = inventoryItemsTable,
        _inventoryUnitsTable = inventoryUnitsTable,
-       _salesTaxesTable = salesTaxesTable {
+       _salesTaxesTable = salesTaxesTable,
+       _dioClient = dioClient {
     // Initialize user when repository is created
     _initUser().then((_) {
       if (_user != null) {
@@ -58,7 +66,7 @@ class SyncRepositoryImpl implements SyncRepository {
         dev.log('User already initialized: ${_user!.userid}');
         return;
       }
-      
+
       _user = await _userTable.getCurrentUser();
       if (_user == null) {
         dev.log('No user found in database during initialization');
@@ -71,13 +79,15 @@ class SyncRepositoryImpl implements SyncRepository {
     }
   }
 
-
   @override
   Future<ApiResponse<List<CustomerEntity>>> getCustomers() async {
     try {
       if (_user == null) {
         dev.log('User not found in database - cannot sync customers');
-        return ApiResponse(errorCode: '-1', message: 'Please login again to sync customers');
+        return ApiResponse(
+          errorCode: '-1',
+          message: 'Please login again to sync customers',
+        );
       }
 
       final customersData = await _apiService.getCustomers(
@@ -116,7 +126,10 @@ class SyncRepositoryImpl implements SyncRepository {
     try {
       if (_user == null) {
         dev.log('User not found in database - cannot sync sales rep customers');
-        return ApiResponse(errorCode: '-1', message: 'Please login again to sync sales rep customers');
+        return ApiResponse(
+          errorCode: '-1',
+          message: 'Please login again to sync sales rep customers',
+        );
       }
 
       final customersData = await _apiService.getSalesrepRouteCustomers(
@@ -157,7 +170,10 @@ class SyncRepositoryImpl implements SyncRepository {
     try {
       if (_user == null) {
         dev.log('User not found in database - cannot sync prices');
-        return ApiResponse(errorCode: '-1', message: 'Please login again to sync prices');
+        return ApiResponse(
+          errorCode: '-1',
+          message: 'Please login again to sync prices',
+        );
       }
 
       final customersData = await _apiService.getCustomersPriceList(
@@ -196,7 +212,10 @@ class SyncRepositoryImpl implements SyncRepository {
     try {
       if (_user == null) {
         dev.log('User not found in database - cannot sync inventory items');
-        return ApiResponse(errorCode: '-1', message: 'Please login again to sync inventory items');
+        return ApiResponse(
+          errorCode: '-1',
+          message: 'Please login again to sync inventory items',
+        );
       }
 
       final customersData = await _apiService.getInventoryItems(
@@ -275,7 +294,10 @@ class SyncRepositoryImpl implements SyncRepository {
     try {
       if (_user == null) {
         dev.log('User not found in database - cannot sync sales taxes');
-        return ApiResponse(errorCode: '-1', message: 'Please login again to sync sales taxes');
+        return ApiResponse(
+          errorCode: '-1',
+          message: 'Please login again to sync sales taxes',
+        );
       }
 
       dev.log('Getting sales taxes for user: ${_user!.userid}');
@@ -300,21 +322,23 @@ class SyncRepositoryImpl implements SyncRepository {
           message: 'Failed to get sales taxes: $errorMsg',
         );
       }
-    
+
       dev.log('Raw API response: $response');
-      final taxes = response.map((json) {
-        try {
-          return SalesTaxEntity.fromJson(json);
-        } catch (e) {
-          dev.log('Error parsing sales tax item: $e, JSON: $json');
-          return null;
-        }
-      })
-      .whereType<SalesTaxEntity>() // Filter out null items
-      .toList();
+      final taxes =
+          response
+              .map((json) {
+                try {
+                  return SalesTaxEntity.fromJson(json);
+                } catch (e) {
+                  dev.log('Error parsing sales tax item: $e, JSON: $json');
+                  return null;
+                }
+              })
+              .whereType<SalesTaxEntity>() // Filter out null items
+              .toList();
 
       dev.log('Successfully parsed ${taxes.length} sales taxes from API');
-      
+
       if (taxes.isEmpty) {
         return ApiResponse(
           errorCode: '-1',
@@ -343,5 +367,79 @@ class SyncRepositoryImpl implements SyncRepository {
   @override
   Future<void> saveSalesTaxes(List<SalesTaxEntity> taxes) async {
     await _salesTaxesTable.createOrUpdateTaxes(taxes);
+  }
+
+  @override
+  Future<ApiResponse<List<WarehouseEntity>>> getUserWarehouse() async {
+    try {
+      if (_user == null) {
+        dev.log('User not found in database - cannot sync warehouse');
+        return ApiResponse(
+          errorCode: ApiErrorCode.userNotExist.message,
+          message: 'Please login again to sync warehouse',
+        );
+      }
+
+      try {
+        // Make API call using DioClient directly similar to other methods
+        final response = await _dioClient.get(
+          ApiEndpoints.getUserWearhouse,
+          queryParameters: {
+            'userid': _user!.userid,
+            'workspace': _user!.workspace,
+            'password': _user!.password,
+          },
+        );
+
+        if (response.statusCode != 200) {
+          return ApiResponse(
+            errorCode: ApiErrorCode.exceptionFailure.message,
+            message: 'Server error: ${response.statusCode}',
+          );
+        }
+
+        // Parse the warehouse data
+        final List<dynamic> responseData = response.data;
+        final List<Map<String, dynamic>> warehouseData =
+            responseData.cast<Map<String, dynamic>>();
+
+        if (warehouseData.isEmpty) {
+          return ApiResponse(
+            errorCode: ApiErrorCode.noDefaultLocation.message,
+            message: 'No warehouse data found',
+          );
+        }
+
+        final warehouse = warehouseData.first['warehouse'] as String;
+        final currency = warehouseData.first['currency'] as String;
+
+        final data = [
+          WarehouseEntity(warehouse: warehouse, currency: currency),
+        ];
+
+        return ApiResponse<List<WarehouseEntity>>(
+          data: data,
+          errorCode: null,
+          message: null,
+        );
+      } catch (e) {
+        dev.log('Error making API call: $e');
+        return ApiResponse(
+          errorCode: ApiErrorCode.exceptionFailure.message,
+          message: 'Failed to fetch warehouse data: $e',
+        );
+      }
+    } catch (e) {
+      dev.log('Error syncing warehouse: $e');
+      return ApiResponse(
+        errorCode: ApiErrorCode.unknown.message,
+        message: e.toString(),
+      );
+    }
+  }
+
+  @override
+  Future<void> saveUserWarehouse(String warehouse, String currency) async {
+    await _userTable.updateUserWarehouse(warehouse, currency);
   }
 }

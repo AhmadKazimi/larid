@@ -13,6 +13,7 @@ import 'package:larid/features/sync/domain/usecases/sync_inventory_units_usecase
 import 'package:larid/features/sync/domain/usecases/sync_sales_taxes_usecase.dart';
 import 'package:larid/features/sync/domain/usecases/sync_prices_usecase.dart';
 import 'package:larid/features/sync/presentation/bloc/sync_bloc.dart';
+import 'package:larid/features/sync/domain/usecases/sync_user_warehouse_usecase.dart';
 import 'core/di/service_locator.dart';
 import 'core/l10n/l10n.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
                 syncInventoryItemsUseCase: getIt<SyncInventoryItemsUseCase>(),
                 syncInventoryUnitsUseCase: getIt<SyncInventoryUnitsUseCase>(),
                 syncSalesTaxesUseCase: getIt<SyncSalesTaxesUseCase>(),
+                syncUserWarehouseUseCase: getIt<SyncUserWarehouseUseCase>(),
               ),
         ),
       ],

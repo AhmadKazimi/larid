@@ -25,6 +25,7 @@ import '../../features/sync/domain/usecases/sync_prices_usecase.dart';
 import '../../features/sync/domain/usecases/sync_inventory_items_usecase.dart';
 import '../../features/sync/domain/usecases/sync_inventory_units_usecase.dart';
 import '../../features/sync/domain/usecases/sync_sales_taxes_usecase.dart';
+import '../../features/sync/domain/usecases/sync_user_warehouse_usecase.dart';
 import '../../features/sync/presentation/bloc/sync_bloc.dart';
 import '../../features/map/data/repositories/working_session_repository_impl.dart';
 import '../../features/map/domain/repositories/working_session_repository.dart';
@@ -116,6 +117,7 @@ Future<void> setupServiceLocator() async {
       inventoryItemsTable: getIt(),
       inventoryUnitsTable: getIt(),
       salesTaxesTable: getIt(),
+      dioClient: DioClient.instance,
     ),
   );
 
@@ -141,6 +143,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(() => SyncInventoryItemsUseCase(getIt()));
   getIt.registerFactory(() => SyncInventoryUnitsUseCase(getIt()));
   getIt.registerFactory(() => SyncSalesTaxesUseCase(getIt()));
+  getIt.registerFactory(() => SyncUserWarehouseUseCase(getIt()));
   getIt.registerFactory(() => EndSessionUseCase(getIt()));
 
   // BLoCs
@@ -156,6 +159,7 @@ Future<void> setupServiceLocator() async {
       syncInventoryItemsUseCase: getIt(),
       syncInventoryUnitsUseCase: getIt(),
       syncSalesTaxesUseCase: getIt(),
+      syncUserWarehouseUseCase: getIt(),
     ),
   );
 
@@ -168,6 +172,9 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory<InvoiceBloc>(
     () => InvoiceBloc(invoiceRepository: getIt<InvoiceRepository>()),
   );
+
+  // Update warehouse in ApiService if available
+  await updateWarehouseInApiService();
 }
 
 Future<void> _initializeNetworkComponents(String? baseUrl) async {
@@ -222,5 +229,21 @@ Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
     );
   } catch (e) {
     rethrow;
+  }
+}
+
+// Function to update the warehouse value in the ApiService
+Future<void> updateWarehouseInApiService() async {
+  try {
+    final userTable = getIt<UserTable>();
+    final warehouseData = await userTable.getUserWarehouse();
+    final warehouse = warehouseData['warehouse'];
+
+    if (warehouse != null) {
+      final apiService = getIt<ApiService>();
+      apiService.setWarehouse(warehouse);
+    }
+  } catch (e) {
+    print('Error updating warehouse in ApiService: $e');
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 import 'package:larid/core/theme/app_theme.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import '../../../../core/error/error_codes.dart';
@@ -22,6 +23,7 @@ class SyncPage extends StatefulWidget {
 class _SyncPageState extends State<SyncPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  StreamSubscription? _syncSubscription;
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _SyncPageState extends State<SyncPage>
   @override
   void dispose() {
     _animationController.dispose();
+    _syncSubscription?.cancel();
     super.dispose();
   }
 
@@ -50,7 +53,8 @@ class _SyncPageState extends State<SyncPage>
               state.pricesState.isLoading ||
               state.inventoryItemsState.isLoading ||
               state.inventoryUnitsState.isLoading ||
-              state.salesTaxesState.isLoading;
+              state.salesTaxesState.isLoading ||
+              state.warehouseState.isLoading;
 
           final bool hasError =
               state.customersState.errorCode != null ||
@@ -58,7 +62,8 @@ class _SyncPageState extends State<SyncPage>
               state.pricesState.errorCode != null ||
               state.inventoryItemsState.errorCode != null ||
               state.inventoryUnitsState.errorCode != null ||
-              state.salesTaxesState.errorCode != null;
+              state.salesTaxesState.errorCode != null ||
+              state.warehouseState.errorCode != null;
 
           final bool isSuccess =
               state.customersState.isSuccess &&
@@ -66,7 +71,8 @@ class _SyncPageState extends State<SyncPage>
               state.pricesState.isSuccess &&
               state.inventoryItemsState.isSuccess &&
               state.inventoryUnitsState.isSuccess &&
-              state.salesTaxesState.isSuccess;
+              state.salesTaxesState.isSuccess &&
+              state.warehouseState.isSuccess;
 
           if (isLoading) {
             _animationController.repeat();
@@ -84,7 +90,8 @@ class _SyncPageState extends State<SyncPage>
               state.pricesState.errorCode != null ||
               state.inventoryItemsState.errorCode != null ||
               state.inventoryUnitsState.errorCode != null ||
-              state.salesTaxesState.errorCode != null;
+              state.salesTaxesState.errorCode != null ||
+              state.warehouseState.errorCode != null;
 
           final bool isSuccess =
               state.customersState.isSuccess &&
@@ -92,7 +99,8 @@ class _SyncPageState extends State<SyncPage>
               state.pricesState.isSuccess &&
               state.inventoryItemsState.isSuccess &&
               state.inventoryUnitsState.isSuccess &&
-              state.salesTaxesState.isSuccess;
+              state.salesTaxesState.isSuccess &&
+              state.warehouseState.isSuccess;
 
           final bool isLoading =
               state.customersState.isLoading ||
@@ -100,20 +108,22 @@ class _SyncPageState extends State<SyncPage>
               state.pricesState.isLoading ||
               state.inventoryItemsState.isLoading ||
               state.inventoryUnitsState.isLoading ||
-              state.salesTaxesState.isLoading;
+              state.salesTaxesState.isLoading ||
+              state.warehouseState.isLoading;
 
           // Calculate progress (0.0 to 1.0)
           double progress = 0.0;
-          int totalSteps = 6; // Total number of sync operations
+          int totalSteps = 7; // Total number of sync operations
           int completedSteps = 0;
-          
+
           if (state.customersState.isSuccess) completedSteps++;
           if (state.salesRepState.isSuccess) completedSteps++;
           if (state.pricesState.isSuccess) completedSteps++;
           if (state.inventoryItemsState.isSuccess) completedSteps++;
           if (state.inventoryUnitsState.isSuccess) completedSteps++;
           if (state.salesTaxesState.isSuccess) completedSteps++;
-          
+          if (state.warehouseState.isSuccess) completedSteps++;
+
           progress = completedSteps / totalSteps;
 
           return GradientPageLayout(
@@ -135,9 +145,10 @@ class _SyncPageState extends State<SyncPage>
                               child: Icon(
                                 Icons.sync,
                                 size: 32,
-                                color: isSuccess
-                                    ? Colors.green
-                                    : hasError
+                                color:
+                                    isSuccess
+                                        ? Colors.green
+                                        : hasError
                                         ? Colors.red
                                         : AppColors.primary,
                               ),
@@ -145,10 +156,12 @@ class _SyncPageState extends State<SyncPage>
                             const SizedBox(width: 16),
                             Text(
                               l10n.syncAllData,
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                  ),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ],
                         ),
@@ -163,9 +176,8 @@ class _SyncPageState extends State<SyncPage>
                         const SizedBox(height: 8),
                         Text(
                           '${(progress * 100).toInt()}%',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.primary,
-                              ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.primary),
                         ),
                       ],
                     ),
@@ -180,10 +192,12 @@ class _SyncPageState extends State<SyncPage>
                           children: [
                             Text(
                               l10n.syncStatus,
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                  ),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             _buildApiLogSection(
@@ -196,10 +210,7 @@ class _SyncPageState extends State<SyncPage>
                               state.salesRepState,
                             ),
                             const SizedBox(height: 8),
-                            _buildApiLogSection(
-                              l10n.prices,
-                              state.pricesState,
-                            ),
+                            _buildApiLogSection(l10n.prices, state.pricesState),
                             const SizedBox(height: 8),
                             _buildApiLogSection(
                               l10n.inventoryItems,
@@ -214,6 +225,11 @@ class _SyncPageState extends State<SyncPage>
                             _buildApiLogSection(
                               l10n.salesTaxes,
                               state.salesTaxesState,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildApiLogSection(
+                              'Warehouse',
+                              state.warehouseState,
                             ),
                           ],
                         ),
@@ -242,7 +258,8 @@ class _SyncPageState extends State<SyncPage>
         state.pricesState.isLoading ||
         state.inventoryItemsState.isLoading ||
         state.inventoryUnitsState.isLoading ||
-        state.salesTaxesState.isLoading;
+        state.salesTaxesState.isLoading ||
+        state.warehouseState.isLoading;
 
     final bool hasError =
         state.customersState.errorCode != null ||
@@ -250,7 +267,8 @@ class _SyncPageState extends State<SyncPage>
         state.pricesState.errorCode != null ||
         state.inventoryItemsState.errorCode != null ||
         state.inventoryUnitsState.errorCode != null ||
-        state.salesTaxesState.errorCode != null;
+        state.salesTaxesState.errorCode != null ||
+        state.warehouseState.errorCode != null;
 
     final bool isSuccess =
         state.customersState.isSuccess &&
@@ -258,7 +276,8 @@ class _SyncPageState extends State<SyncPage>
         state.pricesState.isSuccess &&
         state.inventoryItemsState.isSuccess &&
         state.inventoryUnitsState.isSuccess &&
-        state.salesTaxesState.isSuccess;
+        state.salesTaxesState.isSuccess &&
+        state.warehouseState.isSuccess;
 
     if (isSuccess && !hasError) {
       SharedPrefs.setSynced(true);
@@ -275,64 +294,56 @@ class _SyncPageState extends State<SyncPage>
       ),
       child: ElevatedButton(
         onPressed:
-          isLoading
-              ? null
-              : () {
-                if (isSuccess && !hasError) {
-                  context.go(RouteConstants.map);
-                } else {
-                  // Start sync process
-                  context.read<SyncBloc>().add(const SyncEvent.syncSalesTaxes());
-                  context.read<SyncBloc>().add(const SyncEvent.syncCustomers());
-                  context.read<SyncBloc>().add(
-                    const SyncEvent.syncSalesRepCustomers(),
-                  );
-                  context.read<SyncBloc>().add(const SyncEvent.syncPrices());
-                  context.read<SyncBloc>().add(
-                    const SyncEvent.syncInventoryItems(),
-                  );
-                  context.read<SyncBloc>().add(
-                    const SyncEvent.syncInventoryUnits(),
-                  );
-                }
-              },
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.all(16),
-        backgroundColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child:
-          isLoading
-              ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-              : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    isSuccess && !hasError ? l10n.start : l10n.syncAllData,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+            isLoading
+                ? null
+                : () {
+                  if (isSuccess && !hasError) {
+                    context.go(RouteConstants.map);
+                  } else {
+                    // Start sync process
+                    _syncAllData();
+                  }
+                },
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child:
+            isLoading
+                ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
-                  if (isSuccess || hasError) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      isSuccess ? Icons.check_circle : Icons.error,
-                      color: Colors.white,
-                      size: 20,
+                )
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      isSuccess && !hasError ? l10n.start : l10n.syncAllData,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    if (isSuccess || hasError) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        isSuccess ? Icons.check_circle : Icons.error,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ],
                   ],
-                ],
-              ),
-    ));
+                ),
+      ),
+    );
   }
 
   Widget _buildApiLogSection(String title, ApiCallState state) {
@@ -381,5 +392,35 @@ class _SyncPageState extends State<SyncPage>
         );
       },
     );
+  }
+
+  // Function to sync all data
+  void _syncAllData() {
+    // Cancel any existing subscription
+    _syncSubscription?.cancel();
+
+    // First sync non-inventory items
+    context.read<SyncBloc>().add(const SyncEvent.syncCustomers());
+    context.read<SyncBloc>().add(const SyncEvent.syncSalesRepCustomers());
+    context.read<SyncBloc>().add(const SyncEvent.syncPrices());
+    context.read<SyncBloc>().add(const SyncEvent.syncInventoryUnits());
+    context.read<SyncBloc>().add(const SyncEvent.syncSalesTaxes());
+
+    // Sync warehouse first, then listen for its success before syncing inventory items
+    final bloc = context.read<SyncBloc>();
+    bloc.add(const SyncEvent.syncUserWarehouse());
+
+    // Listen to bloc state changes
+    _syncSubscription = bloc.stream.listen((state) {
+      // When warehouse sync is successful, trigger inventory items sync
+      if (state.warehouseState.isSuccess &&
+          !state.inventoryItemsState.isLoading) {
+        // Only trigger inventory sync if it hasn't already been done
+        if (!state.inventoryItemsState.isSuccess &&
+            state.inventoryItemsState.errorCode == null) {
+          bloc.add(const SyncEvent.syncInventoryItems());
+        }
+      }
+    });
   }
 }
