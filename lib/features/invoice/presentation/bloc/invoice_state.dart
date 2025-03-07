@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../../features/sync/domain/entities/customer_entity.dart';
 import '../../../../features/sync/domain/entities/inventory/inventory_item_entity.dart';
+import 'package:equatable/equatable.dart';
+import 'package:larid/features/invoice/domain/entities/invoice_entity.dart';
 
 part 'invoice_state.freezed.dart';
 
@@ -30,11 +32,11 @@ class InvoiceState with _$InvoiceState {
     @Default('Cash') String paymentType,
     String? invoiceNumber,
     String? errorMessage,
+    @Default(false) bool isLoading,
   }) = _InvoiceState;
-  
-  factory InvoiceState.initial(CustomerEntity customer) => InvoiceState(
-    customer: customer,
-  );
+
+  factory InvoiceState.initial(CustomerEntity customer) =>
+      InvoiceState(customer: customer);
 }
 
 @freezed
@@ -53,11 +55,45 @@ class InvoiceItemModel with _$InvoiceItemModel {
   }) {
     final totalPrice = item.sellUnitPrice * quantity;
     // Tax will be calculated later based on tax rules
-    
+
     return InvoiceItemModel(
       item: item,
       quantity: quantity,
       totalPrice: totalPrice,
     );
   }
+}
+
+// Bloc-specific states
+abstract class InvoiceBlocState extends Equatable {
+  const InvoiceBlocState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class InvoiceInitial extends InvoiceBlocState {}
+
+class InvoiceSaving extends InvoiceBlocState {}
+
+class InvoiceSaved extends InvoiceBlocState {}
+
+class InvoicesLoading extends InvoiceBlocState {}
+
+class InvoicesLoaded extends InvoiceBlocState {
+  final List<InvoiceEntity> invoices;
+
+  const InvoicesLoaded({required this.invoices});
+
+  @override
+  List<Object?> get props => [invoices];
+}
+
+class InvoiceError extends InvoiceBlocState {
+  final String message;
+
+  const InvoiceError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
 }

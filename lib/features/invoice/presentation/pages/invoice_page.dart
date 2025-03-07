@@ -5,6 +5,7 @@ import 'package:larid/core/l10n/app_localizations.dart';
 import 'package:larid/core/theme/app_theme.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
+import '../../../../core/di/service_locator.dart';
 import '../bloc/invoice_bloc.dart';
 import '../bloc/invoice_event.dart';
 import '../bloc/invoice_state.dart';
@@ -30,7 +31,30 @@ class _InvoicePageState extends State<InvoicePage> {
   void initState() {
     super.initState();
     _isReturn = widget.isReturn;
-    _invoiceBloc = InvoiceBloc();
+    _invoiceBloc = getIt<InvoiceBloc>();
+
+    // Listen for state changes to update the comment controller
+    _invoiceBloc.stream.listen((state) {
+      if (state.comment.isNotEmpty &&
+          _commentController.text != state.comment) {
+        debugPrint('Setting comment controller text: ${state.comment}');
+        _commentController.text = state.comment;
+      }
+
+      // Debug current invoice state
+      if (!state.isLoading) {
+        debugPrint('Invoice state updated:');
+        debugPrint('- Invoice Number: ${state.invoiceNumber ?? "New Invoice"}');
+        debugPrint('- Items Count: ${state.items.length}');
+        debugPrint('- Return Items Count: ${state.returnItems.length}');
+        debugPrint('- Grand Total: ${state.grandTotal}');
+      }
+    });
+
+    // Initialize the invoice after setup
+    debugPrint(
+      'Initializing invoice for customer: ${widget.customer.customerCode}',
+    );
     _invoiceBloc.add(
       InitializeInvoice(customerCode: widget.customer.customerCode),
     );
@@ -52,6 +76,41 @@ class _InvoicePageState extends State<InvoicePage> {
       value: _invoiceBloc,
       child: BlocBuilder<InvoiceBloc, InvoiceState>(
         builder: (context, state) {
+          // Show loading indicator when loading
+          if (state.isLoading) {
+            debugPrint('🔄 Showing loading indicator for invoice page');
+            return Scaffold(
+              body: SafeArea(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: AppColors.primary),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Loading invoice...',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          debugPrint(
+            '🏗️ Building invoice page for ${state.customer.customerName} with:',
+          );
+          debugPrint(
+            '- Invoice Number: ${state.invoiceNumber ?? "New Invoice"}',
+          );
+          debugPrint(
+            '- Items: ${state.items.length}, Return Items: ${state.returnItems.length}',
+          );
+          debugPrint(
+            '- Subtotal: ${state.subtotal}, Grand Total: ${state.grandTotal}',
+          );
+
           return Scaffold(
             // Added Scaffold to provide Material context
             body: SafeArea(
@@ -131,6 +190,18 @@ class _InvoicePageState extends State<InvoicePage> {
     ThemeData theme,
     AppLocalizations localizations,
   ) {
+    // Use a unique key based on state values to force rebuild when they change
+    final invoiceCardKey = ValueKey(
+      'invoice-card-${state.subtotal}-${state.grandTotal}-${state.items.length}',
+    );
+    final returnCardKey = ValueKey(
+      'return-card-${state.returnSubtotal}-${state.returnGrandTotal}-${state.returnItems.length}',
+    );
+
+    debugPrint(
+      'Building invoice body with (reusing keys: $invoiceCardKey, $returnCardKey)',
+    );
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       children: [
@@ -166,6 +237,7 @@ class _InvoicePageState extends State<InvoicePage> {
         // Invoice section - only show if not in return mode
         if (!_isReturn)
           _buildSectionCard(
+            key: invoiceCardKey, // Add key to force rebuild when values change
             title: localizations.invoice,
             child: Column(
               children: [
@@ -188,6 +260,7 @@ class _InvoicePageState extends State<InvoicePage> {
         // Return section - always show in return mode
         if (_isReturn)
           _buildSectionCard(
+            key: returnCardKey, // Add key to force rebuild when values change
             title: localizations.returnItems,
             child: Column(
               children: [
@@ -230,8 +303,13 @@ class _InvoicePageState extends State<InvoicePage> {
     );
   }
 
-  Widget _buildSectionCard({required String title, required Widget child}) {
+  Widget _buildSectionCard({
+    Key? key,
+    required String title,
+    required Widget child,
+  }) {
     return GradientFormCard(
+      key: key,
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,25 +495,45 @@ class _InvoicePageState extends State<InvoicePage> {
             // Add item button
             _buildActionButton(
               onPressed: () async {
+                // Create a map of previously selected items to send to the items page
+                final Map<String, int> preselectedItems = {};
+
+                // Add current items to the preselected map
+                if (_isReturn) {
+                  for (final item in state.returnItems) {
+                    preselectedItems[item.item.itemCode] = item.quantity;
+                  }
+                } else {
+                  for (final item in state.items) {
+                    preselectedItems[item.item.itemCode] = item.quantity;
+                  }
+                }
+
                 // Navigate to items page using GoRouter and capture the result
                 final result = await context.push<Map<String, dynamic>>(
                   RouteConstants.items,
-                  extra: {'isReturn': _isReturn},
+                  extra: {
+                    'isReturn': _isReturn,
+                    'preselectedItems': preselectedItems,
+                  },
                 );
 
                 // Process the returned items
                 if (result != null && result.isNotEmpty) {
                   // Debug log to verify we're receiving data
-                  debugPrint('Received selected items: ${result.length}');
+                  debugPrint('Received selected items: ${result.toString()}');
+
+                  // Extract the 'items' map from the result
+                  final items = result['items'] as Map<String, dynamic>;
 
                   // Add items to invoice
                   if (_isReturn) {
                     context.read<InvoiceBloc>().add(
-                      AddReturnItems(items: result),
+                      AddReturnItems(items: items),
                     );
                   } else {
                     context.read<InvoiceBloc>().add(
-                      AddInvoiceItems(items: result),
+                      AddInvoiceItems(items: items),
                     );
                   }
 

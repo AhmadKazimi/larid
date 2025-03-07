@@ -224,15 +224,20 @@ class AppRouter {
         path: RouteConstants.items,
         name: 'items',
         pageBuilder: (context, state) {
-          final extraMap = state.extra as Map<String, dynamic>;
-          final isReturn = extraMap['isReturn'] as bool? ?? false;
+          final extra = state.extra as Map<String, dynamic>?;
+          final isReturn = extra?['isReturn'] as bool? ?? false;
+          final preselectedItems =
+              extra?['preselectedItems'] as Map<String, int>?;
 
           return _buildSlideTransition(
             context: context,
             state: state,
             child: BlocProvider(
               create: (context) => ItemsBloc(),
-              child: ItemsPage(isReturn: isReturn),
+              child: ItemsPage(
+                isReturn: isReturn,
+                preselectedItems: preselectedItems,
+              ),
             ),
           );
         },

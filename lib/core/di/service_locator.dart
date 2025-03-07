@@ -31,18 +31,19 @@ import '../../features/map/domain/repositories/working_session_repository.dart';
 import '../../features/map/domain/usecases/check_active_session_usecase.dart';
 import '../../features/map/domain/usecases/start_session_usecase.dart';
 import '../../features/map/domain/usecases/end_session_usecase.dart';
+import '../../database/database_helper.dart';
+import '../../features/invoice/data/repositories/invoice_repository_impl.dart';
+import '../../features/invoice/domain/repositories/invoice_repository.dart';
+import '../../features/invoice/presentation/bloc/invoice_bloc.dart';
 
 final getIt = GetIt.instance;
 
-
-
 Future<void> setupServiceLocator() async {
-
   // Core
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(sharedPreferences);
 
-  // Database
+  // Database setup
   final documentsDirectory = await getApplicationDocumentsDirectory();
   final databasePath = join(documentsDirectory.path, 'larid.db');
 
@@ -63,6 +64,11 @@ Future<void> setupServiceLocator() async {
     },
   );
 
+  // Register DatabaseHelper with the created database
+  getIt.registerSingleton<DatabaseHelper>(
+    DatabaseHelper()..setDatabase(database),
+  );
+
   // Database tables
   final userTable = UserTable(database);
   final customerTable = CustomerTable(database);
@@ -72,6 +78,9 @@ Future<void> setupServiceLocator() async {
   final salesTaxesTable = SalesTaxesTable(database);
   final workingSessionTable = WorkingSessionTable(database);
   final invoiceTable = InvoiceTable(database);
+
+  // Ensure the invoice table schema is up to date
+  await invoiceTable.ensureSchema();
 
   getIt.registerSingleton<UserTable>(userTable);
   getIt.registerSingleton<CustomerTable>(customerTable);
@@ -149,14 +158,23 @@ Future<void> setupServiceLocator() async {
       syncSalesTaxesUseCase: getIt(),
     ),
   );
+
+  // Register InvoiceRepository
+  getIt.registerLazySingleton<InvoiceRepository>(
+    () => InvoiceRepositoryImpl(dbHelper: getIt<DatabaseHelper>()),
+  );
+
+  // Register InvoiceBloc
+  getIt.registerFactory<InvoiceBloc>(
+    () => InvoiceBloc(invoiceRepository: getIt<InvoiceRepository>()),
+  );
 }
 
 Future<void> _initializeNetworkComponents(String? baseUrl) async {
-
   try {
     // Initialize DioClient singleton with base URL
     await DioClient.initialize(baseUrl);
-    
+
     // Register the singleton instance
     if (!getIt.isRegistered<DioClient>()) {
       getIt.registerSingleton<DioClient>(DioClient.instance);
@@ -177,11 +195,10 @@ Future<void> _initializeNetworkComponents(String? baseUrl) async {
 
 // Function to update DioClient's baseUrl
 Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
-
   try {
     // Update the base URL in the singleton instance
     DioClient.instance.setBaseUrl(newBaseUrl);
-    
+
     // Verify the update
     final updatedBaseUrl = DioClient.instance.baseUrl;
 
@@ -203,7 +220,6 @@ Future<void> updateDioClientBaseUrl(String newBaseUrl) async {
         userTable: getIt(),
       ),
     );
-    
   } catch (e) {
     rethrow;
   }

@@ -11,8 +11,10 @@ import 'package:larid/features/sync/domain/entities/inventory/inventory_item_ent
 
 class ItemsPage extends StatefulWidget {
   final bool isReturn;
+  final Map<String, int>? preselectedItems;
 
-  const ItemsPage({Key? key, this.isReturn = false}) : super(key: key);
+  const ItemsPage({Key? key, this.isReturn = false, this.preselectedItems})
+    : super(key: key);
 
   @override
   State<ItemsPage> createState() => _ItemsPageState();
@@ -26,7 +28,21 @@ class _ItemsPageState extends State<ItemsPage> {
   void initState() {
     super.initState();
     _itemsBloc = ItemsBloc();
+
+    // Load items and apply preselected quantities if available
     _itemsBloc.add(LoadItems(isReturn: widget.isReturn));
+
+    // Apply preselected items after a short delay to ensure items are loaded
+    if (widget.preselectedItems != null &&
+        widget.preselectedItems!.isNotEmpty) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        for (final entry in widget.preselectedItems!.entries) {
+          _itemsBloc.add(
+            UpdateItemQuantity(itemCode: entry.key, quantity: entry.value),
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -74,7 +90,7 @@ class _ItemsPageState extends State<ItemsPage> {
         if (state.error != null) {
           return Center(
             child: GradientFormCard(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -175,7 +191,7 @@ class _ItemsPageState extends State<ItemsPage> {
           Expanded(
             child: Text(
               widget.isReturn ? localizations.returnItems : localizations.items,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -250,81 +266,101 @@ class _ItemsPageState extends State<ItemsPage> {
         final selectedQuantity = state.selectedItems[item.itemCode] ?? 0;
 
         return GradientFormCard(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildItemIcon(),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.itemCode,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.description,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildItemIcon(),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                        Text(
+                          item.itemCode,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
                           ),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            '${item.sellUnitPrice.toStringAsFixed(2)} JOD',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: AppColors.secondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        if (selectedQuantity > 0) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
+                        const SizedBox(height: 4),
+                        Text(
+                          item.description,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.secondary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${item.sellUnitPrice.toStringAsFixed(2)} JOD',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: AppColors.secondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'Total: ${(selectedQuantity * item.sellUnitPrice).toStringAsFixed(2)} JOD',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500,
+                          ],
+                        ),
+                        if (selectedQuantity > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Total: ${(selectedQuantity * item.sellUnitPrice).toStringAsFixed(2)} JOD',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),
-                        ],
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  _buildQuantityControls(
+                    context,
+                    selectedQuantity,
+                    item.itemCode,
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              _buildQuantityControls(context, selectedQuantity, item.itemCode),
             ],
           ),
         );
@@ -340,7 +376,7 @@ class _ItemsPageState extends State<ItemsPage> {
         color: AppColors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
+      child: const Icon(
         Icons.inventory_2_outlined,
         color: AppColors.primary,
         size: 24,
@@ -353,37 +389,74 @@ class _ItemsPageState extends State<ItemsPage> {
     int quantity,
     String itemCode,
   ) {
-    return Row(
-      children: [
-        _buildQuantityButton(
-          icon: Icons.remove,
-          onPressed:
-              quantity > 0
-                  ? () => _itemsBloc.add(
-                    UpdateItemQuantity(
-                      itemCode: itemCode,
-                      quantity: quantity - 1,
-                    ),
-                  )
-                  : null,
-        ),
-        Container(
-          width: 36,
-          height: 36,
-          alignment: Alignment.center,
-          child: Text(
-            quantity.toString(),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-        _buildQuantityButton(
-          icon: Icons.add,
-          onPressed:
-              () => _itemsBloc.add(
-                UpdateItemQuantity(itemCode: itemCode, quantity: quantity + 1),
+    return BlocBuilder<ItemsBloc, ItemsState>(
+      builder: (context, state) {
+        // Find the current item to get its available quantity
+        final item = state.allItems.firstWhere(
+          (item) => item.itemCode == itemCode,
+          orElse:
+              () => const InventoryItemEntity(
+                itemCode: '',
+                description: '',
+                taxableFlag: 0,
+                taxCode: '',
+                sellUnitCode: '',
+                sellUnitPrice: 0,
+                qty: 0,
               ),
-        ),
-      ],
+        );
+
+        // Check if selected quantity reached available inventory
+        final bool isMaxQuantityReached = quantity >= item.qty;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildQuantityButton(
+                icon: Icons.remove,
+                onPressed:
+                    quantity > 0
+                        ? () => _itemsBloc.add(
+                          UpdateItemQuantity(
+                            itemCode: itemCode,
+                            quantity: quantity - 1,
+                          ),
+                        )
+                        : null,
+              ),
+              SizedBox(
+                width: 32,
+                child: Text(
+                  quantity.toString(),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              _buildQuantityButton(
+                icon: Icons.add,
+                onPressed:
+                    isMaxQuantityReached
+                        ? null
+                        : () => _itemsBloc.add(
+                          UpdateItemQuantity(
+                            itemCode: itemCode,
+                            quantity: quantity + 1,
+                          ),
+                        ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -394,8 +467,8 @@ class _ItemsPageState extends State<ItemsPage> {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 32,
+        height: 32,
         decoration: BoxDecoration(
           color:
               onPressed == null
@@ -406,7 +479,7 @@ class _ItemsPageState extends State<ItemsPage> {
         child: Icon(
           icon,
           color: onPressed == null ? Colors.grey : AppColors.primary,
-          size: 20,
+          size: 16,
         ),
       ),
     );
@@ -486,16 +559,33 @@ class _ItemsPageState extends State<ItemsPage> {
                     itemCount == 0
                         ? null
                         : () {
-                          final selectedItemsData = <String, dynamic>{};
+                          final selectedItemsData = <String, dynamic>{
+                            'isReturn': widget.isReturn,
+                            'totalAmount': totalAmount,
+                            'itemCount': itemCount,
+                            'items': <String, Map<String, dynamic>>{},
+                          };
+
                           for (final entry in state.selectedItems.entries) {
                             if (entry.value > 0) {
                               final item = state.allItems.firstWhere(
                                 (item) => item.itemCode == entry.key,
                               );
-                              selectedItemsData[entry.key] = {
-                                'item': item,
+
+                              selectedItemsData['items'][entry.key] = {
+                                'item': {
+                                  'itemCode': item.itemCode,
+                                  'description': item.description,
+                                  'taxableFlag': item.taxableFlag,
+                                  'taxCode': item.taxCode,
+                                  'sellUnitCode': item.sellUnitCode,
+                                  'sellUnitPrice': item.sellUnitPrice,
+                                  'qty': item.qty,
+                                },
                                 'quantity': entry.value,
                                 'total': entry.value * item.sellUnitPrice,
+                                'isReturn': widget.isReturn,
+                                'unitPrice': item.sellUnitPrice,
                               };
                             }
                           }
