@@ -113,20 +113,124 @@ class _InvoicePageState extends State<InvoicePage> {
 
           return Scaffold(
             // Added Scaffold to provide Material context
-            body: SafeArea(
-              child: Column(
-                children: [
-                  _buildHeader(context, state, localizations),
-                  _buildActionButtons(context, state, localizations),
-                  Expanded(
-                    child: _buildBody(context, state, theme, localizations),
+            body: Column(
+              children: [
+                _buildGradientHeader(context, state, localizations),
+                Expanded(
+                  child: SafeArea(
+                    top: false,
+                    child: Column(
+                      children: [
+                        _buildActionButtons(context, state, localizations),
+                        Expanded(
+                          child: _buildBody(
+                            context,
+                            state,
+                            theme,
+                            localizations,
+                          ),
+                        ),
+                        _buildBottomBar(context, state, theme, localizations),
+                      ],
+                    ),
                   ),
-                  _buildBottomBar(context, state, theme, localizations),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildGradientHeader(
+    BuildContext context,
+    InvoiceState state,
+    AppLocalizations localizations,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.customer.customerName,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      _isReturn
+                          ? localizations.returnItem
+                          : localizations.invoice,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.9),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  state.paymentType,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

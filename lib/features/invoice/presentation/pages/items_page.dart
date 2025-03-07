@@ -60,15 +60,133 @@ class _ItemsPageState extends State<ItemsPage> {
     return BlocProvider.value(
       value: _itemsBloc,
       child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(context, localizations),
-              _buildSearchBar(context, localizations),
-              Expanded(child: _buildItemsList(context, localizations, theme)),
-              _buildBottomBar(context, localizations, theme),
-            ],
-          ),
+        body: Column(
+          children: [
+            _buildGradientHeader(context, localizations),
+            Expanded(
+              child: SafeArea(
+                top: false,
+                child: _buildItemsList(context, localizations, theme),
+              ),
+            ),
+            _buildBottomBar(context, localizations, theme),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGradientHeader(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Header with back button and title
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      widget.isReturn
+                          ? localizations.returnItems
+                          : localizations.items,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      widget.isReturn
+                          ? localizations.returnItems
+                          : localizations.items,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Search bar
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextFormField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: localizations.search,
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppColors.primary,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                onChanged: (value) => _itemsBloc.add(SearchItems(query: value)),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -168,87 +286,6 @@ class _ItemsPageState extends State<ItemsPage> {
           },
         );
       },
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, AppLocalizations localizations) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.arrow_back, color: AppColors.primary),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              widget.isReturn ? localizations.returnItems : localizations.items,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: widget.isReturn ? Colors.orange : AppColors.secondary,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              widget.isReturn ? localizations.returnItems : localizations.items,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar(BuildContext context, AppLocalizations localizations) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: GradientFormCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: TextFormField(
-          controller: _searchController,
-          decoration: InputDecoration(
-            hintText: localizations.search,
-            prefixIcon: const Icon(Icons.search, color: AppColors.primary),
-            border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
-          onChanged: (value) => _itemsBloc.add(SearchItems(query: value)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRetryButton(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: () => _itemsBloc.add(LoadItems(isReturn: widget.isReturn)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      icon: const Icon(Icons.refresh),
-      label: const Text('Retry', style: TextStyle(fontWeight: FontWeight.w500)),
     );
   }
 
@@ -615,6 +652,20 @@ class _ItemsPageState extends State<ItemsPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildRetryButton(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: () => _itemsBloc.add(LoadItems(isReturn: widget.isReturn)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      icon: const Icon(Icons.refresh),
+      label: const Text('Retry', style: TextStyle(fontWeight: FontWeight.w500)),
     );
   }
 }

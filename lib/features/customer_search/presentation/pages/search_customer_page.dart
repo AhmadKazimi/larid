@@ -35,23 +35,24 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
       const SwitchCustomerList(showTodayCustomers: true),
     );
     _checkActiveVisitCustomer(); // Check for active visit customer on init
-    
+
     // Listen for visit session changes
     visitSessionState.addListener(_onVisitSessionChanged);
   }
-  
+
   // Check for active visit customer
   Future<void> _checkActiveVisitCustomer() async {
     final customerTable = getIt<CustomerTable>();
-    final activeCustomer = await customerTable.getCustomerWithActiveVisitSession();
-    
+    final activeCustomer =
+        await customerTable.getCustomerWithActiveVisitSession();
+
     if (mounted) {
       setState(() {
         _activeVisitCustomerCode = activeCustomer?.customerCode;
       });
     }
   }
-  
+
   // Listen for visit session changes
   void _onVisitSessionChanged() {
     if (visitSessionState.visitSessionChanged) {
@@ -79,7 +80,7 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
 
   void _onTabChanged(bool showTodayCustomers) {
     if (_showTodayCustomers == showTodayCustomers) return;
-    
+
     // Update the state before triggering the bloc event to make UI feel more responsive
     setState(() {
       _showTodayCustomers = showTodayCustomers;
@@ -100,171 +101,9 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Container(
-              height: 45,
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(0x7F),
-                borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(25),
-                  right: Radius.circular(25),
-                ),
-              ),
-              child: Stack(
-                children: [
-                  // Sliding indicator
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    left:
-                        _showTodayCustomers
-                            ? MediaQuery.of(context).size.width / 2 - 16
-                            : 0,
-                    right:
-                        _showTodayCustomers
-                            ? 0
-                            : MediaQuery.of(context).size.width / 2 - 16,
-                    top: 0,
-                    bottom: 0,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.horizontal(
-                          left: Radius.circular(25),
-                          right: Radius.circular(25),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Tabs with improved interaction
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            // Always respond to tap, even when active
-                            onTap: () => _onTabChanged(true),
-                            // Add a custom splash color that matches the design
-                            splashColor: AppColors.primary.withOpacity(0.1),
-                            highlightColor: Colors.transparent,
-                            borderRadius: BorderRadius.horizontal(
-                              left: Radius.circular(25),
-                            ),
-                            child: Container(
-                              alignment: Alignment.center,
-                              height: 45,
-                              child: AnimatedDefaultTextStyle(
-                                duration: const Duration(milliseconds: 300),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: _showTodayCustomers
-                                      ? AppColors.primary
-                                      : AppColors.background,
-                                  fontWeight: _showTodayCustomers 
-                                      ? FontWeight.bold 
-                                      : FontWeight.normal,
-                                  fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
-                                ),
-                                child: Text(
-                                  AppLocalizations.of(context).todayCustomersTab,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            // Always respond to tap, even when active
-                            onTap: () => _onTabChanged(false),
-                            // Add a custom splash color that matches the design
-                            splashColor: AppColors.primary.withOpacity(0.1),
-                            highlightColor: Colors.transparent,
-                            borderRadius: BorderRadius.horizontal(
-                              right: Radius.circular(25),
-                            ),
-                            child: Container(
-                              alignment: Alignment.center,
-                              height: 45,
-                              child: AnimatedDefaultTextStyle(
-                                duration: const Duration(milliseconds: 300),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: !_showTodayCustomers
-                                      ? AppColors.primary
-                                      : AppColors.background,
-                                  fontWeight: !_showTodayCustomers 
-                                      ? FontWeight.bold 
-                                      : FontWeight.normal,
-                                  fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
-                                ),
-                                child: Text(
-                                  AppLocalizations.of(context).customersTab,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: _onSearchChanged,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  fillColor: AppColors.primaryDark,
-                  filled: true,
-                  hintText: AppLocalizations.of(context)!.searchForClient,
-                  hintStyle: const TextStyle(color: Colors.white70),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white70),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50),
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(50),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 15,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
+          _buildGradientHeader(context),
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
@@ -285,19 +124,52 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
                           // Show faded previous content if available
                           Opacity(
                             opacity: 0.5,
-                            child: _buildCustomerList(_showTodayCustomers ? 
-                                context.read<CustomerSearchBloc>().todayCustomersCache : 
-                                context.read<CustomerSearchBloc>().allCustomersCache),
+                            child: _buildCustomerList(
+                              _showTodayCustomers
+                                  ? context
+                                      .read<CustomerSearchBloc>()
+                                      .todayCustomersCache
+                                  : context
+                                      .read<CustomerSearchBloc>()
+                                      .allCustomersCache,
+                            ),
                           ),
-                          // Centered progress indicator
+
+                          // Center loading indicator
                           const Center(child: CircularProgressIndicator()),
                         ],
                       );
                     },
-                    loaded: (customers) => customers.isEmpty
-                        ? const Center(child: Text('No customers found'))
-                        : _buildCustomerList(customers),
-                    error: (message) => Center(child: Text('Error: $message')),
+                    loaded: (customers) => _buildCustomerList(customers),
+                    error:
+                        (message) => Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 48,
+                                  color: Colors.red,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(message),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    context.read<CustomerSearchBloc>().add(
+                                      const SwitchCustomerList(
+                                        showTodayCustomers: true,
+                                      ),
+                                    );
+                                  },
+                                  child: Text("Retry"),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                   );
                 },
               ),
@@ -308,30 +180,224 @@ class _SearchCustomerPageState extends State<SearchCustomerPage> {
     );
   }
 
+  Widget _buildGradientHeader(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Back button and title
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => context.pop(),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      l10n.customers,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Tabs - Redesigned
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    // All Customers tab
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _onTabChanged(false),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                !_showTodayCustomers
+                                    ? Colors.white
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            l10n.customersTab,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight:
+                                  !_showTodayCustomers
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                              color:
+                                  !_showTodayCustomers
+                                      ? AppColors.primary
+                                      : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Today's Customers tab
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _onTabChanged(true),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color:
+                                _showTodayCustomers
+                                    ? Colors.white
+                                    : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            l10n.todayCustomersTab,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight:
+                                  _showTodayCustomers
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                              color:
+                                  _showTodayCustomers
+                                      ? AppColors.primary
+                                      : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Search field
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  style: TextStyle(color: Colors.grey[800], fontSize: 14),
+                  decoration: InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    hintText: l10n.searchForClient,
+                    hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    isDense: true,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Extracted customer list building to a separate method
   Widget _buildCustomerList(List<CustomerEntity> customers) {
     // If list is empty, don't try to build it
     if (customers.isEmpty) {
       return const Center(child: Text('No customers found'));
     }
-    
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: customers.length,
       // Using a key to ensure proper recycling
-      key: PageStorageKey(_showTodayCustomers ? 'today_customers' : 'all_customers'),
+      key: PageStorageKey(
+        _showTodayCustomers ? 'today_customers' : 'all_customers',
+      ),
       itemBuilder: (context, index) {
         final customer = customers[index];
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: customer.customerCode == _activeVisitCustomerCode 
-                ? Colors.green.shade50  // Light green background for active session
-                : Colors.white,
+            color:
+                customer.customerCode == _activeVisitCustomerCode
+                    ? Colors
+                        .green
+                        .shade50 // Light green background for active session
+                    : Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: customer.customerCode == _activeVisitCustomerCode
-                ? Border.all(color: Colors.green, width: 2) // Green border for active session
-                : null,
+            border:
+                customer.customerCode == _activeVisitCustomerCode
+                    ? Border.all(
+                      color: Colors.green,
+                      width: 2,
+                    ) // Green border for active session
+                    : null,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
