@@ -37,6 +37,7 @@ mixin _$InvoiceState {
   bool get isSyncing => throw _privateConstructorUsedError;
   bool get isPrinting => throw _privateConstructorUsedError;
   bool get isSubmitted => throw _privateConstructorUsedError;
+  bool get isDeleted => throw _privateConstructorUsedError;
   String get paymentType => throw _privateConstructorUsedError;
   String? get invoiceNumber => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
@@ -77,6 +78,7 @@ abstract class $InvoiceStateCopyWith<$Res> {
     bool isSyncing,
     bool isPrinting,
     bool isSubmitted,
+    bool isDeleted,
     String paymentType,
     String? invoiceNumber,
     String? errorMessage,
@@ -121,6 +123,7 @@ class _$InvoiceStateCopyWithImpl<$Res, $Val extends InvoiceState>
     Object? isSyncing = null,
     Object? isPrinting = null,
     Object? isSubmitted = null,
+    Object? isDeleted = null,
     Object? paymentType = null,
     Object? invoiceNumber = freezed,
     Object? errorMessage = freezed,
@@ -228,6 +231,11 @@ class _$InvoiceStateCopyWithImpl<$Res, $Val extends InvoiceState>
                     ? _value.isSubmitted
                     : isSubmitted // ignore: cast_nullable_to_non_nullable
                         as bool,
+            isDeleted:
+                null == isDeleted
+                    ? _value.isDeleted
+                    : isDeleted // ignore: cast_nullable_to_non_nullable
+                        as bool,
             paymentType:
                 null == paymentType
                     ? _value.paymentType
@@ -294,6 +302,7 @@ abstract class _$$InvoiceStateImplCopyWith<$Res>
     bool isSyncing,
     bool isPrinting,
     bool isSubmitted,
+    bool isDeleted,
     String paymentType,
     String? invoiceNumber,
     String? errorMessage,
@@ -338,6 +347,7 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
     Object? isSyncing = null,
     Object? isPrinting = null,
     Object? isSubmitted = null,
+    Object? isDeleted = null,
     Object? paymentType = null,
     Object? invoiceNumber = freezed,
     Object? errorMessage = freezed,
@@ -445,6 +455,11 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
                 ? _value.isSubmitted
                 : isSubmitted // ignore: cast_nullable_to_non_nullable
                     as bool,
+        isDeleted:
+            null == isDeleted
+                ? _value.isDeleted
+                : isDeleted // ignore: cast_nullable_to_non_nullable
+                    as bool,
         paymentType:
             null == paymentType
                 ? _value.paymentType
@@ -494,6 +509,7 @@ class _$InvoiceStateImpl implements _InvoiceState {
     this.isSyncing = false,
     this.isPrinting = false,
     this.isSubmitted = false,
+    this.isDeleted = false,
     this.paymentType = 'Cash',
     this.invoiceNumber,
     this.errorMessage,
@@ -574,6 +590,9 @@ class _$InvoiceStateImpl implements _InvoiceState {
   final bool isSubmitted;
   @override
   @JsonKey()
+  final bool isDeleted;
+  @override
+  @JsonKey()
   final String paymentType;
   @override
   final String? invoiceNumber;
@@ -585,7 +604,7 @@ class _$InvoiceStateImpl implements _InvoiceState {
 
   @override
   String toString() {
-    return 'InvoiceState(customer: $customer, items: $items, returnItems: $returnItems, itemCount: $itemCount, returnCount: $returnCount, subtotal: $subtotal, discount: $discount, total: $total, salesTax: $salesTax, grandTotal: $grandTotal, returnSubtotal: $returnSubtotal, returnDiscount: $returnDiscount, returnTotal: $returnTotal, returnSalesTax: $returnSalesTax, returnGrandTotal: $returnGrandTotal, comment: $comment, isSubmitting: $isSubmitting, isSyncing: $isSyncing, isPrinting: $isPrinting, isSubmitted: $isSubmitted, paymentType: $paymentType, invoiceNumber: $invoiceNumber, errorMessage: $errorMessage, isLoading: $isLoading)';
+    return 'InvoiceState(customer: $customer, items: $items, returnItems: $returnItems, itemCount: $itemCount, returnCount: $returnCount, subtotal: $subtotal, discount: $discount, total: $total, salesTax: $salesTax, grandTotal: $grandTotal, returnSubtotal: $returnSubtotal, returnDiscount: $returnDiscount, returnTotal: $returnTotal, returnSalesTax: $returnSalesTax, returnGrandTotal: $returnGrandTotal, comment: $comment, isSubmitting: $isSubmitting, isSyncing: $isSyncing, isPrinting: $isPrinting, isSubmitted: $isSubmitted, isDeleted: $isDeleted, paymentType: $paymentType, invoiceNumber: $invoiceNumber, errorMessage: $errorMessage, isLoading: $isLoading)';
   }
 
   @override
@@ -632,6 +651,8 @@ class _$InvoiceStateImpl implements _InvoiceState {
                 other.isPrinting == isPrinting) &&
             (identical(other.isSubmitted, isSubmitted) ||
                 other.isSubmitted == isSubmitted) &&
+            (identical(other.isDeleted, isDeleted) ||
+                other.isDeleted == isDeleted) &&
             (identical(other.paymentType, paymentType) ||
                 other.paymentType == paymentType) &&
             (identical(other.invoiceNumber, invoiceNumber) ||
@@ -665,6 +686,7 @@ class _$InvoiceStateImpl implements _InvoiceState {
     isSyncing,
     isPrinting,
     isSubmitted,
+    isDeleted,
     paymentType,
     invoiceNumber,
     errorMessage,
@@ -702,6 +724,7 @@ abstract class _InvoiceState implements InvoiceState {
     final bool isSyncing,
     final bool isPrinting,
     final bool isSubmitted,
+    final bool isDeleted,
     final String paymentType,
     final String? invoiceNumber,
     final String? errorMessage,
@@ -748,6 +771,8 @@ abstract class _InvoiceState implements InvoiceState {
   bool get isPrinting;
   @override
   bool get isSubmitted;
+  @override
+  bool get isDeleted;
   @override
   String get paymentType;
   @override

@@ -29,6 +29,7 @@ class InvoiceState with _$InvoiceState {
     @Default(false) bool isSyncing,
     @Default(false) bool isPrinting,
     @Default(false) bool isSubmitted,
+    @Default(false) bool isDeleted,
     @Default('Cash') String paymentType,
     String? invoiceNumber,
     String? errorMessage,

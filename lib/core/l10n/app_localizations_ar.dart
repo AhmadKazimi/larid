@@ -392,4 +392,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get returnSavedSuccessfully => 'تم حفظ المرتجع بنجاح';
+
+  @override
+  String get invoiceDeletedSuccessfully => 'تم حذف الفاتورة بنجاح';
+
+  @override
+  String get deleteInvoice => 'حذف الفاتورة';
+
+  @override
+  String get deleteConfirmation => 'هل انت متأكد من حذف الفاتورة';
 }

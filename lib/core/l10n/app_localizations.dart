@@ -844,6 +844,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Return saved successfully'**
   String get returnSavedSuccessfully;
+
+  /// No description provided for @invoiceDeletedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice deleted successfully'**
+  String get invoiceDeletedSuccessfully;
+
+  /// No description provided for @deleteInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'حذف الفاتورة'**
+  String get deleteInvoice;
+
+  /// No description provided for @deleteConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure to delete the invoice'**
+  String get deleteConfirmation;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

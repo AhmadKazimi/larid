@@ -392,4 +392,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get returnSavedSuccessfully => 'Return saved successfully';
+
+  @override
+  String get invoiceDeletedSuccessfully => 'Invoice deleted successfully';
+
+  @override
+  String get deleteInvoice => 'حذف الفاتورة';
+
+  @override
+  String get deleteConfirmation => 'Are you sure to delete the invoice';
 }

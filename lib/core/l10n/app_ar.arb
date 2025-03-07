@@ -175,5 +175,8 @@
     "invoiceDetails": "تفاصيل الفاتورة",
     "returnDetails": "تفاصيل المرتجع",
     "invoiceSavedSuccessfully": "تم حفظ الفاتورة بنجاح",
-    "returnSavedSuccessfully": "تم حفظ المرتجع بنجاح"
+    "returnSavedSuccessfully": "تم حفظ المرتجع بنجاح",
+    "invoiceDeletedSuccessfully": "تم حذف الفاتورة بنجاح",
+    "deleteInvoice": "حذف الفاتورة",
+    "deleteConfirmation": "هل انت متأكد من حذف الفاتورة"
 }

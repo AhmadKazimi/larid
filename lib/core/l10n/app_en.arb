@@ -175,5 +175,8 @@
     "invoiceDetails": "Invoice Details",
     "returnDetails": "Return Details",
     "invoiceSavedSuccessfully": "Invoice saved successfully",
-    "returnSavedSuccessfully": "Return saved successfully"
+    "returnSavedSuccessfully": "Return saved successfully",
+    "invoiceDeletedSuccessfully": "Invoice deleted successfully",
+    "deleteInvoice": "حذف الفاتورة",
+        "deleteConfirmation": "Are you sure to delete the invoice"
 }

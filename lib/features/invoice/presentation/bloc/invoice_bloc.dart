@@ -42,6 +42,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     on<PrintInvoice>(_onPrintInvoice);
     on<SaveInvoice>(_onSaveInvoice);
     on<GetInvoices>(_onGetInvoices);
+    on<DeleteInvoice>(_onDeleteInvoice);
   }
 
   // Handler implementations
@@ -806,6 +807,38 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
         state.copyWith(
           isSubmitting: false,
           errorMessage: 'Failed to load invoices: ${e.toString()}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDeleteInvoice(
+    DeleteInvoice event,
+    Emitter<InvoiceState> emit,
+  ) async {
+    try {
+      debugPrint('Deleting invoice with ID: ${event.invoiceId}');
+      emit(state.copyWith(isSubmitting: true, errorMessage: null));
+
+      // Delete the invoice using the InvoiceTable
+      await _invoiceTable.deleteInvoice(event.invoiceId);
+
+      // Return to the customer screen without using isDeleted
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          isSubmitted: true, // Use isSubmitted instead of isDeleted
+          errorMessage: null,
+        ),
+      );
+
+      debugPrint('Invoice deleted successfully');
+    } catch (e) {
+      debugPrint('Error deleting invoice: $e');
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          errorMessage: 'Failed to delete invoice: ${e.toString()}',
         ),
       );
     }

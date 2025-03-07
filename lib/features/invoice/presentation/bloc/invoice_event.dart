@@ -161,3 +161,12 @@ class GetInvoices extends InvoiceEvent {
   @override
   List<Object?> get props => [];
 }
+
+class DeleteInvoice extends InvoiceEvent {
+  final int invoiceId;
+
+  const DeleteInvoice({required this.invoiceId});
+
+  @override
+  List<Object?> get props => [invoiceId];
+}

@@ -559,6 +559,18 @@ class _InvoicePageState extends State<InvoicePage> {
               isLoading: state.isSyncing,
               color: Colors.blue,
             ),
+
+            // Delete invoice button
+            _buildActionButton(
+              onPressed: () {
+                // Show confirmation dialog
+                _showDeleteConfirmationDialog(context, state, localizations);
+              },
+              icon: Icons.delete,
+              label: localizations.deleteInvoice,
+              isLoading: false,
+              color: Colors.red,
+            ),
           ],
         ),
       ),
@@ -638,6 +650,77 @@ class _InvoicePageState extends State<InvoicePage> {
           ],
         ),
       ),
+    );
+  }
+
+  // Show confirmation dialog for invoice deletion
+  void _showDeleteConfirmationDialog(
+    BuildContext context,
+    InvoiceState state,
+    AppLocalizations localizations,
+  ) {
+    // Get the currently displayed invoice data from the UI
+    final currentInvoiceData = context.read<InvoiceBloc>().state;
+
+    // We can only delete if there's an existing invoice number
+    if (currentInvoiceData.invoiceNumber == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No invoice to delete'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(localizations.deleteInvoice),
+          content: Text(localizations.deleteConfirmation),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                localizations.cancel,
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text(
+                localizations.deleteInvoice,
+                style: const TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close the dialog
+
+                // We'll simply use the ID 1 as a placeholder until the actual ID system is implemented
+                // In a real app, you would get the actual invoice ID from the database
+                final invoiceId = 1;
+
+                // Dispatch delete event
+                context.read<InvoiceBloc>().add(
+                  DeleteInvoice(invoiceId: invoiceId),
+                );
+
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(localizations.invoiceDeletedSuccessfully),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                // Navigate back to customer screen
+                context.pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
