@@ -52,16 +52,19 @@ class _InvoicePageState extends State<InvoicePage> {
       value: _invoiceBloc,
       child: BlocBuilder<InvoiceBloc, InvoiceState>(
         builder: (context, state) {
-          return SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(context, state, localizations),
-                _buildActionButtons(context, state, localizations),
-                Expanded(
-                  child: _buildBody(context, state, theme, localizations),
-                ),
-                _buildBottomBar(context, state, theme, localizations),
-              ],
+          return Scaffold(
+            // Added Scaffold to provide Material context
+            body: SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(context, state, localizations),
+                  _buildActionButtons(context, state, localizations),
+                  Expanded(
+                    child: _buildBody(context, state, theme, localizations),
+                  ),
+                  _buildBottomBar(context, state, theme, localizations),
+                ],
+              ),
             ),
           );
         },
@@ -78,9 +81,16 @@ class _InvoicePageState extends State<InvoicePage> {
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.arrow_back, color: AppColors.primary),
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -96,14 +106,19 @@ class _InvoicePageState extends State<InvoicePage> {
               ],
             ),
           ),
-          Chip(
-            label: Text(
-              state.paymentType,
-              style: Theme.of(
-                context,
-              ).textTheme.labelMedium?.copyWith(color: Colors.white),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.secondary,
+              borderRadius: BorderRadius.circular(16),
             ),
-            backgroundColor: AppColors.secondary,
+            child: Text(
+              state.paymentType,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ],
       ),
@@ -147,6 +162,7 @@ class _InvoicePageState extends State<InvoicePage> {
           ),
         if (_isReturn && state.returnItems.isNotEmpty)
           const SizedBox(height: 16),
+
         // Invoice section - only show if not in return mode
         if (!_isReturn)
           _buildSectionCard(
@@ -169,7 +185,7 @@ class _InvoicePageState extends State<InvoicePage> {
           ),
         if (!_isReturn) const SizedBox(height: 16),
 
-        // Return section - always show in return mode, otherwise show conditionally
+        // Return section - always show in return mode
         if (_isReturn)
           _buildSectionCard(
             title: localizations.returnItems,
@@ -195,42 +211,6 @@ class _InvoicePageState extends State<InvoicePage> {
           ),
 
         const SizedBox(height: 16),
-
-        // // Summary section - only show if not in return mode
-        // if (!_isReturn)
-        //   _buildSectionCard(
-        //     title: localizations.summary,
-        //     child: Column(
-        //       children: [
-        //         _buildAmountRow(
-        //           localizations.netSubTotal,
-        //           state.subtotal - state.returnSubtotal,
-        //         ),
-        //         _buildAmountRow(
-        //           localizations.netDiscount,
-        //           state.discount - state.returnDiscount,
-        //         ),
-        //         const Divider(),
-        //         _buildAmountRow(
-        //           localizations.netTotal,
-        //           state.total - state.returnTotal,
-        //           isBold: true,
-        //         ),
-        //         _buildAmountRow(
-        //           localizations.netSalesTax,
-        //           state.salesTax - state.returnSalesTax,
-        //         ),
-        //         const Divider(),
-        //         _buildAmountRow(
-        //           localizations.netGrandTotal,
-        //           state.grandTotal - state.returnGrandTotal,
-        //           isPrimary: true,
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // if (!_isReturn) const SizedBox(height: 16),
-        // const SizedBox(height: 16),
 
         // Comment field
         TextField(
@@ -258,9 +238,10 @@ class _InvoicePageState extends State<InvoicePage> {
         children: [
           Text(
             title,
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: AppColors.primary),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 16),
           child,
@@ -362,26 +343,28 @@ class _InvoicePageState extends State<InvoicePage> {
           ),
           const SizedBox(width: 8),
           // Quantity adjustment
-          SizedBox(
-            width: 32,
-            height: 32,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.remove_circle_outline, size: 20),
-              onPressed: () {
-                if (invoiceItem.quantity > 1) {
-                  bloc.add(
-                    UpdateItemQuantity(
-                      item: invoiceItem,
-                      quantity: invoiceItem.quantity - 1,
-                      isReturn: isReturn,
-                    ),
-                  );
-                } else {
-                  bloc.add(RemoveItem(item: invoiceItem, isReturn: isReturn));
-                }
-              },
-              color: AppColors.primary,
+          GestureDetector(
+            onTap: () {
+              if (invoiceItem.quantity > 1) {
+                bloc.add(
+                  UpdateItemQuantity(
+                    item: invoiceItem,
+                    quantity: invoiceItem.quantity - 1,
+                    isReturn: isReturn,
+                  ),
+                );
+              } else {
+                bloc.add(RemoveItem(item: invoiceItem, isReturn: isReturn));
+              }
+            },
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.remove, size: 18, color: AppColors.primary),
             ),
           ),
           SizedBox(
@@ -394,22 +377,24 @@ class _InvoicePageState extends State<InvoicePage> {
               ),
             ),
           ),
-          SizedBox(
-            width: 32,
-            height: 32,
-            child: IconButton(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.add_circle_outline, size: 20),
-              onPressed: () {
-                bloc.add(
-                  UpdateItemQuantity(
-                    item: invoiceItem,
-                    quantity: invoiceItem.quantity + 1,
-                    isReturn: isReturn,
-                  ),
-                );
-              },
-              color: AppColors.primary,
+          GestureDetector(
+            onTap: () {
+              bloc.add(
+                UpdateItemQuantity(
+                  item: invoiceItem,
+                  quantity: invoiceItem.quantity + 1,
+                  isReturn: isReturn,
+                ),
+              );
+            },
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.add, size: 18, color: AppColors.primary),
             ),
           ),
         ],
@@ -461,7 +446,8 @@ class _InvoicePageState extends State<InvoicePage> {
                 }
               },
               icon: Icons.add_shopping_cart,
-              label: localizations.addItem,
+              label:
+                  _isReturn ? localizations.returnItems : localizations.addItem,
               count: _isReturn ? state.returnCount : state.itemCount,
               color: AppColors.primary,
             ),
@@ -597,7 +583,7 @@ class _InvoicePageState extends State<InvoicePage> {
                       'Submitting invoice with ${state.items.length + state.returnItems.length} items',
                     );
                     context.read<InvoiceBloc>().add(
-                      SubmitInvoice(isReturn: state.returnItems.isNotEmpty),
+                      SubmitInvoice(isReturn: _isReturn),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -617,7 +603,9 @@ class _InvoicePageState extends State<InvoicePage> {
                                   const Icon(Icons.save),
                                   const SizedBox(width: 8),
                                   Text(
-                                    '${localizations.submit} ${localizations.invoice}',
+                                    _isReturn
+                                        ? '${localizations.submit} ${localizations.returnItem}'
+                                        : '${localizations.submit} ${localizations.invoice}',
                                     style: Theme.of(context)
                                         .textTheme
                                         .labelLarge
