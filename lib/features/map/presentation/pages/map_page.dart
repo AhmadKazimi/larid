@@ -35,7 +35,8 @@ class MapPage extends StatefulWidget {
   State<MapPage> createState() => _MapPageState();
 }
 
-class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
+class _MapPageState extends State<MapPage>
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   GoogleMapController? _mapController;
   final Location _location = Location();
   LatLng _currentPosition = const LatLng(24.7136, 46.6753); // Default to Riyadh
@@ -54,6 +55,11 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
   final EndSessionUseCase _endSessionUseCase = getIt<EndSessionUseCase>();
   late final AppLocalizations l10n;
 
+  // Animation controllers - make nullable to avoid late initialization errors
+  AnimationController? _infoCardAnimationController;
+  Animation<double>? _infoCardSlideAnimation;
+  Animation<double>? _infoCardFadeAnimation;
+
   // Track customer visit session
   CustomerEntity? _customerWithActiveVisit;
   bool _hasActiveCustomerVisit = false;
@@ -71,6 +77,9 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // Listen for visit session state changes
     visitSessionState.addListener(_handleSessionStateChange);
+
+    // Initialize animation controllers
+    _initializeAnimations();
 
     _loadMapStyle();
     _getCurrentLocation();
@@ -128,12 +137,44 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _hideCustomerInfo();
+    // Safe way to hide customer info without depending on animations
+    if (_overlayEntry != null) {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    }
+
     _mapController?.dispose();
+
+    // Dispose animation controllers only if they were initialized
+    _infoCardAnimationController?.dispose();
+
     // Remove observers and listeners
     WidgetsBinding.instance.removeObserver(this);
     visitSessionState.removeListener(_handleSessionStateChange);
     super.dispose();
+  }
+
+  void _initializeAnimations() {
+    // Create the animation controller
+    _infoCardAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    // Create animations that depend on the controller
+    _infoCardSlideAnimation = Tween<double>(begin: 100.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _infoCardAnimationController!,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _infoCardFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _infoCardAnimationController!,
+        curve: Curves.easeOut,
+      ),
+    );
   }
 
   Future<void> _loadMapStyle() async {
@@ -561,8 +602,15 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
     });
   }
 
-  void _showCustomerInfo(CustomerEntity customer, BuildContext context) {
-    _hideCustomerInfo();
+  void _showCustomerInfo(CustomerEntity customer, BuildContext context) async {
+    // First hide any existing info
+    await _hideCustomerInfo();
+
+    // Make sure animations are initialized
+    if (_infoCardAnimationController == null) {
+      _initializeAnimations();
+    }
+
     debugPrint('Showing customer info for: ${customer.customerName}');
 
     // Calculate distance if we have coordinates
@@ -589,6 +637,9 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
 
     final l10n = AppLocalizations.of(context);
 
+    // Reset animation controller to prepare for entry animation
+    _infoCardAnimationController?.reset();
+
     _overlayEntry = OverlayEntry(
       builder: (context) {
         // Debug distance value
@@ -596,164 +647,204 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
           'Building overlay with distance: $_selectedCustomerDistance',
         );
 
-        return Positioned(
-          bottom: 16,
-          left: 16,
-          right: 16,
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          customer.customerName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
+        return AnimatedBuilder(
+          animation: _infoCardAnimationController!,
+          builder: (context, child) {
+            return Positioned(
+              bottom:
+                  16 +
+                  (_infoCardSlideAnimation?.value ?? 0.0), // Slide up effect
+              left: 16,
+              right: 16,
+              child: Opacity(
+                opacity: _infoCardFadeAnimation?.value ?? 1.0, // Fade in effect
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: _hideCustomerInfo,
-                        color: AppColors.primary,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  _buildInfoRow(
-                    Icons.badge,
-                    l10n.customerCode,
-                    customer.customerCode,
-                  ),
-                  const SizedBox(height: 4),
-                  _buildInfoRow(
-                    Icons.location_on,
-                    l10n.address,
-                    customer.address,
-                  ),
-                  const SizedBox(height: 4),
-                  _buildInfoRow(Icons.phone, l10n.phone, customer.contactPhone),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                customer.customerName,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: _hideCustomerInfo,
+                              color: AppColors.primary,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        _buildInfoRow(
+                          Icons.badge,
+                          l10n.customerCode,
+                          customer.customerCode,
+                        ),
+                        const SizedBox(height: 4),
+                        _buildInfoRow(
+                          Icons.location_on,
+                          l10n.address,
+                          customer.address,
+                        ),
+                        const SizedBox(height: 4),
+                        _buildInfoRow(
+                          Icons.phone,
+                          l10n.phone,
+                          customer.contactPhone,
+                        ),
 
-                  // Always show distance row, with loading indicator if needed
-                  const SizedBox(height: 4),
-                  _selectedCustomerDistance != null
-                      ? _buildInfoRow(
-                        Icons.directions_car,
-                        l10n.distance,
-                        _selectedCustomerDistance,
-                      )
-                      : Row(
-                        children: [
-                          Icon(
-                            Icons.directions_car,
-                            size: 20,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            l10n.distance,
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontWeight: FontWeight.w500,
+                        // Always show distance row, with loading indicator if needed
+                        const SizedBox(height: 4),
+                        _selectedCustomerDistance != null
+                            ? _buildInfoRow(
+                              Icons.directions_car,
+                              l10n.distance,
+                              _selectedCustomerDistance,
+                            )
+                            : Row(
+                              children: [
+                                Icon(
+                                  Icons.directions_car,
+                                  size: 20,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  l10n.distance,
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed:
+                                customer.mapCoords?.isNotEmpty ?? false
+                                    ? () =>
+                                        _openInGoogleMaps(customer.mapCoords)
+                                    : null,
+                            icon: const Icon(Icons.directions),
+                            label: Text(l10n.getDirections),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.secondary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        const SizedBox(height: 8),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              _hideCustomerInfo();
+                              // Use NavigationService with GoRouter
+                              NavigationService.push(
+                                context,
+                                RouteConstants.customerActivity,
+                                extra: customer,
+                              );
+                              // Session checking will be handled in didChangeDependencies
+                            },
+
+                            icon: const Icon(Icons.play_arrow),
+                            label: Text(l10n.startVisit),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                           ),
-                        ],
-                      ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed:
-                          customer.mapCoords?.isNotEmpty ?? false
-                              ? () => _openInGoogleMaps(customer.mapCoords)
-                              : null,
-                      icon: const Icon(Icons.directions),
-                      label: Text(l10n.getDirections),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        _hideCustomerInfo();
-                        // Use NavigationService with GoRouter
-                        NavigationService.push(
-                          context,
-                          RouteConstants.customerActivity,
-                          extra: customer,
-                        );
-                        // Session checking will be handled in didChangeDependencies
-                      },
-
-                      icon: const Icon(Icons.play_arrow),
-                      label: Text(l10n.startVisit),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
 
     Overlay.of(context).insert(_overlayEntry!);
     setState(() => _selectedCustomer = null);
+
+    // Start the entry animation
+    _infoCardAnimationController?.forward();
   }
 
-  void _hideCustomerInfo() {
+  Future<void> _hideCustomerInfo() async {
+    if (_overlayEntry == null) return;
+
+    // Run the exit animation only if controller is initialized
+    if (_infoCardAnimationController?.isAnimating == true) {
+      // Wait for any ongoing animations to complete
+      await _infoCardAnimationController?.forward().orCancel.catchError((_) {});
+    }
+
+    if (_infoCardAnimationController != null && mounted) {
+      try {
+        await _infoCardAnimationController!.reverse();
+      } catch (e) {
+        debugPrint('Animation error: $e');
+        // Continue with removal even if animation fails
+      }
+    }
+
+    // Then remove the overlay
     _overlayEntry?.remove();
     _overlayEntry = null;
 
     // Clear route when hiding customer info
-    setState(() {
-      _polylines.clear();
-      _routePoints.clear();
-      _selectedCustomerDistance = null;
-    });
+    if (mounted) {
+      setState(() {
+        _polylines.clear();
+        _routePoints.clear();
+        _selectedCustomerDistance = null;
+      });
+    }
   }
 
   void _onMapCreated(GoogleMapController controller) {
