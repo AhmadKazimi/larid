@@ -58,6 +58,43 @@
     "customerCode": "Customer Code",
     "address": "Address",
     "phone": "Phone",
+    "distance": "Distance",
+    "distanceWithValue": "{distance} km",
+    "@distanceWithValue": {
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            }
+        }
+    },
+    "distanceWithTime": "{distance} km (~{duration} min)",
+    "@distanceWithTime": {
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            },
+            "duration": {
+                "type": "int"
+            }
+        }
+    },
+    "approximateDistance": "{distance} km (approximate)",
+    "@approximateDistance": {
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            }
+        }
+    },
+    "straightLineDistance": "{distance} km (straight line)",
+    "@straightLineDistance": {
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            }
+        }
+    },
+    "loadingDistance": "Calculating...",
     "locationServicesRequired": "Location services are required to use the map",
     "locationPermissionRequired": "Location permission is required to show your location on the map",
     "getDirections": "Get Directions",
@@ -177,6 +214,6 @@
     "invoiceSavedSuccessfully": "Invoice saved successfully",
     "returnSavedSuccessfully": "Return saved successfully",
     "invoiceDeletedSuccessfully": "Invoice deleted successfully",
-    "deleteInvoice": "حذف الفاتورة",
-        "deleteConfirmation": "Are you sure to delete the invoice"
+    "deleteInvoice": "Delete Invoice",
+    "deleteConfirmation": "Are you sure to delete the invoice"
 }

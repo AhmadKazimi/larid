@@ -146,6 +146,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phone => 'Phone';
 
   @override
+  String get distance => 'Distance';
+
+  @override
+  String distanceWithValue(String distance) {
+    return '$distance km';
+  }
+
+  @override
+  String distanceWithTime(String distance, int duration) {
+    return '$distance km (~$duration min)';
+  }
+
+  @override
+  String approximateDistance(String distance) {
+    return '$distance km (approximate)';
+  }
+
+  @override
+  String straightLineDistance(String distance) {
+    return '$distance km (straight line)';
+  }
+
+  @override
+  String get loadingDistance => 'Calculating...';
+
+  @override
   String get locationServicesRequired => 'Location services are required to use the map';
 
   @override
@@ -397,7 +423,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invoiceDeletedSuccessfully => 'Invoice deleted successfully';
 
   @override
-  String get deleteInvoice => 'حذف الفاتورة';
+  String get deleteInvoice => 'Delete Invoice';
 
   @override
   String get deleteConfirmation => 'Are you sure to delete the invoice';

@@ -58,6 +58,43 @@
     "customerCode": "رمز العميل",
     "address": "العنوان",
     "phone": "الهاتف",
+    "distance": "المسافة",
+    "distanceWithValue": "{distance} كم",
+    "@distanceWithValue": {
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            }
+        }
+    },
+    "distanceWithTime": "{distance} كم (~{duration} دقيقة)",
+    "@distanceWithTime": {
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            },
+            "duration": {
+                "type": "int"
+            }
+        }
+    },
+    "approximateDistance": "{distance} كم (تقريباً)",
+    "@approximateDistance": {
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            }
+        }
+    },
+    "straightLineDistance": "{distance} كم (خط مستقيم)",
+    "@straightLineDistance": {
+        "placeholders": {
+            "distance": {
+                "type": "String"
+            }
+        }
+    },
+    "loadingDistance": "جاري الحساب...",
     "locationServicesRequired": "خدمات الموقع مطلوبة لاستخدام الخريطة",
     "locationPermissionRequired": "إذن الموقع مطلوب لعرض موقعك على الخريطة",
     "getDirections": "الحصول على الاتجاهات",

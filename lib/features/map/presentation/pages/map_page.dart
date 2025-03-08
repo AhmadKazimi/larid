@@ -440,8 +440,11 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
           final durationSeconds = data['routes'][0]['duration'];
           final durationMinutes = (durationSeconds / 60).round();
 
-          // Format the distance string
-          _selectedCustomerDistance = '$distanceKm km (~$durationMinutes min)';
+          // Format the distance string with localization
+          _selectedCustomerDistance = l10n.distanceWithTime(
+            distanceKm,
+            durationMinutes,
+          );
           debugPrint(
             'Distance: $distanceKm km, Duration: $durationMinutes min',
           );
@@ -455,6 +458,7 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
             color: AppColors.primary,
             points: points,
             width: 5,
+            patterns: [PatternItem.dash(15), PatternItem.gap(8)],
           );
 
           setState(() {
@@ -553,7 +557,7 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
   void _useApproximateDistance(LatLng origin, LatLng destination) {
     final distance = _calculateDistance(origin, destination);
     setState(() {
-      _selectedCustomerDistance = '${distance.toString()} km (aproximate)';
+      _selectedCustomerDistance = l10n.approximateDistance(distance.toString());
     });
   }
 
@@ -654,7 +658,7 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
                   _selectedCustomerDistance != null
                       ? _buildInfoRow(
                         Icons.directions_car,
-                        'Distance', // Hard-coded since we don't have translation
+                        l10n.distance,
                         _selectedCustomerDistance,
                       )
                       : Row(
@@ -666,7 +670,7 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Distance', // Hard-coded since we don't have translation
+                            l10n.distance,
                             style: const TextStyle(
                               color: Colors.black54,
                               fontWeight: FontWeight.w500,

@@ -365,6 +365,42 @@ abstract class AppLocalizations {
   /// **'Phone'**
   String get phone;
 
+  /// No description provided for @distance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get distance;
+
+  /// No description provided for @distanceWithValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} km'**
+  String distanceWithValue(String distance);
+
+  /// No description provided for @distanceWithTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} km (~{duration} min)'**
+  String distanceWithTime(String distance, int duration);
+
+  /// No description provided for @approximateDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} km (approximate)'**
+  String approximateDistance(String distance);
+
+  /// No description provided for @straightLineDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} km (straight line)'**
+  String straightLineDistance(String distance);
+
+  /// No description provided for @loadingDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating...'**
+  String get loadingDistance;
+
   /// No description provided for @locationServicesRequired.
   ///
   /// In en, this message translates to:
@@ -854,7 +890,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteInvoice.
   ///
   /// In en, this message translates to:
-  /// **'حذف الفاتورة'**
+  /// **'Delete Invoice'**
   String get deleteInvoice;
 
   /// No description provided for @deleteConfirmation.

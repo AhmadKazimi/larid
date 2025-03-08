@@ -146,6 +146,32 @@ class AppLocalizationsAr extends AppLocalizations {
   String get phone => 'الهاتف';
 
   @override
+  String get distance => 'المسافة';
+
+  @override
+  String distanceWithValue(String distance) {
+    return '$distance كم';
+  }
+
+  @override
+  String distanceWithTime(String distance, int duration) {
+    return '$distance كم (~$duration دقيقة)';
+  }
+
+  @override
+  String approximateDistance(String distance) {
+    return '$distance كم (تقريباً)';
+  }
+
+  @override
+  String straightLineDistance(String distance) {
+    return '$distance كم (خط مستقيم)';
+  }
+
+  @override
+  String get loadingDistance => 'جاري الحساب...';
+
+  @override
   String get locationServicesRequired => 'خدمات الموقع مطلوبة لاستخدام الخريطة';
 
   @override
