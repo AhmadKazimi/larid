@@ -19,13 +19,14 @@ import '../../domain/usecases/end_session_usecase.dart';
 import '../../domain/repositories/working_session_repository.dart';
 import 'package:larid/core/widgets/custom_dialog.dart';
 import 'package:larid/core/widgets/custom_button.dart';
+import 'package:dio/dio.dart';
+import 'dart:math' show cos, sqrt, asin, sin, min, max;
+import 'dart:convert';
 
 import '../widgets/session_clock_widget.dart';
 import 'package:larid/features/customer_activity/presentation/pages/customer_activity_page.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:go_router/go_router.dart';
-import 'package:larid/core/router/route_constants.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -56,7 +57,13 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
   // Track customer visit session
   CustomerEntity? _customerWithActiveVisit;
   bool _hasActiveCustomerVisit = false;
-  
+
+  // Polylines and route properties
+  final Set<Polyline> _polylines = {};
+  List<LatLng> _routePoints = [];
+  String? _selectedCustomerDistance;
+  final Dio _dio = Dio(); // For API requests
+
   @override
   void initState() {
     super.initState();
@@ -64,7 +71,7 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // Listen for visit session state changes
     visitSessionState.addListener(_handleSessionStateChange);
-    
+
     _loadMapStyle();
     _getCurrentLocation();
     _loadCustomers();
@@ -77,37 +84,39 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
     super.didChangeDependencies();
     l10n = AppLocalizations.of(context);
   }
-  
+
   @override
   void activate() {
     super.activate();
     // Refresh session data when the page becomes active again
     _checkActiveCustomerVisit();
   }
-  
+
   @override
   void didUpdateWidget(covariant MapPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     // Force refresh when widget is updated
     _checkActiveCustomerVisit();
   }
-  
+
   @override
   void reassemble() {
     super.reassemble();
     // Refresh when hot reload occurs during development
     _checkActiveCustomerVisit();
   }
-  
+
   // Handle session state changes notified by CustomerActivityPage
   void _handleSessionStateChange() {
     if (visitSessionState.visitSessionChanged) {
-      debugPrint('MapPage: Detected visit session change notification, refreshing state');
+      debugPrint(
+        'MapPage: Detected visit session change notification, refreshing state',
+      );
       _checkActiveCustomerVisit();
       visitSessionState.consumeSessionChange();
     }
   }
-  
+
   // Also implement app lifecycle handling to refresh on resume
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -213,14 +222,14 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
         _customers = customers;
       });
       _addCustomerMarkers();
-      
+
       // Check for active visit sessions after loading customers
       _checkActiveCustomerVisit();
     } catch (e) {
       debugPrint('Error loading customers: $e');
     }
   }
-  
+
   // Check if there's an active customer visit session
   Future<void> _checkActiveCustomerVisit() async {
     try {
@@ -232,15 +241,18 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
           _customerWithActiveVisit = null;
         });
       }
-      
+
       // Then check for active session
       final hasActiveVisit = await _customerTable.hasActiveVisitSession();
       debugPrint('MapPage: Has active visit: $hasActiveVisit');
-      
+
       if (hasActiveVisit) {
-        final customerWithVisit = await _customerTable.getCustomerWithActiveVisitSession();
-        debugPrint('MapPage: Found active visit for customer: ${customerWithVisit?.customerName}');
-        
+        final customerWithVisit =
+            await _customerTable.getCustomerWithActiveVisitSession();
+        debugPrint(
+          'MapPage: Found active visit for customer: ${customerWithVisit?.customerName}',
+        );
+
         if (mounted && customerWithVisit != null) {
           setState(() {
             _hasActiveCustomerVisit = true;
@@ -359,122 +371,369 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
     }
   }
 
+  // Calculate distance between two coordinates
+  double _calculateDistance(LatLng start, LatLng end) {
+    const double earthRadius = 6371; // Earth's radius in kilometers
+    double latDifference = _toRadians(end.latitude - start.latitude);
+    double longDifference = _toRadians(end.longitude - start.longitude);
+
+    double a =
+        sin(latDifference / 2) * sin(latDifference / 2) +
+        cos(_toRadians(start.latitude)) *
+            cos(_toRadians(end.latitude)) *
+            sin(longDifference / 2) *
+            sin(longDifference / 2);
+
+    double c = 2 * asin(sqrt(a));
+    double distance = earthRadius * c;
+
+    return double.parse(distance.toStringAsFixed(2));
+  }
+
+  double _toRadians(double degree) {
+    return degree * (3.141592653589793 / 180);
+  }
+
+  // Get route between two locations and distance using OpenStreetMap Routing API
+  Future<void> _getRouteAndDistance(LatLng origin, LatLng destination) async {
+    try {
+      // Clear previous route and distance
+      setState(() {
+        _polylines.clear();
+        _routePoints.clear();
+        _selectedCustomerDistance = null;
+      });
+
+      debugPrint(
+        'Getting route from ${origin.latitude},${origin.longitude} to ${destination.latitude},${destination.longitude}',
+      );
+
+      // Use OpenStreetMap Routing API (OSRM) instead of Google Directions API
+      // Format: {longitude},{latitude} (note the reversed order compared to LatLng)
+      final String url =
+          'https://router.project-osrm.org/route/v1/driving/'
+          '${origin.longitude},${origin.latitude};${destination.longitude},${destination.latitude}'
+          '?overview=full&geometries=polyline';
+
+      debugPrint('OSRM API URL: $url');
+
+      final response = await _dio.get(url);
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        if (data['code'] == 'Ok' && data['routes']?.isNotEmpty == true) {
+          debugPrint(
+            'OSRM API response: success, found ${data['routes'].length} route(s)',
+          );
+
+          // Get the route points
+          final encodedPolyline = data['routes'][0]['geometry'];
+          final points = _decodePolyline(encodedPolyline);
+          debugPrint('Decoded ${points.length} points for route');
+
+          // Get distance in meters and convert to kilometers
+          final distanceMeters = data['routes'][0]['distance'];
+          final distanceKm = (distanceMeters / 1000).toStringAsFixed(2);
+
+          // Get duration in seconds and convert to minutes
+          final durationSeconds = data['routes'][0]['duration'];
+          final durationMinutes = (durationSeconds / 60).round();
+
+          // Format the distance string
+          _selectedCustomerDistance = '$distanceKm km (~$durationMinutes min)';
+          debugPrint(
+            'Distance: $distanceKm km, Duration: $durationMinutes min',
+          );
+
+          // Save route points for later use
+          _routePoints = points;
+
+          // Add polyline to map
+          final routePolyline = Polyline(
+            polylineId: const PolylineId('route'),
+            color: AppColors.primary,
+            points: points,
+            width: 5,
+          );
+
+          setState(() {
+            _polylines.add(routePolyline);
+          });
+
+          debugPrint('Polyline added to map with ${points.length} points');
+
+          // Ensure the customer info shows up with the distance
+          if (_overlayEntry != null) {
+            _overlayEntry!.markNeedsBuild();
+          }
+
+          // Adjust map to show the entire route
+          _fitBoundsForRoute(points);
+        } else {
+          debugPrint('OSRM API error: ${data['code'] ?? 'Unknown error'}');
+          _useApproximateDistance(origin, destination);
+        }
+      } else {
+        debugPrint(
+          'OSRM API request failed with status: ${response.statusCode}',
+        );
+        _useApproximateDistance(origin, destination);
+      }
+    } catch (e) {
+      debugPrint('Error getting route and distance: $e');
+      _useApproximateDistance(origin, destination);
+    }
+  }
+
+  // Decode Google's encoded polyline string - works with OSRM too
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> points = [];
+    int index = 0, len = encoded.length;
+    int lat = 0, lng = 0;
+
+    while (index < len) {
+      int b, shift = 0, result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+
+      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.codeUnitAt(index++) - 63;
+        result |= (b & 0x1F) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+
+      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+
+      final p = LatLng((lat / 1E5), (lng / 1E5));
+      points.add(p);
+    }
+
+    return points;
+  }
+
+  // Adjust map camera to show the entire route
+  void _fitBoundsForRoute(List<LatLng> points) {
+    if (points.isEmpty || _mapController == null) return;
+
+    double minLat = points[0].latitude;
+    double maxLat = points[0].latitude;
+    double minLng = points[0].longitude;
+    double maxLng = points[0].longitude;
+
+    for (var point in points) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLng) minLng = point.longitude;
+      if (point.longitude > maxLng) maxLng = point.longitude;
+    }
+
+    // Add some padding
+    final bounds = LatLngBounds(
+      southwest: LatLng(minLat - 0.01, minLng - 0.01),
+      northeast: LatLng(maxLat + 0.01, maxLng + 0.01),
+    );
+
+    // Animate camera to fit bounds
+    _mapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 50), // 50 pixels padding
+    );
+  }
+
+  // Fallback to approximate distance calculation
+  void _useApproximateDistance(LatLng origin, LatLng destination) {
+    final distance = _calculateDistance(origin, destination);
+    setState(() {
+      _selectedCustomerDistance = '${distance.toString()} km (aproximate)';
+    });
+  }
+
   void _showCustomerInfo(CustomerEntity customer, BuildContext context) {
     _hideCustomerInfo();
+    debugPrint('Showing customer info for: ${customer.customerName}');
+
+    // Calculate distance if we have coordinates
+    if (customer.mapCoords?.isNotEmpty ?? false) {
+      try {
+        final coords = customer.mapCoords!.split(',');
+        if (coords.length == 2) {
+          final lat = double.parse(coords[0]);
+          final lng = double.parse(coords[1]);
+          final customerLocation = LatLng(lat, lng);
+          debugPrint('Customer location: $lat, $lng');
+
+          // Get route and distance
+          _getRouteAndDistance(_currentPosition, customerLocation);
+        }
+      } catch (e) {
+        debugPrint('Error processing customer coordinates: $e');
+        _selectedCustomerDistance = null;
+      }
+    } else {
+      debugPrint('No map coordinates available for this customer');
+      _selectedCustomerDistance = null;
+    }
 
     final l10n = AppLocalizations.of(context);
 
     _overlayEntry = OverlayEntry(
-      builder:
-          (context) => Positioned(
-            bottom: 16,
-            left: 16,
-            right: 16,
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            customer.customerName,
+      builder: (context) {
+        // Debug distance value
+        debugPrint(
+          'Building overlay with distance: $_selectedCustomerDistance',
+        );
+
+        return Positioned(
+          bottom: 16,
+          left: 16,
+          right: 16,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          customer.customerName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: _hideCustomerInfo,
+                        color: AppColors.primary,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _buildInfoRow(
+                    Icons.badge,
+                    l10n.customerCode,
+                    customer.customerCode,
+                  ),
+                  const SizedBox(height: 4),
+                  _buildInfoRow(
+                    Icons.location_on,
+                    l10n.address,
+                    customer.address,
+                  ),
+                  const SizedBox(height: 4),
+                  _buildInfoRow(Icons.phone, l10n.phone, customer.contactPhone),
+
+                  // Always show distance row, with loading indicator if needed
+                  const SizedBox(height: 4),
+                  _selectedCustomerDistance != null
+                      ? _buildInfoRow(
+                        Icons.directions_car,
+                        'Distance', // Hard-coded since we don't have translation
+                        _selectedCustomerDistance,
+                      )
+                      : Row(
+                        children: [
+                          Icon(
+                            Icons.directions_car,
+                            size: 20,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Distance', // Hard-coded since we don't have translation
                             style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: _hideCustomerInfo,
-                          color: AppColors.primary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    _buildInfoRow(
-                      Icons.badge,
-                      l10n.customerCode,
-                      customer.customerCode,
-                    ),
-                    const SizedBox(height: 4),
-                    _buildInfoRow(
-                      Icons.location_on,
-                      l10n.address,
-                      customer.address,
-                    ),
-                    const SizedBox(height: 4),
-                    _buildInfoRow(
-                      Icons.phone,
-                      l10n.phone,
-                      customer.contactPhone,
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed:
-                            customer.mapCoords?.isNotEmpty ?? false
-                                ? () => _openInGoogleMaps(customer.mapCoords)
-                                : null,
-                        icon: const Icon(Icons.directions),
-                        label: Text(l10n.getDirections),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          const SizedBox(width: 8),
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
+                        ],
+                      ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed:
+                          customer.mapCoords?.isNotEmpty ?? false
+                              ? () => _openInGoogleMaps(customer.mapCoords)
+                              : null,
+                      icon: const Icon(Icons.directions),
+                      label: Text(l10n.getDirections),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                  ),
+                  const SizedBox(height: 8),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                              _hideCustomerInfo();
-                              // Use NavigationService with GoRouter
-                              NavigationService.push(context, RouteConstants.customerActivity, extra: customer);
-                              // Session checking will be handled in didChangeDependencies
-                            },
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _hideCustomerInfo();
+                        // Use NavigationService with GoRouter
+                        NavigationService.push(
+                          context,
+                          RouteConstants.customerActivity,
+                          extra: customer,
+                        );
+                        // Session checking will be handled in didChangeDependencies
+                      },
 
-                        icon: const Icon(Icons.play_arrow),
-                        label: Text(l10n.startVisit),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                      icon: const Icon(Icons.play_arrow),
+                      label: Text(l10n.startVisit),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
+        );
+      },
     );
 
     Overlay.of(context).insert(_overlayEntry!);
@@ -484,9 +743,13 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
   void _hideCustomerInfo() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    if (mounted) {
-      setState(() => _selectedCustomer = null);
-    }
+
+    // Clear route when hiding customer info
+    setState(() {
+      _polylines.clear();
+      _routePoints.clear();
+      _selectedCustomerDistance = null;
+    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -623,10 +886,10 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
                     _activeSession = false;
                     _sessionStartTime = null;
                   });
-                  
+
                   // Also check and update customer visit session status
                   await _checkActiveCustomerVisit();
-                  
+
                   _showStartSessionDialog(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -761,45 +1024,62 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       // Show banner if there's an active customer visit session
-      bottomNavigationBar: _hasActiveCustomerVisit && _customerWithActiveVisit != null
-          ? Container(
-              color: Colors.green,
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              child: Row(
-                children: [
-                  Icon(Icons.person, color: Colors.white),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l10n.activeVisitWith(_customerWithActiveVisit!.customerName),
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      bottomNavigationBar:
+          _hasActiveCustomerVisit && _customerWithActiveVisit != null
+              ? Container(
+                color: Colors.green,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.person, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.activeVisitWith(
+                          _customerWithActiveVisit!.customerName,
+                        ),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to the customer activity page using GoRouter
-                      NavigationService.push(context, RouteConstants.customerActivity, extra: _customerWithActiveVisit!);
-                    },
-                    child: Text(
-                      l10n.continueVisiting,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    TextButton(
+                      onPressed: () {
+                        // Navigate to the customer activity page using GoRouter
+                        NavigationService.push(
+                          context,
+                          RouteConstants.customerActivity,
+                          extra: _customerWithActiveVisit!,
+                        );
+                      },
+                      child: Text(
+                        l10n.continueVisiting,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          : null,
+                  ],
+                ),
+              )
+              : null,
       body: Stack(
         children: [
           GoogleMap(
             onMapCreated: _onMapCreated,
             initialCameraPosition: CameraPosition(
               target: _currentPosition,
-              zoom: 20,
+              zoom: 15, // Reduced zoom level to see more context
             ),
             myLocationEnabled: true,
             myLocationButtonEnabled: false,
             markers: _markers,
+            polylines: _polylines,
             onTap: (_) {
               _hideCustomerInfo();
               // Check session status on map tap as well
@@ -807,7 +1087,7 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
             },
             mapType: MapType.normal,
             style: _mapStyle,
-            zoomControlsEnabled: false,
+            zoomControlsEnabled: true, // Enable zoom controls to help debug
           ),
           SafeArea(
             child: Padding(
@@ -834,7 +1114,10 @@ class _MapPageState extends State<MapPage> with WidgetsBindingObserver {
                       icon: const Icon(Icons.search, color: AppColors.primary),
                       onPressed: () {
                         _hideCustomerInfo();
-                        NavigationService.push(context, RouteConstants.customerSearch);
+                        NavigationService.push(
+                          context,
+                          RouteConstants.customerSearch,
+                        );
                         // Session checking will be handled in didChangeDependencies
                       },
                     ),
