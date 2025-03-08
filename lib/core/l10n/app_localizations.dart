@@ -898,6 +898,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure to delete the invoice'**
   String get deleteConfirmation;
+
+  /// No description provided for @printInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Print Invoice'**
+  String get printInvoice;
+
+  /// No description provided for @returnInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Return Invoice'**
+  String get returnInvoice;
+
+  /// No description provided for @generatingPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating PDF...'**
+  String get generatingPdf;
+
+  /// No description provided for @errorGeneratingPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Error generating PDF'**
+  String get errorGeneratingPdf;
+
+  /// No description provided for @noPdfFileToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'No PDF file to share'**
+  String get noPdfFileToShare;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @sharingInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing Invoice'**
+  String get sharingInvoice;
+
+  /// No description provided for @sharingReturnInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing Return'**
+  String get sharingReturnInvoice;
+
+  /// No description provided for @customerInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Information'**
+  String get customerInformation;
+
+  /// No description provided for @customerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Name'**
+  String get customerName;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @comment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get comment;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @unitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Price'**
+  String get unitPrice;
+
+  /// No description provided for @itemCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Item Code'**
+  String get itemCode;
+
+  /// No description provided for @thankYouForYourBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your business!'**
+  String get thankYouForYourBusiness;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

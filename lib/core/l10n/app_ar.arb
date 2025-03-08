@@ -215,5 +215,23 @@
     "returnSavedSuccessfully": "تم حفظ المرتجع بنجاح",
     "invoiceDeletedSuccessfully": "تم حذف الفاتورة بنجاح",
     "deleteInvoice": "حذف الفاتورة",
-    "deleteConfirmation": "هل انت متأكد من حذف الفاتورة"
+    "deleteConfirmation": "هل أنت متأكد من حذف الفاتورة",
+    
+    "printInvoice": "طباعة الفاتورة",
+    "returnInvoice": "فاتورة المرتجعات",
+    "generatingPdf": "جاري إنشاء ملف PDF...",
+    "errorGeneratingPdf": "خطأ في إنشاء ملف PDF",
+    "noPdfFileToShare": "لا يوجد ملف PDF للمشاركة",
+    "share": "مشاركة",
+    "sharingInvoice": "مشاركة الفاتورة",
+    "sharingReturnInvoice": "مشاركة فاتورة المرتجعات",
+    "customerInformation": "معلومات العميل",
+    "customerName": "اسم العميل",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "comment": "تعليق",
+    "description": "الوصف",
+    "unitPrice": "سعر الوحدة",
+    "itemCode": "رمز المنتج",
+    "thankYouForYourBusiness": "شكراً لتعاملكم معنا!"
 }

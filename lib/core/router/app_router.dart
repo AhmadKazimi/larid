@@ -11,6 +11,7 @@ import '../../features/customer_search/presentation/bloc/customer_search_bloc.da
 import '../../features/customer_activity/presentation/pages/customer_activity_page.dart';
 import '../../features/invoice/presentation/pages/invoice_page.dart';
 import '../../features/invoice/presentation/pages/items_page.dart';
+import '../../features/invoice/presentation/pages/print_page.dart';
 import '../../features/invoice/presentation/bloc/items_bloc.dart';
 import '../../features/photo_capture/presentation/pages/photo_capture_page.dart';
 import '../../features/receipt_voucher/presentation/pages/receipt_voucher_page.dart';
@@ -101,7 +102,8 @@ class AppRouter {
                 !isInvoicePage &&
                 !isItemsPage &&
                 !isPhotoCaptureePage &&
-                !isReceiptVoucherPage) {
+                !isReceiptVoucherPage &&
+                state.matchedLocation != RouteConstants.printInvoice) {
               return RouteConstants.map;
             }
             // If data is not synced and not on sync page, go to sync
@@ -267,6 +269,28 @@ class AppRouter {
             context: context,
             state: state,
             child: ReceiptVoucherPage(customer: customer),
+          );
+        },
+      ),
+
+      // Print Invoice Route
+      GoRoute(
+        path: RouteConstants.printInvoice,
+        name: 'print-invoice',
+        pageBuilder: (context, state) {
+          final extraData = state.extra as Map<String, dynamic>;
+          final invoice = extraData['invoice'];
+          final customer = extraData['customer'] as CustomerEntity;
+          final isReturn = extraData['isReturn'] as bool? ?? false;
+
+          return _buildSlideTransition(
+            context: context,
+            state: state,
+            child: PrintPage(
+              invoice: invoice,
+              customer: customer,
+              isReturn: isReturn,
+            ),
           );
         },
       ),

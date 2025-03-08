@@ -654,6 +654,25 @@ class _InvoicePageState extends State<InvoicePage> {
               color: AppColors.primary,
             ),
 
+            // Print button
+            _buildActionButton(
+              onPressed: () {
+                // Navigate to the print page with invoice data
+                context.push(
+                  RouteConstants.printInvoice,
+                  extra: {
+                    'invoice': state,
+                    'isReturn': _isReturn,
+                    'customer': state.customer,
+                  },
+                );
+              },
+              icon: Icons.print,
+              label: localizations.print,
+              isLoading: state.isPrinting,
+              color: Colors.green,
+            ),
+
             // Sync button
             _buildActionButton(
               onPressed:
@@ -858,64 +877,43 @@ class _InvoicePageState extends State<InvoicePage> {
                 textAlign: TextAlign.center,
               ),
             ),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Debug log when submit button is clicked
-                    debugPrint(
-                      'Submitting invoice with ${state.items.length + state.returnItems.length} items',
-                    );
-                    context.read<InvoiceBloc>().add(
-                      SubmitInvoice(isReturn: _isReturn),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    elevation: 5,
-                  ),
-                  child:
-                      state.isSubmitting
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Builder(
-                            builder: (context) {
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.save),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _isReturn
-                                        ? '${localizations.submit} ${localizations.returnItem}'
-                                        : '${localizations.submit} ${localizations.invoice}',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelLarge
-                                        ?.copyWith(color: Colors.white),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: () {
-                  context.read<InvoiceBloc>().add(const PrintInvoice());
-                },
-                icon:
-                    state.isPrinting
-                        ? const CircularProgressIndicator()
-                        : const Icon(Icons.picture_as_pdf),
-                tooltip: localizations.print,
-                color: AppColors.primary,
-                iconSize: 32,
-              ),
-            ],
+          ElevatedButton(
+            onPressed: () {
+              // Debug log when submit button is clicked
+              debugPrint(
+                'Submitting invoice with ${state.items.length + state.returnItems.length} items',
+              );
+              context.read<InvoiceBloc>().add(
+                SubmitInvoice(isReturn: _isReturn),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              elevation: 5,
+            ),
+            child:
+                state.isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Builder(
+                      builder: (context) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.save),
+                            const SizedBox(width: 8),
+                            Text(
+                              _isReturn
+                                  ? '${localizations.submit} ${localizations.returnItem}'
+                                  : '${localizations.submit} ${localizations.invoice}',
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(color: Colors.white),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
           ),
         ],
       ),

@@ -215,5 +215,23 @@
     "returnSavedSuccessfully": "Return saved successfully",
     "invoiceDeletedSuccessfully": "Invoice deleted successfully",
     "deleteInvoice": "Delete Invoice",
-    "deleteConfirmation": "Are you sure to delete the invoice"
+    "deleteConfirmation": "Are you sure to delete the invoice",
+    
+    "printInvoice": "Print Invoice",
+    "returnInvoice": "Return Invoice",
+    "generatingPdf": "Generating PDF...",
+    "errorGeneratingPdf": "Error generating PDF",
+    "noPdfFileToShare": "No PDF file to share",
+    "share": "Share",
+    "sharingInvoice": "Sharing Invoice",
+    "sharingReturnInvoice": "Sharing Return",
+    "customerInformation": "Customer Information",
+    "customerName": "Customer Name",
+    "date": "Date",
+    "time": "Time",
+    "comment": "Comment",
+    "description": "Description",
+    "unitPrice": "Unit Price",
+    "itemCode": "Item Code",
+    "thankYouForYourBusiness": "Thank you for your business!"
 }

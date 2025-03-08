@@ -427,4 +427,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteConfirmation => 'Are you sure to delete the invoice';
+
+  @override
+  String get printInvoice => 'Print Invoice';
+
+  @override
+  String get returnInvoice => 'Return Invoice';
+
+  @override
+  String get generatingPdf => 'Generating PDF...';
+
+  @override
+  String get errorGeneratingPdf => 'Error generating PDF';
+
+  @override
+  String get noPdfFileToShare => 'No PDF file to share';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get sharingInvoice => 'Sharing Invoice';
+
+  @override
+  String get sharingReturnInvoice => 'Sharing Return';
+
+  @override
+  String get customerInformation => 'Customer Information';
+
+  @override
+  String get customerName => 'Customer Name';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get comment => 'Comment';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get unitPrice => 'Unit Price';
+
+  @override
+  String get itemCode => 'Item Code';
+
+  @override
+  String get thankYouForYourBusiness => 'Thank you for your business!';
 }

@@ -426,5 +426,56 @@ class AppLocalizationsAr extends AppLocalizations {
   String get deleteInvoice => 'حذف الفاتورة';
 
   @override
-  String get deleteConfirmation => 'هل انت متأكد من حذف الفاتورة';
+  String get deleteConfirmation => 'هل أنت متأكد من حذف الفاتورة';
+
+  @override
+  String get printInvoice => 'طباعة الفاتورة';
+
+  @override
+  String get returnInvoice => 'فاتورة المرتجعات';
+
+  @override
+  String get generatingPdf => 'جاري إنشاء ملف PDF...';
+
+  @override
+  String get errorGeneratingPdf => 'خطأ في إنشاء ملف PDF';
+
+  @override
+  String get noPdfFileToShare => 'لا يوجد ملف PDF للمشاركة';
+
+  @override
+  String get share => 'مشاركة';
+
+  @override
+  String get sharingInvoice => 'مشاركة الفاتورة';
+
+  @override
+  String get sharingReturnInvoice => 'مشاركة فاتورة المرتجعات';
+
+  @override
+  String get customerInformation => 'معلومات العميل';
+
+  @override
+  String get customerName => 'اسم العميل';
+
+  @override
+  String get date => 'التاريخ';
+
+  @override
+  String get time => 'الوقت';
+
+  @override
+  String get comment => 'تعليق';
+
+  @override
+  String get description => 'الوصف';
+
+  @override
+  String get unitPrice => 'سعر الوحدة';
+
+  @override
+  String get itemCode => 'رمز المنتج';
+
+  @override
+  String get thankYouForYourBusiness => 'شكراً لتعاملكم معنا!';
 }
