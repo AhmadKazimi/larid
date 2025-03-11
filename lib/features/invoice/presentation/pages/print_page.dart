@@ -8,12 +8,18 @@ import 'package:larid/core/theme/app_theme.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:larid/features/invoice/presentation/bloc/invoice_state.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
+import 'package:larid/database/user_table.dart';
+import 'package:larid/features/auth/domain/entities/user_entity.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
+import 'package:get_it/get_it.dart';
+import 'package:larid/core/di/service_locator.dart';
+import 'package:larid/features/taxes/domain/services/tax_calculator_service.dart';
+import 'package:provider/provider.dart';
 
 class PrintPage extends StatefulWidget {
   final InvoiceState invoice;
@@ -37,122 +43,321 @@ class _PrintPageState extends State<PrintPage> {
   late final AppLocalizations l10n;
   bool _didInitialize = false;
   pw.Font? _arabicFont;
+  String? _userId;
+  TaxCalculatorService? _taxCalculator;
+  bool _fontLoaded = false;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     // Don't call _generatePdf() here - it will be called in didChangeDependencies
     _loadFonts();
+    _getUserId();
+    _initTaxCalculator().then((_) {
+      if (mounted) {
+        _logInvoiceItemTaxes();
+      }
+    });
   }
 
   Future<void> _loadFonts() async {
+    debugPrint('Loading Arabic font for PDF generation');
     try {
-      // Load the Arabic font from assets
+      // Load the KufiArabic font - use the correct path
       final fontData = await rootBundle.load(
         'assets/fonts/NotoKufiArabic-Regular.ttf',
       );
       _arabicFont = pw.Font.ttf(fontData.buffer.asByteData());
-      debugPrint('Arabic font loaded successfully');
+      debugPrint('Arabic font (NotoKufiArabic) loaded successfully');
+
+      // Try to load the bold version as well for better rendering
+      try {
+        final boldFontData = await rootBundle.load(
+          'assets/fonts/NotoKufiArabic-Bold.ttf',
+        );
+        final boldFont = pw.Font.ttf(boldFontData.buffer.asByteData());
+        debugPrint('Bold Arabic font loaded successfully');
+      } catch (boldError) {
+        debugPrint('Bold font not loaded: $boldError');
+      }
+
+      setState(() {
+        _fontLoaded = true;
+      });
     } catch (e) {
       debugPrint('Error loading Arabic font: $e');
-      // Fallback to default font if loading fails
+      // Use default fonts if we couldn't load the Arabic font
+      setState(() {
+        _fontLoaded = true;
+      });
     }
+  }
+
+  Future<void> _getUserId() async {
+    try {
+      final userTable = GetIt.I<UserTable>();
+      final currentUser = await userTable.getCurrentUser();
+      if (currentUser != null) {
+        setState(() {
+          _userId = currentUser.userid;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error getting user ID: $e');
+    }
+  }
+
+  Future<void> _initTaxCalculator() async {
+    debugPrint('Initializing tax calculator for PDF generation');
+    try {
+      final taxService = Provider.of<TaxCalculatorService>(
+        context,
+        listen: false,
+      );
+      _taxCalculator = taxService;
+      debugPrint('Tax calculator initialized successfully');
+
+      // Verify tax calculator is working by testing with a sample tax code
+      final sampleTaxCode = "GST";
+      final sampleRate = _taxCalculator!.getTaxPercentage(sampleTaxCode);
+      final sampleAmount = _taxCalculator!.calculateTax(sampleTaxCode, 100);
+      debugPrint(
+        'Tax calculator test: code=$sampleTaxCode, rate=$sampleRate%, amount=$sampleAmount',
+      );
+    } catch (e) {
+      debugPrint('Error initializing tax calculator: $e');
+      // We'll use fallback calculations if the tax calculator isn't available
+    }
+  }
+
+  // Helper methods for tax calculations when needed
+  double getTaxRate(String taxCode) {
+    if (_taxCalculator != null) {
+      return _taxCalculator!.getTaxPercentage(taxCode);
+    }
+    // Default fallback rates based on common tax codes
+    if (taxCode.contains('VAT') || taxCode.contains('GST')) {
+      return 16.0; // Standard VAT/GST rate in Jordan
+    }
+    return 0.0;
+  }
+
+  double calculateTaxAmount(String taxCode, double price) {
+    if (_taxCalculator != null) {
+      return _taxCalculator!.calculateTax(taxCode, price);
+    }
+    // Fallback calculation
+    final taxRate = getTaxRate(taxCode);
+    return price * (taxRate / 100);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     l10n = AppLocalizations.of(context);
+    if (!_initialized) {
+      _initialized = true;
+      _initializeAndGeneratePdf();
+    }
+  }
 
-    // Only generate PDF on the first call to didChangeDependencies
-    if (!_didInitialize) {
-      _didInitialize = true;
-      _generatePdf();
+  Future<void> _initializeAndGeneratePdf() async {
+    debugPrint('Initializing components for PDF generation');
+    setState(() {
+      _isGenerating = true;
+    });
+
+    try {
+      // Initialize all components in parallel for efficiency
+      final futures = <Future>[];
+
+      // Load font if not already loaded
+      if (!_fontLoaded) {
+        futures.add(_loadFonts());
+      }
+
+      // Get user ID if not already loaded
+      if (_userId == null || _userId!.isEmpty) {
+        futures.add(_getUserId());
+      }
+
+      // Initialize tax calculator if not already initialized
+      if (_taxCalculator == null) {
+        futures.add(_initTaxCalculator());
+      }
+
+      // Wait for all initializations to complete
+      await Future.wait(futures);
+
+      // Generate PDF once everything is initialized
+      if (mounted) {
+        debugPrint('All components initialized, generating PDF');
+        await _generatePdf();
+      }
+    } catch (e) {
+      debugPrint('Error during initialization: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error initializing: $e')));
+        setState(() {
+          _isGenerating = false;
+        });
+      }
     }
   }
 
   Future<void> _generatePdf() async {
-    if (mounted) {
-      setState(() {
-        _isGenerating = true;
-      });
+    if (!_fontLoaded || _userId == null || _userId!.isEmpty) {
+      debugPrint(
+        'Cannot generate PDF: Font loaded: $_fontLoaded, User ID: ${_userId == null ? "Not loaded" : "Loaded"}',
+      );
+      return;
     }
 
-    try {
-      // Make sure font is loaded
-      if (_arabicFont == null) {
-        await _loadFonts();
-      }
+    if (_taxCalculator == null) {
+      debugPrint(
+        'Tax calculator not initialized, attempting to initialize now...',
+      );
+      await _initTaxCalculator();
+    }
 
+    debugPrint(
+      'Generating PDF with tax calculator: ${_taxCalculator != null ? "Available" : "NOT AVAILABLE"}',
+    );
+
+    setState(() {
+      _isGenerating = true;
+    });
+
+    try {
       final pdf = pw.Document();
 
-      // Create a theme with Arabic font
+      // Ensure we have the Arabic font
+      if (_arabicFont == null) {
+        debugPrint('WARNING: Arabic font not loaded, attempting to load again');
+        await _loadFonts();
+        if (_arabicFont == null) {
+          debugPrint('CRITICAL: Could not load Arabic font, using fallbacks');
+        }
+      }
+
+      // Create a theme with Arabic font as the base font
+      final defaultFont = await pw.Font.courier();
       final theme = pw.ThemeData.withFont(
-        base: _arabicFont ?? await pw.Font.courier(),
-        bold: _arabicFont ?? await pw.Font.courier(),
-        italic: _arabicFont ?? await pw.Font.courier(),
-        boldItalic: _arabicFont ?? await pw.Font.courier(),
+        base: _arabicFont ?? defaultFont,
+        bold: _arabicFont ?? defaultFont,
+        italic: _arabicFont ?? defaultFont,
+        boldItalic: _arabicFont ?? defaultFont,
       );
 
-      // Add pages to the PDF with the theme
+      // Load app logo for footer
+      Uint8List? logoImage;
+      try {
+        final logoBytes = await rootBundle.load('assets/images/img_larid2.png');
+        logoImage = logoBytes.buffer.asUint8List();
+        debugPrint('Logo loaded successfully for PDF footer');
+      } catch (e) {
+        debugPrint('Error loading logo for PDF footer: $e');
+        // Continue without logo if it can't be loaded
+      }
+
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(32),
           theme: theme,
           textDirection: pw.TextDirection.rtl,
-          build: (pw.Context context) {
-            return [
-              _buildHeader(),
-              pw.SizedBox(height: 20),
-              _buildCustomerInfo(),
-              pw.SizedBox(height: 20),
-              _buildInvoiceDetails(),
-              pw.SizedBox(height: 20),
-              _buildItemsTable(),
-              pw.SizedBox(height: 20),
-              _buildTotals(),
-              pw.SizedBox(height: 30),
-              _buildFooter(),
-            ];
-          },
+          build:
+              (context) => [
+                _buildHeader(),
+                pw.SizedBox(height: 20),
+                _buildCustomerInfo(),
+                pw.SizedBox(height: 20),
+                _buildInvoiceDetails(),
+                pw.SizedBox(height: 20),
+                _buildItemsTable(context),
+                pw.SizedBox(height: 20),
+                _buildTotals(),
+                pw.SizedBox(height: 40),
+                _buildFooter(),
+              ],
+          footer:
+              (context) => pw.Padding(
+                padding: const pw.EdgeInsets.only(top: 10),
+                child: pw.Container(
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border(
+                      top: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                    ),
+                  ),
+                  padding: const pw.EdgeInsets.only(top: 5),
+                  child: pw.Row(
+                    mainAxisAlignment:
+                        pw.MainAxisAlignment.start, // Align to left
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      if (logoImage != null)
+                        pw.Container(
+                          height: 30,
+                          width: 40,
+                          child: pw.Image(pw.MemoryImage(logoImage)),
+                        ),
+                      pw.Text(
+                        'Powered by',
+                        style: pw.TextStyle(
+                          fontSize: 8,
+                          color: PdfColors.grey700,
+                          fontStyle: pw.FontStyle.italic,
+                        ),
+                      ),
+                      // Add page number on the right side
+                      pw.Spacer(),
+                      pw.Text(
+                        'Page ${context.pageNumber} of ${context.pagesCount}',
+                        style: pw.TextStyle(
+                          fontSize: 8,
+                          color: PdfColors.grey700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
         ),
       );
 
       // Save the PDF
       final output = await getTemporaryDirectory();
-      final file = File(
-        '${output.path}/invoice_${DateTime.now().millisecondsSinceEpoch}.pdf',
-      );
+      final formattedInvoiceNumber =
+          "${_userId!}-${widget.invoice.invoiceNumber ?? "new"}";
+      final file = File('${output.path}/invoice_$formattedInvoiceNumber.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      if (mounted) {
-        setState(() {
-          _pdfPath = file.path;
-          _isGenerating = false;
-        });
-      }
+      setState(() {
+        _pdfPath = file.path;
+        _isGenerating = false;
+      });
     } catch (e) {
       debugPrint('Error generating PDF: $e');
-      if (mounted) {
-        setState(() {
-          _isGenerating = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error generating PDF: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      setState(() {
+        _isGenerating = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating PDF: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   pw.Widget _buildHeader() {
     final title =
         widget.isReturn
-            ? '${l10n.returnItem} #${widget.invoice.invoiceNumber ?? "New"}'
-            : '${l10n.invoice} #${widget.invoice.invoiceNumber ?? "New"}';
+            ? '${l10n.returnItem} #${formattedInvoiceNumber}'
+            : '${l10n.invoice} #${formattedInvoiceNumber}';
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -263,63 +468,159 @@ class _PrintPageState extends State<PrintPage> {
     );
   }
 
-  pw.Widget _buildItemsTable() {
+  pw.Widget _buildItemsTable(pw.Context context) {
     final items =
         widget.isReturn ? widget.invoice.returnItems : widget.invoice.items;
 
+    // Debug log to check tax values
+    debugPrint('Building items table with ${items.length} items');
+
+    // Force initialization of tax calculator if needed
+    if (_taxCalculator == null) {
+      debugPrint('WARNING: Tax calculator is null when building items table');
+      // This is a synchronous method, so we can't await the async initialization here
+      // We'll rely on the fallback logic below
+    } else {
+      debugPrint('Tax calculator is available for PDF generation');
+    }
+
     return pw.Table(
-      border: pw.TableBorder.all(color: PdfColors.grey300),
+      border: pw.TableBorder(
+        left: pw.BorderSide(color: PdfColors.black, width: 1),
+        right: pw.BorderSide(color: PdfColors.black, width: 1),
+        top: pw.BorderSide(color: PdfColors.black, width: 1),
+        bottom: pw.BorderSide(color: PdfColors.black, width: 1),
+        horizontalInside: pw.BorderSide(color: PdfColors.black, width: 0.7),
+        verticalInside: pw.BorderSide(color: PdfColors.black, width: 0.7),
+      ),
       columnWidths: {
-        0: const pw.FlexColumnWidth(1), // Item Code
-        1: const pw.FlexColumnWidth(3), // Description
-        2: const pw.FlexColumnWidth(1), // Quantity
-        3: const pw.FlexColumnWidth(1), // Unit Price
-        4: const pw.FlexColumnWidth(1), // Total
+        0: const pw.FlexColumnWidth(1.5), // Price after tax
+        1: const pw.FlexColumnWidth(1), // Tax
+        2: const pw.FlexColumnWidth(1.5), // Price before tax
+        3: const pw.FlexColumnWidth(1), // Quantity
+        4: const pw.FlexColumnWidth(3), // Description
+        5: const pw.FlexColumnWidth(1), // Item Code
       },
       children: [
         // Header row
         pw.TableRow(
-          decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+          decoration: const pw.BoxDecoration(
+            color: PdfColors.grey300,
+            borderRadius: pw.BorderRadius.vertical(top: pw.Radius.circular(2)),
+          ),
           children: [
-            _buildTableCell(l10n.itemCode, isHeader: true),
-            _buildTableCell(l10n.description, isHeader: true),
-            _buildTableCell(l10n.quantity, isHeader: true),
-            _buildTableCell(l10n.unitPrice, isHeader: true),
-            _buildTableCell(l10n.total, isHeader: true),
+            _buildTableCell(l10n.total, isHeader: true), // Price after tax
+            _buildTableCell('الضريبة', isHeader: true), // Tax
+            _buildTableCell(
+              'السعر قبل الضريبة',
+              isHeader: true,
+            ), // Price before tax
+            _buildTableCell(l10n.quantity, isHeader: true), // Quantity
+            _buildTableCell(l10n.description, isHeader: true), // Description
+            _buildTableCell(l10n.itemCode, isHeader: true), // Item Code
           ],
         ),
         // Item rows
-        ...items
-            .map(
-              (item) => pw.TableRow(
-                children: [
-                  _buildTableCell(item.item.itemCode),
-                  _buildTableCell(item.item.description),
-                  _buildTableCell(item.quantity.toString()),
-                  _buildTableCell(
-                    '${item.item.sellUnitPrice.toStringAsFixed(2)} JOD',
-                  ),
-                  _buildTableCell('${item.totalPrice.toStringAsFixed(2)} JOD'),
-                ],
-              ),
-            )
-            .toList(),
+        ...items.map((item) {
+          // Get base values
+          final itemCode = item.item.itemCode;
+          final taxCode = item.item.taxCode;
+          final quantity = item.quantity;
+          final unitPrice = item.item.sellUnitPrice;
+
+          // Calculate core values
+          final priceBeforeTax =
+              item.priceBeforeTax > 0
+                  ? item.priceBeforeTax
+                  : unitPrice * quantity;
+
+          // DIRECT CALCULATION OF TAX RATE AND AMOUNT
+          // For debugging purposes, let's directly calculate these values
+
+          // 1. Default to stored values if available
+          double taxRate = item.taxRate;
+          double taxAmount = item.taxAmount;
+
+          debugPrint('Item $itemCode (taxCode: $taxCode):');
+          debugPrint('- Initial taxRate from item: $taxRate');
+          debugPrint('- Initial taxAmount from item: $taxAmount');
+
+          // 2. If we have a taxCode but no rate, try to get it from calculator
+          if (taxRate <= 0 && taxCode.isNotEmpty && _taxCalculator != null) {
+            taxRate = _taxCalculator!.getTaxPercentage(taxCode);
+            debugPrint('- Got taxRate from calculator: $taxRate');
+          }
+
+          // 3. If still no rate but we have a taxCode, use default
+          if (taxRate <= 0 && taxCode.isNotEmpty) {
+            taxRate = 16.0; // Default VAT rate
+            debugPrint('- Using default taxRate: $taxRate');
+          }
+
+          // 4. Calculate tax amount if needed
+          if (taxAmount <= 0 && taxRate > 0) {
+            taxAmount = priceBeforeTax * (taxRate / 100);
+            debugPrint('- Calculated taxAmount: $taxAmount');
+          }
+
+          // 5. Calculate final price
+          final priceAfterTax = priceBeforeTax + taxAmount;
+
+          // Show EXACTLY what will be displayed
+          final taxDisplay =
+              '${taxAmount.toStringAsFixed(2)} JOD\n(${taxRate.toStringAsFixed(1)}%)';
+          debugPrint('Tax display in PDF: $taxDisplay');
+
+          return pw.TableRow(
+            children: [
+              _buildTableCell(
+                '${priceAfterTax.toStringAsFixed(2)} JOD',
+              ), // Price after tax
+              _buildTableCell(
+                taxAmount > 0 || taxRate > 0
+                    ? '${taxAmount.toStringAsFixed(2)} JOD\n(${taxRate.toStringAsFixed(1)}%)'
+                    : 'معفى من الضريبة', // "Tax exempt" in Arabic
+              ), // Tax + percentage or exempt
+              _buildTableCell(
+                '${priceBeforeTax.toStringAsFixed(2)} JOD',
+              ), // Price before tax
+              _buildTableCell(quantity.toString()), // Quantity
+              _buildTableCell(item.item.description), // Description
+              _buildTableCell(itemCode), // Item Code
+            ],
+          );
+        }),
       ],
     );
   }
 
+  // Enhanced table cell for better Arabic text rendering
   pw.Widget _buildTableCell(String text, {bool isHeader = false}) {
+    // Check if the text contains Arabic characters (which need special handling)
+    bool containsArabic = text.contains(RegExp(r'[\u0600-\u06FF]'));
+
     return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 7),
       child: pw.Text(
         text,
-        style: pw.TextStyle(fontWeight: isHeader ? pw.FontWeight.bold : null),
-        textAlign: isHeader ? pw.TextAlign.center : pw.TextAlign.left,
+        style: pw.TextStyle(
+          fontWeight: isHeader ? pw.FontWeight.bold : null,
+          // Explicitly use Arabic font if the text contains Arabic characters
+          font: containsArabic ? _arabicFont : null,
+          fontSize: isHeader ? 10 : 9, // Slightly smaller for better fitting
+        ),
+        textAlign:
+            containsArabic || isHeader
+                ? pw.TextAlign.center
+                : pw.TextAlign.left,
+        textDirection:
+            containsArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
       ),
     );
   }
 
   pw.Widget _buildTotals() {
+    // Get values from invoice state
     final subtotal =
         widget.isReturn
             ? widget.invoice.returnSubtotal
@@ -339,20 +640,68 @@ class _PrintPageState extends State<PrintPage> {
             ? widget.invoice.returnGrandTotal
             : widget.invoice.grandTotal;
 
+    // Debug log the values
+    debugPrint('PDF Totals from state:');
+    debugPrint('- subtotal: $subtotal');
+    debugPrint('- discount: $discount');
+    debugPrint('- total (subtotal - discount): $total');
+    debugPrint('- salesTax: $salesTax');
+    debugPrint('- grandTotal (total + salesTax): $grandTotal');
+
+    // Recalculate tax and total to ensure accuracy
+    double calculatedTax = 0.0;
+    final items =
+        widget.isReturn ? widget.invoice.returnItems : widget.invoice.items;
+
+    // Sum up all item taxes using our tax calculator
+    for (var item in items) {
+      final taxCode = item.item.taxCode;
+      final priceBeforeTax =
+          item.priceBeforeTax > 0
+              ? item.priceBeforeTax
+              : item.item.sellUnitPrice * item.quantity;
+
+      double itemTaxAmount = item.taxAmount;
+      if (itemTaxAmount <= 0 && taxCode.isNotEmpty) {
+        // Use tax calculator if available
+        if (_taxCalculator != null) {
+          itemTaxAmount = calculateTaxAmount(taxCode, priceBeforeTax);
+        } else {
+          // Fall back to stored tax rate or default
+          double taxRate =
+              item.taxRate > 0 ? item.taxRate : getTaxRate(taxCode);
+          if (taxRate <= 0 && taxCode.isNotEmpty) {
+            taxRate = 16.0; // Default if all else fails
+          }
+          itemTaxAmount = priceBeforeTax * (taxRate / 100);
+        }
+      }
+
+      calculatedTax += itemTaxAmount;
+    }
+
+    // Use original value if it's reasonable, otherwise use calculated
+    final finalTaxAmount = (salesTax > 0) ? salesTax : calculatedTax;
+    final finalGrandTotal = total + finalTaxAmount;
+
+    debugPrint('PDF Recalculated values:');
+    debugPrint('- finalTaxAmount: $finalTaxAmount');
+    debugPrint('- finalGrandTotal: $finalGrandTotal');
+
     return pw.Container(
       alignment: pw.Alignment.centerRight,
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.end,
         children: [
           _buildTotalRow(l10n.subTotal, subtotal),
-          _buildTotalRow(l10n.discount, discount),
+          if (discount > 0) _buildTotalRow(l10n.discount, discount),
           pw.Divider(),
           _buildTotalRow(l10n.total, total, isBold: true),
-          _buildTotalRow(l10n.salesTax, salesTax),
+          _buildTotalRow(l10n.salesTax, finalTaxAmount, isPrimary: true),
           pw.Divider(),
           _buildTotalRow(
             l10n.grandTotal,
-            grandTotal,
+            finalGrandTotal,
             isBold: true,
             isPrimary: true,
           ),
@@ -437,6 +786,48 @@ class _PrintPageState extends State<PrintPage> {
     }
   }
 
+  // Get formatted invoice number consistently
+  String get formattedInvoiceNumber {
+    return _userId != null && _userId!.isNotEmpty
+        ? '${_userId!}-${widget.invoice.invoiceNumber ?? "New"}'
+        : widget.invoice.invoiceNumber ?? "New";
+  }
+
+  // Helper method to directly log tax information for all items
+  void _logInvoiceItemTaxes() {
+    if (_taxCalculator == null) {
+      debugPrint('Cannot log taxes: Tax calculator not initialized');
+      return;
+    }
+
+    final items =
+        widget.isReturn ? widget.invoice.returnItems : widget.invoice.items;
+
+    debugPrint('\n============ INVOICE ITEM TAX DETAILS ============');
+    debugPrint('Total items: ${items.length}');
+
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+      final taxCode = item.item.taxCode;
+      final price = item.item.sellUnitPrice * item.quantity;
+
+      final taxRate = _taxCalculator!.getTaxPercentage(taxCode);
+      final taxAmount = _taxCalculator!.calculateTax(taxCode, price);
+
+      debugPrint(
+        'Item ${i + 1}: ${item.item.itemCode} - ${item.item.description}',
+      );
+      debugPrint('- Tax Code: ${taxCode.isEmpty ? "NONE" : taxCode}');
+      debugPrint('- Tax Rate: ${taxRate.toStringAsFixed(2)}%');
+      debugPrint('- Price: ${price.toStringAsFixed(2)} JOD');
+      debugPrint('- Tax Amount: ${taxAmount.toStringAsFixed(2)} JOD');
+      debugPrint('- Total: ${(price + taxAmount).toStringAsFixed(2)} JOD');
+      debugPrint('-------------------------------------------');
+    }
+
+    debugPrint('==================================================\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -465,8 +856,8 @@ class _PrintPageState extends State<PrintPage> {
                           ? PdfPreview(
                             pdfFileName:
                                 widget.isReturn
-                                    ? 'return_invoice_${widget.invoice.invoiceNumber ?? "new"}.pdf'
-                                    : 'invoice_${widget.invoice.invoiceNumber ?? "new"}.pdf',
+                                    ? 'return_invoice_${formattedInvoiceNumber}.pdf'
+                                    : 'invoice_${formattedInvoiceNumber}.pdf',
                             build:
                                 (format) => File(_pdfPath!).readAsBytesSync(),
                             canChangeOrientation: false,

@@ -797,6 +797,10 @@ mixin _$InvoiceItemModel {
   double get totalPrice => throw _privateConstructorUsedError;
   double get discount => throw _privateConstructorUsedError;
   double get tax => throw _privateConstructorUsedError;
+  double get priceBeforeTax => throw _privateConstructorUsedError;
+  double get taxAmount => throw _privateConstructorUsedError;
+  double get priceAfterTax => throw _privateConstructorUsedError;
+  double get taxRate => throw _privateConstructorUsedError;
 
   /// Create a copy of InvoiceItemModel
   /// with the given fields replaced by the non-null parameter values.
@@ -818,6 +822,10 @@ abstract class $InvoiceItemModelCopyWith<$Res> {
     double totalPrice,
     double discount,
     double tax,
+    double priceBeforeTax,
+    double taxAmount,
+    double priceAfterTax,
+    double taxRate,
   });
 
   $InventoryItemEntityCopyWith<$Res> get item;
@@ -843,6 +851,10 @@ class _$InvoiceItemModelCopyWithImpl<$Res, $Val extends InvoiceItemModel>
     Object? totalPrice = null,
     Object? discount = null,
     Object? tax = null,
+    Object? priceBeforeTax = null,
+    Object? taxAmount = null,
+    Object? priceAfterTax = null,
+    Object? taxRate = null,
   }) {
     return _then(
       _value.copyWith(
@@ -870,6 +882,26 @@ class _$InvoiceItemModelCopyWithImpl<$Res, $Val extends InvoiceItemModel>
                 null == tax
                     ? _value.tax
                     : tax // ignore: cast_nullable_to_non_nullable
+                        as double,
+            priceBeforeTax:
+                null == priceBeforeTax
+                    ? _value.priceBeforeTax
+                    : priceBeforeTax // ignore: cast_nullable_to_non_nullable
+                        as double,
+            taxAmount:
+                null == taxAmount
+                    ? _value.taxAmount
+                    : taxAmount // ignore: cast_nullable_to_non_nullable
+                        as double,
+            priceAfterTax:
+                null == priceAfterTax
+                    ? _value.priceAfterTax
+                    : priceAfterTax // ignore: cast_nullable_to_non_nullable
+                        as double,
+            taxRate:
+                null == taxRate
+                    ? _value.taxRate
+                    : taxRate // ignore: cast_nullable_to_non_nullable
                         as double,
           )
           as $Val,
@@ -902,6 +934,10 @@ abstract class _$$InvoiceItemModelImplCopyWith<$Res>
     double totalPrice,
     double discount,
     double tax,
+    double priceBeforeTax,
+    double taxAmount,
+    double priceAfterTax,
+    double taxRate,
   });
 
   @override
@@ -927,6 +963,10 @@ class __$$InvoiceItemModelImplCopyWithImpl<$Res>
     Object? totalPrice = null,
     Object? discount = null,
     Object? tax = null,
+    Object? priceBeforeTax = null,
+    Object? taxAmount = null,
+    Object? priceAfterTax = null,
+    Object? taxRate = null,
   }) {
     return _then(
       _$InvoiceItemModelImpl(
@@ -955,6 +995,26 @@ class __$$InvoiceItemModelImplCopyWithImpl<$Res>
                 ? _value.tax
                 : tax // ignore: cast_nullable_to_non_nullable
                     as double,
+        priceBeforeTax:
+            null == priceBeforeTax
+                ? _value.priceBeforeTax
+                : priceBeforeTax // ignore: cast_nullable_to_non_nullable
+                    as double,
+        taxAmount:
+            null == taxAmount
+                ? _value.taxAmount
+                : taxAmount // ignore: cast_nullable_to_non_nullable
+                    as double,
+        priceAfterTax:
+            null == priceAfterTax
+                ? _value.priceAfterTax
+                : priceAfterTax // ignore: cast_nullable_to_non_nullable
+                    as double,
+        taxRate:
+            null == taxRate
+                ? _value.taxRate
+                : taxRate // ignore: cast_nullable_to_non_nullable
+                    as double,
       ),
     );
   }
@@ -969,6 +1029,10 @@ class _$InvoiceItemModelImpl implements _InvoiceItemModel {
     required this.totalPrice,
     this.discount = 0.0,
     this.tax = 0.0,
+    this.priceBeforeTax = 0.0,
+    this.taxAmount = 0.0,
+    this.priceAfterTax = 0.0,
+    this.taxRate = 0.0,
   });
 
   @override
@@ -983,10 +1047,22 @@ class _$InvoiceItemModelImpl implements _InvoiceItemModel {
   @override
   @JsonKey()
   final double tax;
+  @override
+  @JsonKey()
+  final double priceBeforeTax;
+  @override
+  @JsonKey()
+  final double taxAmount;
+  @override
+  @JsonKey()
+  final double priceAfterTax;
+  @override
+  @JsonKey()
+  final double taxRate;
 
   @override
   String toString() {
-    return 'InvoiceItemModel(item: $item, quantity: $quantity, totalPrice: $totalPrice, discount: $discount, tax: $tax)';
+    return 'InvoiceItemModel(item: $item, quantity: $quantity, totalPrice: $totalPrice, discount: $discount, tax: $tax, priceBeforeTax: $priceBeforeTax, taxAmount: $taxAmount, priceAfterTax: $priceAfterTax, taxRate: $taxRate)';
   }
 
   @override
@@ -1001,12 +1077,29 @@ class _$InvoiceItemModelImpl implements _InvoiceItemModel {
                 other.totalPrice == totalPrice) &&
             (identical(other.discount, discount) ||
                 other.discount == discount) &&
-            (identical(other.tax, tax) || other.tax == tax));
+            (identical(other.tax, tax) || other.tax == tax) &&
+            (identical(other.priceBeforeTax, priceBeforeTax) ||
+                other.priceBeforeTax == priceBeforeTax) &&
+            (identical(other.taxAmount, taxAmount) ||
+                other.taxAmount == taxAmount) &&
+            (identical(other.priceAfterTax, priceAfterTax) ||
+                other.priceAfterTax == priceAfterTax) &&
+            (identical(other.taxRate, taxRate) || other.taxRate == taxRate));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, item, quantity, totalPrice, discount, tax);
+  int get hashCode => Object.hash(
+    runtimeType,
+    item,
+    quantity,
+    totalPrice,
+    discount,
+    tax,
+    priceBeforeTax,
+    taxAmount,
+    priceAfterTax,
+    taxRate,
+  );
 
   /// Create a copy of InvoiceItemModel
   /// with the given fields replaced by the non-null parameter values.
@@ -1027,6 +1120,10 @@ abstract class _InvoiceItemModel implements InvoiceItemModel {
     required final double totalPrice,
     final double discount,
     final double tax,
+    final double priceBeforeTax,
+    final double taxAmount,
+    final double priceAfterTax,
+    final double taxRate,
   }) = _$InvoiceItemModelImpl;
 
   @override
@@ -1039,6 +1136,14 @@ abstract class _InvoiceItemModel implements InvoiceItemModel {
   double get discount;
   @override
   double get tax;
+  @override
+  double get priceBeforeTax;
+  @override
+  double get taxAmount;
+  @override
+  double get priceAfterTax;
+  @override
+  double get taxRate;
 
   /// Create a copy of InvoiceItemModel
   /// with the given fields replaced by the non-null parameter values.

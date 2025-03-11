@@ -48,19 +48,29 @@ class InvoiceItemModel with _$InvoiceItemModel {
     required double totalPrice,
     @Default(0.0) double discount,
     @Default(0.0) double tax,
+    @Default(0.0) double priceBeforeTax,
+    @Default(0.0) double taxAmount,
+    @Default(0.0) double priceAfterTax,
+    @Default(0.0) double taxRate,
   }) = _InvoiceItemModel;
 
   factory InvoiceItemModel.fromInventoryItem({
     required InventoryItemEntity item,
     required int quantity,
+    double? taxRate,
   }) {
-    final totalPrice = item.sellUnitPrice * quantity;
-    // Tax will be calculated later based on tax rules
+    final priceBeforeTax = item.sellUnitPrice * quantity;
+    final taxAmount = taxRate != null ? priceBeforeTax * (taxRate / 100) : 0.0;
+    final priceAfterTax = priceBeforeTax + taxAmount;
 
     return InvoiceItemModel(
       item: item,
       quantity: quantity,
-      totalPrice: totalPrice,
+      totalPrice: priceAfterTax,
+      priceBeforeTax: priceBeforeTax,
+      taxAmount: taxAmount,
+      priceAfterTax: priceAfterTax,
+      taxRate: taxRate ?? 0.0,
     );
   }
 }

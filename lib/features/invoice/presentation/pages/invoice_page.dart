@@ -341,19 +341,23 @@ class _InvoicePageState extends State<InvoicePage> {
         // Invoice section - only show if not in return mode
         if (!_isReturn)
           _buildSectionCard(
-            key: invoiceCardKey, // Add key to force rebuild when values change
+            key: invoiceCardKey,
             title: localizations.invoice,
             child: Column(
               children: [
                 _buildAmountRow(localizations.subTotal, state.subtotal),
-                _buildAmountRow(localizations.discount, state.discount),
-                const Divider(),
-                _buildAmountRow(localizations.total, state.total, isBold: true),
-                _buildAmountRow(localizations.salesTax, state.salesTax),
-                const Divider(),
+                if (state.discount > 0)
+                  _buildAmountRow(localizations.discount, state.discount),
+                _buildAmountRow(localizations.total, state.total),
+                _buildAmountRow(
+                  localizations.salesTax,
+                  state.salesTax,
+                  isPrimary: true,
+                ),
                 _buildAmountRow(
                   localizations.grandTotal,
                   state.grandTotal,
+                  isBold: true,
                   isPrimary: true,
                 ),
               ],
@@ -364,7 +368,7 @@ class _InvoicePageState extends State<InvoicePage> {
         // Return section - always show in return mode
         if (_isReturn)
           _buildSectionCard(
-            key: returnCardKey, // Add key to force rebuild when values change
+            key: returnCardKey,
             title: localizations.returnItems,
             child: Column(
               children: [
@@ -478,6 +482,21 @@ class _InvoicePageState extends State<InvoicePage> {
   ) {
     final textTheme = Theme.of(context).textTheme;
     final bloc = context.read<InvoiceBloc>();
+    final localizations = AppLocalizations.of(context);
+
+    // Get tax calculator to display tax information
+    final taxCalculator = bloc.getTaxCalculator();
+    final hasTax = taxCalculator?.hasTax(invoiceItem.item.taxCode) ?? false;
+    final taxRate =
+        taxCalculator?.getTaxPercentage(invoiceItem.item.taxCode) ?? 0.0;
+
+    // Calculate tax amounts
+    final priceBeforeTax =
+        invoiceItem.item.sellUnitPrice * invoiceItem.quantity;
+    final taxAmount =
+        taxCalculator?.calculateTax(invoiceItem.item.taxCode, priceBeforeTax) ??
+        0.0;
+    final priceAfterTax = priceBeforeTax + taxAmount;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -503,6 +522,15 @@ class _InvoicePageState extends State<InvoicePage> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                // Show tax information if available
+                if (hasTax && taxRate > 0)
+                  Text(
+                    'معدل الضريبة: ${taxRate.toStringAsFixed(2)}%',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.primary,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -514,8 +542,22 @@ class _InvoicePageState extends State<InvoicePage> {
                 '${invoiceItem.quantity} × ${invoiceItem.item.sellUnitPrice.toStringAsFixed(2)}',
                 style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
+              // Show price before tax if taxable
+              if (hasTax && taxRate > 0) ...[
+                Text(
+                  'السعر قبل الضريبة: ${priceBeforeTax.toStringAsFixed(2)}',
+                  style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                ),
+                Text(
+                  'مبلغ الضريبة: ${taxAmount.toStringAsFixed(2)}',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
               Text(
-                '${invoiceItem.totalPrice.toStringAsFixed(2)} JOD',
+                '${priceAfterTax.toStringAsFixed(2)} JOD',
                 style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: AppColors.secondary,

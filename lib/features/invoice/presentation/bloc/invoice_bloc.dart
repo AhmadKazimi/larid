@@ -13,20 +13,27 @@ import 'package:larid/features/invoice/domain/entities/invoice_item_entity.dart'
 import 'package:larid/features/invoice/domain/repositories/invoice_repository.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart';
+import 'package:larid/features/taxes/domain/repositories/tax_repository.dart';
+import 'package:larid/features/taxes/domain/services/tax_calculator_service.dart';
 
 class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   final CustomerTable _customerTable = getIt<CustomerTable>();
   final InventoryItemsTable _inventoryItemsTable = getIt<InventoryItemsTable>();
   final InvoiceTable _invoiceTable = getIt<InvoiceTable>();
   final InvoiceRepository _invoiceRepository;
+  final TaxRepository _taxRepository;
+  TaxCalculatorService? _taxCalculator;
 
-  InvoiceBloc({required InvoiceRepository invoiceRepository})
-    : _invoiceRepository = invoiceRepository,
-      super(
-        InvoiceState.initial(
-          CustomerEntity(customerCode: "", customerName: ""),
-        ),
-      ) {
+  InvoiceBloc({
+    required InvoiceRepository invoiceRepository,
+    required TaxRepository taxRepository,
+  }) : _invoiceRepository = invoiceRepository,
+       _taxRepository = taxRepository,
+       super(
+         InvoiceState.initial(
+           CustomerEntity(customerCode: "", customerName: ""),
+         ),
+       ) {
     on<InitializeInvoice>(_onInitializeInvoice);
     on<NavigateToItemsPage>(_onNavigateToItemsPage);
     on<AddItems>(_onAddItems);
@@ -43,6 +50,19 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     on<SaveInvoice>(_onSaveInvoice);
     on<GetInvoices>(_onGetInvoices);
     on<DeleteInvoice>(_onDeleteInvoice);
+
+    // Initialize tax calculator
+    _initTaxCalculator();
+  }
+
+  Future<void> _initTaxCalculator() async {
+    try {
+      final taxes = await _taxRepository.getAllTaxes();
+      _taxCalculator = TaxCalculatorService(taxes);
+      debugPrint('Tax calculator initialized with ${taxes.length} taxes');
+    } catch (e) {
+      debugPrint('Error initializing tax calculator: $e');
+    }
   }
 
   // Handler implementations
@@ -287,32 +307,49 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   }
 
   void _onAddItems(AddItems event, Emitter<InvoiceState> emit) {
-    final List<InvoiceItemModel> updatedItems = List.from(state.items);
-
-    // Add new items or update existing ones
-    for (final newItem in event.items) {
-      final existingItemIndex = updatedItems.indexWhere(
-        (item) => item.item.itemCode == newItem.item.itemCode,
-      );
-
-      if (existingItemIndex != -1) {
-        // Update existing item
-        final existingItem = updatedItems[existingItemIndex];
-        updatedItems[existingItemIndex] = InvoiceItemModel(
-          item: existingItem.item,
-          quantity: newItem.quantity,
-          totalPrice: newItem.item.sellUnitPrice * newItem.quantity,
-          discount: existingItem.discount,
-          tax: existingItem.tax,
-        );
-      } else {
-        // Add new item
-        updatedItems.add(newItem);
-      }
+    // Ensure tax calculator is initialized
+    if (_taxCalculator == null) {
+      _initTaxCalculator();
     }
 
-    emit(state.copyWith(items: updatedItems));
-    add(const CalculateInvoiceTotals());
+    final items = event.items;
+    final updatedItems = <InvoiceItemModel>[];
+
+    for (final item in items) {
+      // Get tax rate for this item
+      double? taxRate;
+      if (_taxCalculator != null) {
+        taxRate = _taxCalculator!.getTaxPercentage(item.item.taxCode);
+      }
+
+      // Calculate tax amount
+      final priceBeforeTax = item.item.sellUnitPrice * item.quantity;
+      final taxAmount =
+          _taxCalculator?.calculateTax(item.item.taxCode, priceBeforeTax) ??
+          0.0;
+      final priceAfterTax = priceBeforeTax + taxAmount;
+
+      // Update item with tax information
+      final updatedItem = item.copyWith(
+        taxRate: taxRate ?? 0.0,
+        priceBeforeTax: priceBeforeTax,
+        taxAmount: taxAmount,
+        priceAfterTax: priceAfterTax,
+        totalPrice: priceAfterTax,
+      );
+
+      updatedItems.add(updatedItem);
+    }
+
+    // Add updated items to state
+    final newItems = [...state.items, ...updatedItems];
+
+    emit(
+      state.copyWith(items: newItems, itemCount: _calculateItemCount(newItems)),
+    );
+
+    // Recalculate totals
+    _calculateTotals(emit);
   }
 
   void _onAddInvoiceItems(AddInvoiceItems event, Emitter<InvoiceState> emit) {
@@ -878,5 +915,89 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   // Helper method to calculate total quantity
   int _calculateTotalQuantity(List<InvoiceItemModel> items) {
     return items.fold(0, (sum, item) => sum + item.quantity);
+  }
+
+  // Add the missing _calculateItemCount method
+  int _calculateItemCount(List<InvoiceItemModel> items) {
+    return items.fold(0, (sum, item) => sum + item.quantity);
+  }
+
+  // Add a method to get the tax calculator
+  TaxCalculatorService? getTaxCalculator() {
+    return _taxCalculator;
+  }
+
+  // Update the _calculateTotals method to include tax calculations
+  void _calculateTotals(Emitter<InvoiceState> emit) async {
+    // Ensure tax calculator is initialized
+    if (_taxCalculator == null) {
+      await _initTaxCalculator();
+    }
+
+    double subtotal = 0.0;
+    double discount = 0.0;
+    double salesTax = 0.0;
+    double returnSubtotal = 0.0;
+    double returnDiscount = 0.0;
+    double returnSalesTax = 0.0;
+
+    // Calculate for regular items
+    for (final item in state.items) {
+      // Calculate price before tax
+      final priceBeforeTax = item.item.sellUnitPrice * item.quantity;
+
+      // Calculate tax amount if tax calculator is available
+      double taxAmount = 0.0;
+      if (_taxCalculator != null) {
+        taxAmount = _taxCalculator!.calculateTax(
+          item.item.taxCode,
+          priceBeforeTax,
+        );
+      }
+
+      subtotal += priceBeforeTax;
+      discount += item.discount;
+      salesTax += taxAmount;
+    }
+
+    // Calculate for return items
+    for (final item in state.returnItems) {
+      // Calculate price before tax
+      final priceBeforeTax = item.item.sellUnitPrice * item.quantity;
+
+      // Calculate tax amount if tax calculator is available
+      double taxAmount = 0.0;
+      if (_taxCalculator != null) {
+        taxAmount = _taxCalculator!.calculateTax(
+          item.item.taxCode,
+          priceBeforeTax,
+        );
+      }
+
+      returnSubtotal += priceBeforeTax;
+      returnDiscount += item.discount;
+      returnSalesTax += taxAmount;
+    }
+
+    // Calculate totals
+    final total = subtotal - discount;
+    final grandTotal = total + salesTax;
+    final returnTotal = returnSubtotal - returnDiscount;
+    final returnGrandTotal = returnTotal + returnSalesTax;
+
+    emit(
+      state.copyWith(
+        subtotal: subtotal,
+        discount: discount,
+        total: total,
+        salesTax: salesTax,
+        grandTotal: grandTotal,
+        returnSubtotal: returnSubtotal,
+        returnDiscount: returnDiscount,
+        returnTotal: returnTotal,
+        returnSalesTax: returnSalesTax,
+        returnGrandTotal: returnGrandTotal,
+      ),
+    );
   }
 }

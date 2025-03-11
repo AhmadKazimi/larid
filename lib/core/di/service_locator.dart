@@ -36,6 +36,9 @@ import '../../database/database_helper.dart';
 import '../../features/invoice/data/repositories/invoice_repository_impl.dart';
 import '../../features/invoice/domain/repositories/invoice_repository.dart';
 import '../../features/invoice/presentation/bloc/invoice_bloc.dart';
+import '../../features/taxes/domain/repositories/tax_repository.dart';
+import '../../features/taxes/data/repositories/tax_repository_impl.dart';
+import '../../features/taxes/domain/services/tax_calculator_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -170,8 +173,23 @@ Future<void> setupServiceLocator() async {
 
   // Register InvoiceBloc
   getIt.registerFactory<InvoiceBloc>(
-    () => InvoiceBloc(invoiceRepository: getIt<InvoiceRepository>()),
+    () => InvoiceBloc(
+      invoiceRepository: getIt<InvoiceRepository>(),
+      taxRepository: getIt<TaxRepository>(),
+    ),
   );
+
+  // Register TaxRepository
+  getIt.registerLazySingleton<TaxRepository>(
+    () => TaxRepositoryImpl(salesTaxesTable: getIt<SalesTaxesTable>()),
+  );
+
+  // Register TaxCalculatorService lazily - it will be initialized when needed with taxes from repository
+  getIt.registerFactoryAsync<TaxCalculatorService>(() async {
+    final taxRepository = getIt<TaxRepository>();
+    final taxes = await taxRepository.getAllTaxes();
+    return TaxCalculatorService(taxes);
+  });
 
   // Update warehouse in ApiService if available
   await updateWarehouseInApiService();
