@@ -498,131 +498,212 @@ class _InvoicePageState extends State<InvoicePage> {
         0.0;
     final priceAfterTax = priceBeforeTax + taxAmount;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  invoiceItem.item.itemCode,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  invoiceItem.item.description,
-                  style: textTheme.bodySmall,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                // Show tax information if available
-                if (hasTax && taxRate > 0)
-                  Text(
-                    'معدل الضريبة: ${taxRate.toStringAsFixed(2)}%',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.primary,
-                      fontStyle: FontStyle.italic,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Item header - code and price
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Item code with colored background
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      invoiceItem.item.itemCode,
+                      style: textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${invoiceItem.quantity} × ${invoiceItem.item.sellUnitPrice.toStringAsFixed(2)}',
-                style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-              ),
-              // Show price before tax if taxable
-              if (hasTax && taxRate > 0) ...[
-                Text(
-                  'السعر قبل الضريبة: ${priceBeforeTax.toStringAsFixed(2)}',
-                  style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-                ),
-                Text(
-                  'مبلغ الضريبة: ${taxAmount.toStringAsFixed(2)}',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w500,
+                  // Total price with prominent styling
+                  Text(
+                    '${priceAfterTax.toStringAsFixed(2)} JOD',
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.secondary,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+
+              const SizedBox(height: 8),
+
+              // Item description
               Text(
-                '${priceAfterTax.toStringAsFixed(2)} JOD',
-                style: textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.secondary,
-                ),
+                invoiceItem.item.description,
+                style: textTheme.bodyMedium,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              const SizedBox(height: 8),
+
+              // Price breakdown and quantity controls
+              Row(
+                children: [
+                  // Price information
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Unit price
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.attach_money,
+                              size: 16,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${invoiceItem.item.sellUnitPrice.toStringAsFixed(2)} × ${invoiceItem.quantity}',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Tax information if applicable
+                        if (hasTax && taxRate > 0) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.receipt_long,
+                                size: 16,
+                                color: Colors.grey[600],
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'ضريبة ${taxRate.toStringAsFixed(1)}%: ${taxAmount.toStringAsFixed(2)}',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: AppColors.primary.withOpacity(0.8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  // Quantity controls - redesigned with fully circular buttons
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Decrease button (circular)
+                      Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: InkWell(
+                          onTap: () {
+                            if (invoiceItem.quantity > 1) {
+                              bloc.add(
+                                UpdateItemQuantity(
+                                  item: invoiceItem,
+                                  quantity: invoiceItem.quantity - 1,
+                                  isReturn: isReturn,
+                                ),
+                              );
+                            } else {
+                              bloc.add(
+                                RemoveItem(
+                                  item: invoiceItem,
+                                  isReturn: isReturn,
+                                ),
+                              );
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.remove,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Quantity display
+                      Container(
+                        constraints: const BoxConstraints(minWidth: 32),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${invoiceItem.quantity}',
+                          style: textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+
+                      // Increase button (circular)
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        child: InkWell(
+                          onTap: () {
+                            bloc.add(
+                              UpdateItemQuantity(
+                                item: invoiceItem,
+                                quantity: invoiceItem.quantity + 1,
+                                isReturn: isReturn,
+                              ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(18),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(width: 8),
-          // Quantity adjustment
-          GestureDetector(
-            onTap: () {
-              if (invoiceItem.quantity > 1) {
-                bloc.add(
-                  UpdateItemQuantity(
-                    item: invoiceItem,
-                    quantity: invoiceItem.quantity - 1,
-                    isReturn: isReturn,
-                  ),
-                );
-              } else {
-                bloc.add(RemoveItem(item: invoiceItem, isReturn: isReturn));
-              }
-            },
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.remove, size: 18, color: AppColors.primary),
-            ),
-          ),
-          SizedBox(
-            width: 32,
-            child: Text(
-              '${invoiceItem.quantity}',
-              textAlign: TextAlign.center,
-              style: textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              bloc.add(
-                UpdateItemQuantity(
-                  item: invoiceItem,
-                  quantity: invoiceItem.quantity + 1,
-                  isReturn: isReturn,
-                ),
-              );
-            },
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.add, size: 18, color: AppColors.primary),
-            ),
-          ),
-        ],
-      ),
+        ),
+        // Divider for visual separation between items
+        Divider(color: Colors.grey.shade200, height: 1),
+      ],
     );
   }
 
