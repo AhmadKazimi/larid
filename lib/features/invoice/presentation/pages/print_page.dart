@@ -9,7 +9,9 @@ import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:larid/features/invoice/presentation/bloc/invoice_state.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/database/user_table.dart';
+import 'package:larid/database/company_info_table.dart';
 import 'package:larid/features/auth/domain/entities/user_entity.dart';
+import 'package:larid/features/sync/domain/entities/company_info_entity.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -47,6 +49,7 @@ class _PrintPageState extends State<PrintPage> {
   TaxCalculatorService? _taxCalculator;
   bool _fontLoaded = false;
   bool _initialized = false;
+  CompanyInfoEntity? _companyInfo;
 
   @override
   void initState() {
@@ -54,6 +57,7 @@ class _PrintPageState extends State<PrintPage> {
     // Don't call _generatePdf() here - it will be called in didChangeDependencies
     _loadFonts();
     _getUserId();
+    _getCompanyInfo();
     _initTaxCalculator().then((_) {
       if (mounted) {
         _logInvoiceItemTaxes();
@@ -105,6 +109,23 @@ class _PrintPageState extends State<PrintPage> {
       }
     } catch (e) {
       debugPrint('Error getting user ID: $e');
+    }
+  }
+
+  Future<void> _getCompanyInfo() async {
+    try {
+      final companyInfoTable = GetIt.I<CompanyInfoTable>();
+      final companyInfo = await companyInfoTable.getCompanyInfo();
+      if (companyInfo != null) {
+        setState(() {
+          _companyInfo = companyInfo;
+        });
+        debugPrint('Company info loaded: ${companyInfo.companyName}');
+      } else {
+        debugPrint('No company info found in database');
+      }
+    } catch (e) {
+      debugPrint('Error getting company info: $e');
     }
   }
 
@@ -180,6 +201,11 @@ class _PrintPageState extends State<PrintPage> {
       // Get user ID if not already loaded
       if (_userId == null || _userId!.isEmpty) {
         futures.add(_getUserId());
+      }
+
+      // Get company info if not already loaded
+      if (_companyInfo == null) {
+        futures.add(_getCompanyInfo());
       }
 
       // Initialize tax calculator if not already initialized
@@ -361,12 +387,65 @@ class _PrintPageState extends State<PrintPage> {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
+        // Company info header
+        if (_companyInfo != null) ...[
+          pw.Container(
+            padding: const pw.EdgeInsets.all(10),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.grey100,
+              borderRadius: pw.BorderRadius.circular(5),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text("فاتورة مبيعات"),
+                pw.Text(
+                  _companyInfo!.companyName,
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                  textAlign: pw.TextAlign.center,
+                ),
+
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
+                  children: [
+                    if (_companyInfo!.address1.isNotEmpty)
+                      pw.Text(
+                        "${l10n.address}: ${_companyInfo!.address1}",
+                        style: const pw.TextStyle(fontSize: 12),
+                        textAlign: pw.TextAlign.center,
+                      ),
+                    pw.SizedBox(width: 16),
+                    if (_companyInfo!.phone.isNotEmpty) ...[
+                      pw.Text(
+                        '${l10n.phone}: ${_companyInfo!.phone}',
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                      pw.SizedBox(width: 8),
+                    ],
+                    pw.SizedBox(width: 16),
+                    if (_companyInfo!.taxId.isNotEmpty)
+                      pw.Text(
+                        'الرقم الضريبي: ${_companyInfo!.taxId}',
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 10),
+        ],
+
+        // Invoice number and date
         pw.Row(
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
               title,
-              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+              style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
             ),
             pw.Text(
               DateFormat('yyyy-MM-dd – HH:mm').format(DateTime.now()),
@@ -375,10 +454,6 @@ class _PrintPageState extends State<PrintPage> {
           ],
         ),
         pw.Divider(),
-        pw.Text(
-          title,
-          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
-        ),
       ],
     );
   }
@@ -728,12 +803,14 @@ class _PrintPageState extends State<PrintPage> {
 
   pw.Widget _buildFooter() {
     return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
+        pw.Text("المندوب: $_userId"),
         pw.Divider(),
         pw.SizedBox(height: 10),
         pw.Text(
           l10n.thankYouForYourBusiness,
+          textAlign: pw.TextAlign.center,
           style: pw.TextStyle(
             fontStyle: pw.FontStyle.italic,
             color: PdfColors.grey700,
