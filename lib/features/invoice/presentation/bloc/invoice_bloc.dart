@@ -354,6 +354,11 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
   void _onAddInvoiceItems(AddInvoiceItems event, Emitter<InvoiceState> emit) {
     try {
+      // Ensure tax calculator is initialized
+      if (_taxCalculator == null) {
+        _initTaxCalculator();
+      }
+
       final List<InvoiceItemModel> updatedItems = List.from(state.items);
 
       // Log the received data for debugging
@@ -377,16 +382,33 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
           );
 
           final quantity = (itemData['quantity'] as num).toInt();
-          final totalPrice = item.sellUnitPrice * quantity;
+          final priceBeforeTax = item.sellUnitPrice * quantity;
 
-          // Create the invoice item model
+          // Calculate tax values using tax calculator
+          double taxRate = 0.0;
+          double taxAmount = 0.0;
+
+          if (_taxCalculator != null && item.taxCode.isNotEmpty) {
+            taxRate = _taxCalculator!.getTaxPercentage(item.taxCode);
+            taxAmount = _taxCalculator!.calculateTax(
+              item.taxCode,
+              priceBeforeTax,
+            );
+          }
+
+          final totalPrice = priceBeforeTax + taxAmount;
+
+          // Create the invoice item model with tax values
           final newItem = InvoiceItemModel(
             item: item,
             quantity: quantity,
             totalPrice: totalPrice,
-            // Default values for discount and tax can be set here or calculated based on business rules
+            priceBeforeTax: priceBeforeTax,
+            taxAmount: taxAmount,
+            priceAfterTax: totalPrice,
+            taxRate: taxRate,
             discount: 0,
-            tax: 0,
+            tax: taxAmount,
           );
 
           // Check if the item already exists in the invoice
@@ -401,6 +423,12 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
             // Add new item
             updatedItems.add(newItem);
           }
+
+          // Debug log for tax values
+          debugPrint('Added item ${item.itemCode} with:');
+          debugPrint('- Tax Rate: $taxRate%');
+          debugPrint('- Tax Amount: $taxAmount');
+          debugPrint('- Total Price: $totalPrice');
         }
       }
 
@@ -421,6 +449,11 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
   void _onAddReturnItems(AddReturnItems event, Emitter<InvoiceState> emit) {
     try {
+      // Ensure tax calculator is initialized
+      if (_taxCalculator == null) {
+        _initTaxCalculator();
+      }
+
       final List<InvoiceItemModel> updatedReturnItems = List.from(
         state.returnItems,
       );
@@ -446,16 +479,33 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
           );
 
           final quantity = (itemData['quantity'] as num).toInt();
-          final totalPrice = item.sellUnitPrice * quantity;
+          final priceBeforeTax = item.sellUnitPrice * quantity;
 
-          // Create the invoice item model
+          // Calculate tax values using tax calculator
+          double taxRate = 0.0;
+          double taxAmount = 0.0;
+
+          if (_taxCalculator != null && item.taxCode.isNotEmpty) {
+            taxRate = _taxCalculator!.getTaxPercentage(item.taxCode);
+            taxAmount = _taxCalculator!.calculateTax(
+              item.taxCode,
+              priceBeforeTax,
+            );
+          }
+
+          final totalPrice = priceBeforeTax + taxAmount;
+
+          // Create the invoice item model with tax values
           final newItem = InvoiceItemModel(
             item: item,
             quantity: quantity,
             totalPrice: totalPrice,
-            // Default values for discount and tax can be set here or calculated based on business rules
+            priceBeforeTax: priceBeforeTax,
+            taxAmount: taxAmount,
+            priceAfterTax: totalPrice,
+            taxRate: taxRate,
             discount: 0,
-            tax: 0,
+            tax: taxAmount,
           );
 
           // Check if the item already exists in the invoice
@@ -464,16 +514,22 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
           );
 
           if (existingItemIndex != -1) {
-            // Update existing return item
+            // Update existing item
             updatedReturnItems[existingItemIndex] = newItem;
           } else {
-            // Add new return item
+            // Add new item
             updatedReturnItems.add(newItem);
           }
+
+          // Debug log for tax values
+          debugPrint('Added return item ${item.itemCode} with:');
+          debugPrint('- Tax Rate: $taxRate%');
+          debugPrint('- Tax Amount: $taxAmount');
+          debugPrint('- Total Price: $totalPrice');
         }
       }
 
-      // Update the state with the new return items
+      // Update the state with the new items
       emit(state.copyWith(returnItems: updatedReturnItems));
 
       // Calculate the invoice totals
@@ -649,9 +705,6 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       // Get all unsynced invoices
       final unsyncedInvoices = await _invoiceTable.getUnsyncedInvoices();
 
-      // In a real app, this would involve API calls to sync with the server
-      // For now, we'll just mark them as synced after a delay to simulate network call
-
       if (unsyncedInvoices.isNotEmpty) {
         await Future.delayed(const Duration(seconds: 1));
 
@@ -743,7 +796,6 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     emit(state.copyWith(isPrinting: true, errorMessage: null));
 
     try {
-      // TODO: Implement actual print/PDF generation functionality
       await Future.delayed(const Duration(seconds: 1));
 
       emit(state.copyWith(isPrinting: false));

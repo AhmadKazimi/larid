@@ -189,8 +189,7 @@ class ApiService {
     }
   }
 
-
-Future<List<Map<String, dynamic>>> getCompanyInfo({
+  Future<List<Map<String, dynamic>>> getCompanyInfo({
     required String userid,
     required String workspace,
     required String password,
@@ -199,15 +198,154 @@ Future<List<Map<String, dynamic>>> getCompanyInfo({
       final response = await _dioClient.get(
         ApiEndpoints.getCompanyInfo,
         queryParameters: {
-        ApiParameters.userid: userid,
-        ApiParameters.workspace: workspace,
-        ApiParameters.password: password,
-      },
-    );
-    return List<Map<String, dynamic>>.from(response.data);
-  } catch (e) {
-    throw Exception('Network error: ${e.toString()}');
+          ApiParameters.userid: userid,
+          ApiParameters.workspace: workspace,
+          ApiParameters.password: password,
+        },
+      );
+      return List<Map<String, dynamic>>.from(response.data);
+    } catch (e) {
+      throw Exception('Network error: ${e.toString()}');
+    }
+  }
+
+  /// Uploads an invoice to the server
+  /// Returns the invoice number on success, throws an exception with appropriate message on failure
+  Future<String> uploadInvoice({
+    // Auth parameters
+    required String userid,
+    required String workspace,
+    required String password,
+
+    // Customer details
+    required String customerCode,
+    required String customerName,
+    required String customerAddress,
+    required String invoiceReference,
+    String? comments,
+
+    // Invoice items
+    required List<Map<String, dynamic>> items,
+  }) async {
+    try {
+      // Ensure warehouse is set
+      if (_warehouse == null || _warehouse!.isEmpty) {
+        throw Exception('Warehouse must be set before uploading invoice');
+      }
+
+      // Prepare the request JSON body
+      final Map<String, dynamic> requestBody = {
+        "customer": {
+          "code": customerCode,
+          "name": customerName,
+          "address": customerAddress,
+          "reference": invoiceReference,
+          "comments": comments ?? "",
+        },
+        "items":
+            items.asMap().entries.map((entry) {
+              final int index = entry.key;
+              final item = entry.value;
+
+              return {
+                "index": index + 1, // itemIndex starts from 1
+                "code": item['sItem_cd'],
+                "description": item['sDescription'],
+                "unit": item['sSellUnit_cd'],
+                "qty": item['qty'],
+                "price": item['mSellUnitPrice_amt'],
+                "total_price": item['mSellUnitPrice_amt'] * item['qty'],
+                "tax_cd": item['sTax_cd'],
+                "tax_amt": item['taxAmount'] ?? 0.0,
+                "tax_pc": item['taxPercentage'] ?? 0.0,
+              };
+            }).toList(),
+      };
+
+      // Log the request for debugging
+      print('Upload Invoice Request: ${requestBody.toString()}');
+
+      // Make the API call with auth parameters in headers
+      final response = await _dioClient.post(
+        ApiEndpoints.buildUrl(ApiEndpoints.uploadInvoice),
+        options: Options(
+          headers: {
+            ApiParameters.userid: userid,
+            ApiParameters.workspace: workspace,
+            ApiParameters.password: password,
+            ApiParameters.warehouse: _warehouse,
+          },
+        ),
+        data: requestBody,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> responseData = response.data;
+
+        // Check if we have an error in the response
+        if (responseData.isNotEmpty &&
+            responseData[0] is Map<String, dynamic>) {
+          final Map<String, dynamic> firstItem = responseData[0];
+
+          // Check for error code
+          if (firstItem.containsKey('ERROR')) {
+            final String errorCode = firstItem['ERROR'];
+            final String errorMessage = _getErrorMessageForCode(errorCode);
+            throw Exception(errorMessage);
+          }
+
+          // Check for success (invoice number)
+          if (firstItem.containsKey('number')) {
+            return firstItem['number'];
+          }
+        }
+
+        throw Exception('Invalid response format');
+      } else {
+        throw Exception('Failed to upload invoice: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw Exception('Network error: ${e.message}');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Helper method to get error message based on error code
+  String _getErrorMessageForCode(String errorCode) {
+    switch (errorCode) {
+      case '-201':
+        return 'Payment upload failed';
+      case '-401':
+        return 'Invoice upload failed';
+      case '-601':
+        return 'No items provided';
+      case '-602':
+        return 'No customers provided';
+      case '-500':
+        return 'Data not completed';
+      case '-501':
+        return 'Invalid company';
+      case '-502':
+        return 'Invalid customer';
+      case '-503':
+        return 'Invalid item';
+      case '-504':
+        return 'Invalid unit';
+      case '-505':
+        return 'Invalid tax';
+      case '-9000':
+        return 'Exception failure';
+      case '-700':
+        return 'Paid amount exceeds total amount';
+      case '-1':
+        return 'User does not exist';
+      case '-603':
+        return 'No default location';
+      case '-604':
+        return 'No sales tax';
+      default:
+        return 'Unknown error: $errorCode';
+    }
   }
 }
-}
-

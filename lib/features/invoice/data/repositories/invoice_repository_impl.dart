@@ -48,6 +48,8 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
           'tax_code': item.taxCode,
           'taxable_flag': item.taxableFlag,
           'sell_unit_code': item.sellUnitCode,
+          'tax_amt': item.tax_amt,
+          'tax_pc': item.tax_pc,
           'created_at': item.createdAt.toIso8601String(),
           'updated_at': item.updatedAt.toIso8601String(),
         }, conflictAlgorithm: ConflictAlgorithm.replace);

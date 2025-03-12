@@ -40,6 +40,8 @@ class InvoiceTable {
       isReturn INTEGER NOT NULL DEFAULT 0,
       taxCode TEXT,
       taxableFlag INTEGER DEFAULT 0,
+      tax_amt REAL DEFAULT 0,
+      tax_pc REAL DEFAULT 0,
       sellUnitCode TEXT,
       FOREIGN KEY (invoiceId) REFERENCES $tableName(id)
     )
@@ -112,6 +114,8 @@ class InvoiceTable {
             'isReturn': isReturn ? 1 : 0,
             'taxCode': item.item.taxCode,
             'taxableFlag': item.item.taxableFlag,
+            'tax_amt': item.taxAmount,
+            'tax_pc': item.taxRate,
             'sellUnitCode': item.item.sellUnitCode,
           });
         }
@@ -139,6 +143,8 @@ class InvoiceTable {
               'isReturn': 0, // These are regular items
               'taxCode': item.item.taxCode,
               'taxableFlag': item.item.taxableFlag,
+              'tax_amt': item.taxAmount,
+              'tax_pc': item.taxRate,
               'sellUnitCode': item.item.sellUnitCode,
             });
           }
@@ -162,6 +168,8 @@ class InvoiceTable {
               'isReturn': 1, // These are return items
               'taxCode': item.item.taxCode,
               'taxableFlag': item.item.taxableFlag,
+              'tax_amt': item.taxAmount,
+              'tax_pc': item.taxRate,
               'sellUnitCode': item.item.sellUnitCode,
             });
           }
@@ -283,6 +291,8 @@ class InvoiceTable {
             'isReturn': isReturn ? 1 : 0,
             'taxCode': item.item.taxCode,
             'taxableFlag': item.item.taxableFlag,
+            'tax_amt': item.taxAmount,
+            'tax_pc': item.taxRate,
             'sellUnitCode': item.item.sellUnitCode,
           });
         }
@@ -308,6 +318,8 @@ class InvoiceTable {
             'isReturn': isReturn ? 0 : 1, // Opposite of the main items
             'taxCode': item.item.taxCode,
             'taxableFlag': item.item.taxableFlag,
+            'tax_amt': item.taxAmount,
+            'tax_pc': item.taxRate,
             'sellUnitCode': item.item.sellUnitCode,
           });
         }
@@ -464,6 +476,8 @@ class InvoiceTable {
               print('  - Is Return: ${item['isReturn']}');
               print('  - Tax Code: ${item['taxCode']}');
               print('  - Taxable Flag: ${item['taxableFlag']}');
+              print('  - Tax Amount: ${item['tax_amt']}');
+              print('  - Tax Percentage: ${item['tax_pc']}');
               print('  - Sell Unit Code: ${item['sellUnitCode']}');
             }
             print('-------------------------------------------\n');
@@ -592,6 +606,16 @@ class InvoiceTable {
       if (!itemsColumns.contains('sellUnitCode')) {
         await db.execute(
           'ALTER TABLE $invoiceItemsTableName ADD COLUMN sellUnitCode TEXT',
+        );
+      }
+      if (!itemsColumns.contains('tax_amt')) {
+        await db.execute(
+          'ALTER TABLE $invoiceItemsTableName ADD COLUMN tax_amt REAL DEFAULT 0',
+        );
+      }
+      if (!itemsColumns.contains('tax_pc')) {
+        await db.execute(
+          'ALTER TABLE $invoiceItemsTableName ADD COLUMN tax_pc REAL DEFAULT 0',
         );
       }
     } catch (e) {

@@ -10,6 +10,10 @@ import '../bloc/invoice_bloc.dart';
 import '../bloc/invoice_event.dart';
 import '../bloc/invoice_state.dart';
 import '../../../../core/router/route_constants.dart';
+import 'package:provider/provider.dart';
+import '../../../../core/network/api_service.dart';
+import '../../../../core/utils/dialogs.dart';
+import '../../../../features/auth/domain/repositories/auth_repository.dart';
 
 class InvoicePage extends StatefulWidget {
   final CustomerEntity customer;
@@ -806,11 +810,7 @@ class _InvoicePageState extends State<InvoicePage> {
 
             // Sync button - disabled if no items
             _buildActionButton(
-              onPressed:
-                  hasItems
-                      ? () =>
-                          context.read<InvoiceBloc>().add(const SyncInvoice())
-                      : null,
+              onPressed: hasItems ? () => _syncInvoice(context) : null,
               icon: Icons.cloud_upload,
               label: localizations.sync,
               isLoading: state.isSyncing,
@@ -1072,5 +1072,106 @@ class _InvoicePageState extends State<InvoicePage> {
         ],
       ),
     );
+  }
+
+  Future<void> _syncInvoice(BuildContext context) async {
+    final bloc = context.read<InvoiceBloc>();
+    final state = bloc.state;
+    final apiService = getIt<ApiService>();
+
+    // Check if there are items to upload
+    if (state.items.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No items to upload')));
+      return;
+    }
+
+    // Show loading dialog
+    Dialogs.showLoadingDialog(context, 'Uploading invoice...');
+
+    try {
+      // Get user credentials directly from AuthRepository
+      final authRepository = getIt<AuthRepository>();
+      final user = await authRepository.getCurrentUser();
+
+      if (user == null) {
+        throw Exception('User not logged in');
+      }
+
+      // Alternative to using AuthRepository directly:
+      // final userid = await bloc.getUserId();
+      // final workspace = await bloc.getWorkspace();
+      // final password = await bloc.getPassword();
+
+      // Convert invoice items to the format needed for the API
+      final List<Map<String, dynamic>> formattedItems =
+          state.items.map((item) {
+            // Use the actual tax percentage from the item
+            final taxPercentage = item.taxRate;
+
+            // Use the pre-calculated tax amount from the item
+            final taxAmount = item.taxAmount;
+
+            // Ensure all numeric values are cast to double
+            final quantity = item.quantity.toDouble();
+            final price = item.item.sellUnitPrice.toDouble();
+
+            return {
+              'sItem_cd': item.item.itemCode,
+              'sDescription': item.item.description,
+              'sSellUnit_cd': item.item.sellUnitCode,
+              'qty': quantity,
+              'mSellUnitPrice_amt': price,
+              'sTax_cd': item.item.taxCode,
+              'taxAmount': taxAmount,
+              'taxPercentage': taxPercentage,
+            };
+          }).toList();
+
+      // Upload the invoice
+      final invoiceNumber = await apiService.uploadInvoice(
+        // Auth parameters from user
+        userid: user.userid,
+        workspace: user.workspace,
+        password: user.password,
+
+        // Customer details
+        customerCode: state.customer.customerCode,
+        customerName: state.customer.customerName,
+        customerAddress: state.customer.address ?? '',
+        invoiceReference: state.invoiceNumber ?? '',
+        comments: state.comment,
+
+        // Invoice items
+        items: formattedItems,
+      );
+
+      // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Invoice uploaded successfully. Invoice #$invoiceNumber',
+          ),
+        ),
+      );
+
+      // Update UI to reflect the successful sync
+      bloc.add(const CalculateInvoiceTotals());
+    } catch (e) {
+      // Close loading dialog
+      Navigator.of(context, rootNavigator: true).pop();
+
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

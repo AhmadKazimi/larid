@@ -106,6 +106,8 @@ class DatabaseHelper {
         is_return INTEGER NOT NULL,
         tax_code TEXT,
         taxable_flag INTEGER NOT NULL,
+        tax_amt REAL DEFAULT 0,
+        tax_pc REAL DEFAULT 0,
         sell_unit_code TEXT NOT NULL,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,

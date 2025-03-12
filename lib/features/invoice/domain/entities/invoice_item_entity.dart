@@ -12,6 +12,8 @@ class InvoiceItemEntity extends Equatable {
   final String taxCode;
   final int taxableFlag;
   final String sellUnitCode;
+  final double tax_amt; // Tax amount
+  final double tax_pc; // Tax percentage
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -27,6 +29,8 @@ class InvoiceItemEntity extends Equatable {
     required this.taxCode,
     required this.taxableFlag,
     required this.sellUnitCode,
+    this.tax_amt = 0.0,
+    this.tax_pc = 0.0,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -44,6 +48,8 @@ class InvoiceItemEntity extends Equatable {
     taxCode,
     taxableFlag,
     sellUnitCode,
+    tax_amt,
+    tax_pc,
     createdAt,
     updatedAt,
   ];
