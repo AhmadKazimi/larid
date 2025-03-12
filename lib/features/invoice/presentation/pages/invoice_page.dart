@@ -712,6 +712,10 @@ class _InvoicePageState extends State<InvoicePage> {
     InvoiceState state,
     AppLocalizations localizations,
   ) {
+    // Check if there are any items in the invoice
+    final bool hasItems =
+        _isReturn ? state.returnItems.isNotEmpty : state.items.isNotEmpty;
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: GradientFormCard(
@@ -719,7 +723,7 @@ class _InvoicePageState extends State<InvoicePage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            // Add item button
+            // Add item button - always enabled
             _buildActionButton(
               onPressed: () async {
                 // Create a map of previously selected items to send to the items page
@@ -777,45 +781,61 @@ class _InvoicePageState extends State<InvoicePage> {
               color: AppColors.primary,
             ),
 
-            // Print button
+            // Print button - disabled if no items
             _buildActionButton(
-              onPressed: () {
-                // Navigate to the print page with invoice data
-                context.push(
-                  RouteConstants.printInvoice,
-                  extra: {
-                    'invoice': state,
-                    'isReturn': _isReturn,
-                    'customer': state.customer,
-                  },
-                );
-              },
+              onPressed:
+                  hasItems
+                      ? () {
+                        // Navigate to the print page with invoice data
+                        context.push(
+                          RouteConstants.printInvoice,
+                          extra: {
+                            'invoice': state,
+                            'isReturn': _isReturn,
+                            'customer': state.customer,
+                          },
+                        );
+                      }
+                      : null,
               icon: Icons.print,
               label: localizations.print,
               isLoading: state.isPrinting,
               color: Colors.green,
+              disabled: !hasItems,
             ),
 
-            // Sync button
+            // Sync button - disabled if no items
             _buildActionButton(
               onPressed:
-                  () => context.read<InvoiceBloc>().add(const SyncInvoice()),
+                  hasItems
+                      ? () =>
+                          context.read<InvoiceBloc>().add(const SyncInvoice())
+                      : null,
               icon: Icons.cloud_upload,
               label: localizations.sync,
               isLoading: state.isSyncing,
               color: Colors.blue,
+              disabled: !hasItems,
             ),
 
-            // Delete invoice button
+            // Delete invoice button - disabled if no items
             _buildActionButton(
-              onPressed: () {
-                // Show confirmation dialog
-                _showDeleteConfirmationDialog(context, state, localizations);
-              },
+              onPressed:
+                  hasItems
+                      ? () {
+                        // Show confirmation dialog
+                        _showDeleteConfirmationDialog(
+                          context,
+                          state,
+                          localizations,
+                        );
+                      }
+                      : null,
               icon: Icons.delete,
               label: localizations.deleteInvoice,
               isLoading: false,
               color: Colors.red,
+              disabled: !hasItems,
             ),
           ],
         ),
@@ -824,13 +844,17 @@ class _InvoicePageState extends State<InvoicePage> {
   }
 
   Widget _buildActionButton({
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
     required IconData icon,
     required String label,
     int count = 0,
     bool isLoading = false,
     required Color color,
+    bool disabled = false,
   }) {
+    // Use grey color if disabled
+    final buttonColor = disabled ? Colors.grey : color;
+
     return Expanded(
       child: InkWell(
         onTap: onPressed,
@@ -843,7 +867,7 @@ class _InvoicePageState extends State<InvoicePage> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: buttonColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   padding: const EdgeInsets.all(12),
@@ -853,11 +877,11 @@ class _InvoicePageState extends State<InvoicePage> {
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
-                              color: color,
+                              color: buttonColor,
                               strokeWidth: 2,
                             ),
                           )
-                          : Icon(icon, color: color, size: 24),
+                          : Icon(icon, color: buttonColor, size: 24),
                 ),
                 if (count > 0 && !isLoading)
                   Positioned(
@@ -890,7 +914,7 @@ class _InvoicePageState extends State<InvoicePage> {
               label,
               style: Theme.of(
                 context,
-              ).textTheme.labelSmall?.copyWith(color: color),
+              ).textTheme.labelSmall?.copyWith(color: buttonColor),
               textAlign: TextAlign.center,
             ),
           ],
@@ -989,55 +1013,42 @@ class _InvoicePageState extends State<InvoicePage> {
         children: [
           // Message to clarify that items need to be submitted to save to database
           if (state.items.isNotEmpty || state.returnItems.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: Text(
-                '⚠️ ${localizations.submit}',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange[800],
-                ),
-                textAlign: TextAlign.center,
+            ElevatedButton(
+              onPressed: () {
+                // Debug log when submit button is clicked
+                debugPrint(
+                  'Submitting invoice with ${state.items.length + state.returnItems.length} items',
+                );
+                context.read<InvoiceBloc>().add(
+                  SubmitInvoice(isReturn: _isReturn),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 5,
               ),
+              child:
+                  state.isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Builder(
+                        builder: (context) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _isReturn
+                                    ? '${localizations.submit} ${localizations.returnItem}'
+                                    : '${localizations.submit} ${localizations.invoice}',
+                                style: Theme.of(context).textTheme.labelLarge
+                                    ?.copyWith(color: Colors.white),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
             ),
-          ElevatedButton(
-            onPressed: () {
-              // Debug log when submit button is clicked
-              debugPrint(
-                'Submitting invoice with ${state.items.length + state.returnItems.length} items',
-              );
-              context.read<InvoiceBloc>().add(
-                SubmitInvoice(isReturn: _isReturn),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              elevation: 5,
-            ),
-            child:
-                state.isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Builder(
-                      builder: (context) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.save),
-                            const SizedBox(width: 8),
-                            Text(
-                              _isReturn
-                                  ? '${localizations.submit} ${localizations.returnItem}'
-                                  : '${localizations.submit} ${localizations.invoice}',
-                              style: Theme.of(context).textTheme.labelLarge
-                                  ?.copyWith(color: Colors.white),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-          ),
         ],
       ),
     );
