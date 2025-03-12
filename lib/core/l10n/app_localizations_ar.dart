@@ -307,19 +307,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get invoice => 'الفاتورة';
 
   @override
-  String get subTotal => 'المجموع الفرعي';
+  String get subTotal => 'الأجمالي بدون ضريبة';
 
   @override
   String get discount => 'الخصم';
 
   @override
-  String get total => 'المجموع';
+  String get total => 'اجمالي الضريبة';
 
   @override
-  String get salesTax => 'ضريبة المبيعات';
+  String get salesTax => 'اجمالي الضريبة';
 
   @override
-  String get grandTotal => 'المجموع الكلي';
+  String get grandTotal => 'الأجمالي';
 
   @override
   String get returnItems => 'المرتجعات';
@@ -340,7 +340,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get netSalesTax => 'صافي ضريبة المبيعات';
 
   @override
-  String get netGrandTotal => 'صافي المجموع الكلي';
+  String get netGrandTotal => 'صافي الأجمالي';
 
   @override
   String get addComment => 'إضافة تعليق';
@@ -465,7 +465,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get time => 'الوقت';
 
   @override
-  String get comment => 'تعليق';
+  String get comment => 'ملاحظات';
 
   @override
   String get description => 'الوصف';
@@ -478,4 +478,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get thankYouForYourBusiness => 'شكراً لتعاملكم معنا!';
+
+  @override
+  String get invoiceNumber => 'رقم الفاتورة';
 }

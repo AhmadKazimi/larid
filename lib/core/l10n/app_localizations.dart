@@ -1000,6 +1000,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Thank you for your business!'**
   String get thankYouForYourBusiness;
+
+  /// No description provided for @invoiceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice #'**
+  String get invoiceNumber;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

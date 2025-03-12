@@ -274,7 +274,6 @@ class _PrintPageState extends State<PrintPage> {
                 _buildHeader(),
                 pw.SizedBox(height: 20),
                 _buildCustomerInfo(),
-                pw.SizedBox(height: 20),
                 _buildInvoiceDetails(),
                 pw.SizedBox(height: 20),
                 _buildItemsTable(context),
@@ -356,8 +355,8 @@ class _PrintPageState extends State<PrintPage> {
   pw.Widget _buildHeader() {
     final title =
         widget.isReturn
-            ? '${l10n.returnItem} #${formattedInvoiceNumber}'
-            : '${l10n.invoice} #${formattedInvoiceNumber}';
+            ? '${l10n.invoiceNumber} #${formattedInvoiceNumber}'
+            : '${l10n.invoiceNumber} #${formattedInvoiceNumber}';
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -367,7 +366,7 @@ class _PrintPageState extends State<PrintPage> {
           children: [
             pw.Text(
               title,
-              style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
             ),
             pw.Text(
               DateFormat('yyyy-MM-dd – HH:mm').format(DateTime.now()),
@@ -376,6 +375,10 @@ class _PrintPageState extends State<PrintPage> {
           ],
         ),
         pw.Divider(),
+        pw.Text(
+          title,
+          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+        ),
       ],
     );
   }
@@ -390,10 +393,10 @@ class _PrintPageState extends State<PrintPage> {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text(
-            l10n.customerInformation,
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-          ),
+          // pw.Text(
+          //   l10n.customerInformation,
+          //   style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+          // ),
           pw.SizedBox(height: 5),
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -405,9 +408,9 @@ class _PrintPageState extends State<PrintPage> {
                     pw.Text(
                       '${l10n.customerName}: ${widget.customer.customerName}',
                     ),
-                    pw.Text(
-                      '${l10n.customerCode}: ${widget.customer.customerCode}',
-                    ),
+                    // pw.Text(
+                    //   '${l10n.customerCode}: ${widget.customer.customerCode}',
+                    // ),
                   ],
                 ),
               ),
@@ -415,9 +418,9 @@ class _PrintPageState extends State<PrintPage> {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text(
-                      '${l10n.phone}: ${widget.customer.contactPhone ?? "-"}',
-                    ),
+                    // pw.Text(
+                    //   '${l10n.phone}: ${widget.customer.contactPhone ?? "-"}',
+                    // ),
                     pw.Text(
                       '${l10n.address}: ${widget.customer.address ?? "-"}',
                     ),
@@ -450,19 +453,19 @@ class _PrintPageState extends State<PrintPage> {
               ],
             ),
           ),
-          pw.Expanded(
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(
-                  '${l10n.date}: ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
-                ),
-                pw.Text(
-                  '${l10n.time}: ${DateFormat('HH:mm').format(DateTime.now())}',
-                ),
-              ],
-            ),
-          ),
+          // pw.Expanded(
+          //   child: pw.Column(
+          //     crossAxisAlignment: pw.CrossAxisAlignment.start,
+          //     children: [
+          //       pw.Text(
+          //         '${l10n.date}: ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
+          //       ),
+          //       pw.Text(
+          //         '${l10n.time}: ${DateFormat('HH:mm').format(DateTime.now())}',
+          //       ),
+          //     ],
+          //   ),
+          // ),
         ],
       ),
     );
@@ -534,33 +537,23 @@ class _PrintPageState extends State<PrintPage> {
                   ? item.priceBeforeTax
                   : unitPrice * quantity;
 
-          // DIRECT CALCULATION OF TAX RATE AND AMOUNT
-          // For debugging purposes, let's directly calculate these values
-
           // 1. Default to stored values if available
           double taxRate = item.taxRate;
           double taxAmount = item.taxAmount;
 
-          debugPrint('Item $itemCode (taxCode: $taxCode):');
-          debugPrint('- Initial taxRate from item: $taxRate');
-          debugPrint('- Initial taxAmount from item: $taxAmount');
-
           // 2. If we have a taxCode but no rate, try to get it from calculator
           if (taxRate <= 0 && taxCode.isNotEmpty && _taxCalculator != null) {
             taxRate = _taxCalculator!.getTaxPercentage(taxCode);
-            debugPrint('- Got taxRate from calculator: $taxRate');
           }
 
           // 3. If still no rate but we have a taxCode, use default
           if (taxRate <= 0 && taxCode.isNotEmpty) {
             taxRate = 16.0; // Default VAT rate
-            debugPrint('- Using default taxRate: $taxRate');
           }
 
           // 4. Calculate tax amount if needed
           if (taxAmount <= 0 && taxRate > 0) {
             taxAmount = priceBeforeTax * (taxRate / 100);
-            debugPrint('- Calculated taxAmount: $taxAmount');
           }
 
           // 5. Calculate final price
@@ -696,7 +689,6 @@ class _PrintPageState extends State<PrintPage> {
           _buildTotalRow(l10n.subTotal, subtotal),
           if (discount > 0) _buildTotalRow(l10n.discount, discount),
           pw.Divider(),
-          _buildTotalRow(l10n.total, total, isBold: true),
           _buildTotalRow(l10n.salesTax, finalTaxAmount, isPrimary: true),
           pw.Divider(),
           _buildTotalRow(

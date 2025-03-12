@@ -478,4 +478,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get thankYouForYourBusiness => 'Thank you for your business!';
+
+  @override
+  String get invoiceNumber => 'Invoice #';
 }

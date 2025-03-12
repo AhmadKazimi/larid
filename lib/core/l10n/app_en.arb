@@ -233,5 +233,7 @@
     "description": "Description",
     "unitPrice": "Unit Price",
     "itemCode": "Item Code",
-    "thankYouForYourBusiness": "Thank you for your business!"
+    "thankYouForYourBusiness": "Thank you for your business!",
+    "invoiceNumber":"Invoice #"
+
 }
