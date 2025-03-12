@@ -1,5 +1,7 @@
+import 'dart:developer' as dev;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'company_info_table.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -23,6 +25,8 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'larid.db');
 
+    dev.log('Initializing database at: $path');
+
     return await openDatabase(
       path,
       version: 1,
@@ -32,11 +36,12 @@ class DatabaseHelper {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Create your tables here
+    dev.log('Creating database tables for version $version');
     await _createTables(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    dev.log('Upgrading database from $oldVersion to $newVersion');
     // Handle database migrations here
     if (oldVersion < newVersion) {
       // Add upgrade logic if needed
@@ -109,6 +114,15 @@ class DatabaseHelper {
       )
     ''');
 
+    // Create company_info table
+    dev.log('Creating company_info table');
+    try {
+      await db.execute(CompanyInfoTable.createTableQuery);
+      dev.log('Successfully created company_info table');
+    } catch (e) {
+      dev.log('Error creating company_info table: $e');
+    }
+
     // Create any other tables you might need
   }
 
@@ -118,6 +132,16 @@ class DatabaseHelper {
     await db.delete('invoices');
     await db.delete('inventory_items');
     await db.delete('customers');
+    await db.delete('company_info');
     // Delete data from other tables as needed
+  }
+
+  // Utility method to check if a table exists
+  Future<bool> tableExists(String tableName) async {
+    final db = await database;
+    final result = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='$tableName'",
+    );
+    return result.isNotEmpty;
   }
 }

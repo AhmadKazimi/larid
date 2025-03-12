@@ -9,6 +9,8 @@ class ApiEndpoints {
   static const String getUserWearhouse = '/GetUserWH';
   static const String getSalesTaxes = '/GetSalesTaxes';
   static const String uploadPayment = '/UploadPayment';
+  static const String getCompanyInfo = '/GetCompanyInfo';
+
 
   // Helper method to build full endpoint URL
   static String buildUrl(String endpoint) {

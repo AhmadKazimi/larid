@@ -19,6 +19,7 @@ import 'core/l10n/l10n.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import 'database/user_table.dart';
+import 'features/sync/domain/usecases/sync_company_info_usecase.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget {
                 syncInventoryUnitsUseCase: getIt<SyncInventoryUnitsUseCase>(),
                 syncSalesTaxesUseCase: getIt<SyncSalesTaxesUseCase>(),
                 syncUserWarehouseUseCase: getIt<SyncUserWarehouseUseCase>(),
+                syncCompanyInfoUseCase: getIt<SyncCompanyInfoUseCase>(),
               ),
         ),
       ],

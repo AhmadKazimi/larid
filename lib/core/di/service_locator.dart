@@ -17,6 +17,7 @@ import '../../database/inventory_items_table.dart';
 import '../../database/inventory_units_table.dart';
 import '../../database/working_session_table.dart';
 import '../../database/invoice_table.dart';
+import '../../database/company_info_table.dart';
 import '../../features/sync/data/repositories/sync_repository_impl.dart';
 import '../../features/sync/domain/repositories/sync_repository.dart';
 import '../../features/sync/domain/usecases/sync_customers_usecase.dart';
@@ -26,6 +27,7 @@ import '../../features/sync/domain/usecases/sync_inventory_items_usecase.dart';
 import '../../features/sync/domain/usecases/sync_inventory_units_usecase.dart';
 import '../../features/sync/domain/usecases/sync_sales_taxes_usecase.dart';
 import '../../features/sync/domain/usecases/sync_user_warehouse_usecase.dart';
+import '../../features/sync/domain/usecases/sync_company_info_usecase.dart';
 import '../../features/sync/presentation/bloc/sync_bloc.dart';
 import '../../features/map/data/repositories/working_session_repository_impl.dart';
 import '../../features/map/domain/repositories/working_session_repository.dart';
@@ -65,6 +67,7 @@ Future<void> setupServiceLocator() async {
       await db.execute(WorkingSessionTable.createTableQuery);
       await db.execute(InvoiceTable.createTableQuery);
       await db.execute(InvoiceTable.createInvoiceItemsTableQuery);
+      await db.execute(CompanyInfoTable.createTableQuery);
     },
   );
 
@@ -82,6 +85,7 @@ Future<void> setupServiceLocator() async {
   final salesTaxesTable = SalesTaxesTable(database);
   final workingSessionTable = WorkingSessionTable(database);
   final invoiceTable = InvoiceTable(database);
+  final companyInfoTable = CompanyInfoTable(database);
 
   // Ensure the invoice table schema is up to date
   await invoiceTable.ensureSchema();
@@ -94,6 +98,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerSingleton<SalesTaxesTable>(salesTaxesTable);
   getIt.registerSingleton<WorkingSessionTable>(workingSessionTable);
   getIt.registerSingleton<InvoiceTable>(invoiceTable);
+  getIt.registerSingleton<CompanyInfoTable>(companyInfoTable);
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();
@@ -120,6 +125,7 @@ Future<void> setupServiceLocator() async {
       inventoryItemsTable: getIt(),
       inventoryUnitsTable: getIt(),
       salesTaxesTable: getIt(),
+      companyInfoTable: getIt(),
       dioClient: DioClient.instance,
     ),
   );
@@ -147,6 +153,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerFactory(() => SyncInventoryUnitsUseCase(getIt()));
   getIt.registerFactory(() => SyncSalesTaxesUseCase(getIt()));
   getIt.registerFactory(() => SyncUserWarehouseUseCase(getIt()));
+  getIt.registerFactory(() => SyncCompanyInfoUseCase(getIt()));
   getIt.registerFactory(() => EndSessionUseCase(getIt()));
 
   // BLoCs
@@ -163,6 +170,7 @@ Future<void> setupServiceLocator() async {
       syncInventoryUnitsUseCase: getIt(),
       syncSalesTaxesUseCase: getIt(),
       syncUserWarehouseUseCase: getIt(),
+      syncCompanyInfoUseCase: getIt(),
     ),
   );
 

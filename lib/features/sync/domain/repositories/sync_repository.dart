@@ -5,6 +5,7 @@ import '../entities/inventory/inventory_unit_entity.dart';
 import '../entities/prices/prices_entity.dart';
 import '../entities/sales_tax_entity.dart';
 import '../entities/warehouse/warehouse_entity.dart';
+import '../entities/company_info_entity.dart';
 
 abstract class SyncRepository {
   Future<ApiResponse<List<CustomerEntity>>> getCustomers();
@@ -27,4 +28,7 @@ abstract class SyncRepository {
 
   Future<ApiResponse<List<WarehouseEntity>>> getUserWarehouse();
   Future<void> saveUserWarehouse(String warehouse, String currency);
+
+  Future<ApiResponse<List<CompanyInfoEntity>>> getCompanyInfo();
+  Future<void> saveCompanyInfo(CompanyInfoEntity companyInfo);
 }

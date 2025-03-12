@@ -5,6 +5,7 @@ import '../../domain/entities/inventory/inventory_unit_entity.dart';
 import '../../domain/entities/prices/prices_entity.dart';
 import '../../domain/entities/sales_tax_entity.dart';
 import '../../domain/entities/warehouse/warehouse_entity.dart';
+import '../../domain/entities/company_info_entity.dart';
 
 part 'sync_state.freezed.dart';
 
@@ -37,6 +38,7 @@ class SyncState with _$SyncState {
     ApiCallState<InventoryUnitEntity> inventoryUnitsState,
     @Default(ApiCallState()) ApiCallState<SalesTaxEntity> salesTaxesState,
     @Default(ApiCallState()) ApiCallState<WarehouseEntity> warehouseState,
+    @Default(ApiCallState()) ApiCallState<CompanyInfoEntity> companyInfoState,
   }) = _SyncState;
 
   bool get isAllSynced =>
@@ -46,5 +48,6 @@ class SyncState with _$SyncState {
       inventoryItemsState.isSuccess &&
       inventoryUnitsState.isSuccess &&
       salesTaxesState.isSuccess &&
-      warehouseState.isSuccess;
+      warehouseState.isSuccess &&
+      companyInfoState.isSuccess;
 }

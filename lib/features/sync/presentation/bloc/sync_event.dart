@@ -11,4 +11,5 @@ class SyncEvent with _$SyncEvent {
   const factory SyncEvent.syncInventoryUnits() = _SyncInventoryUnits;
   const factory SyncEvent.syncSalesTaxes() = _SyncSalesTaxes;
   const factory SyncEvent.syncUserWarehouse() = _SyncUserWarehouse;
+  const factory SyncEvent.syncCompanyInfo() = _SyncCompanyInfo;
 }

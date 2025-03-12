@@ -54,7 +54,8 @@ class _SyncPageState extends State<SyncPage>
               state.inventoryItemsState.isLoading ||
               state.inventoryUnitsState.isLoading ||
               state.salesTaxesState.isLoading ||
-              state.warehouseState.isLoading;
+              state.warehouseState.isLoading ||
+              state.companyInfoState.isLoading;
 
           final bool hasError =
               state.customersState.errorCode != null ||
@@ -63,7 +64,8 @@ class _SyncPageState extends State<SyncPage>
               state.inventoryItemsState.errorCode != null ||
               state.inventoryUnitsState.errorCode != null ||
               state.salesTaxesState.errorCode != null ||
-              state.warehouseState.errorCode != null;
+              state.warehouseState.errorCode != null ||
+              state.companyInfoState.errorCode != null;
 
           final bool isSuccess =
               state.customersState.isSuccess &&
@@ -72,7 +74,8 @@ class _SyncPageState extends State<SyncPage>
               state.inventoryItemsState.isSuccess &&
               state.inventoryUnitsState.isSuccess &&
               state.salesTaxesState.isSuccess &&
-              state.warehouseState.isSuccess;
+              state.warehouseState.isSuccess &&
+              state.companyInfoState.isSuccess;
 
           if (isLoading) {
             _animationController.repeat();
@@ -91,7 +94,8 @@ class _SyncPageState extends State<SyncPage>
               state.inventoryItemsState.errorCode != null ||
               state.inventoryUnitsState.errorCode != null ||
               state.salesTaxesState.errorCode != null ||
-              state.warehouseState.errorCode != null;
+              state.warehouseState.errorCode != null ||
+              state.companyInfoState.errorCode != null;
 
           final bool isSuccess =
               state.customersState.isSuccess &&
@@ -100,7 +104,8 @@ class _SyncPageState extends State<SyncPage>
               state.inventoryItemsState.isSuccess &&
               state.inventoryUnitsState.isSuccess &&
               state.salesTaxesState.isSuccess &&
-              state.warehouseState.isSuccess;
+              state.warehouseState.isSuccess &&
+              state.companyInfoState.isSuccess;
 
           final bool isLoading =
               state.customersState.isLoading ||
@@ -109,11 +114,13 @@ class _SyncPageState extends State<SyncPage>
               state.inventoryItemsState.isLoading ||
               state.inventoryUnitsState.isLoading ||
               state.salesTaxesState.isLoading ||
-              state.warehouseState.isLoading;
+              state.warehouseState.isLoading ||
+              state.companyInfoState.isLoading;
 
           // Calculate progress (0.0 to 1.0)
           double progress = 0.0;
-          int totalSteps = 7; // Total number of sync operations
+          int totalSteps =
+              8; // Total number of sync operations (including company info)
           int completedSteps = 0;
 
           if (state.customersState.isSuccess) completedSteps++;
@@ -123,6 +130,7 @@ class _SyncPageState extends State<SyncPage>
           if (state.inventoryUnitsState.isSuccess) completedSteps++;
           if (state.salesTaxesState.isSuccess) completedSteps++;
           if (state.warehouseState.isSuccess) completedSteps++;
+          if (state.companyInfoState.isSuccess) completedSteps++;
 
           progress = completedSteps / totalSteps;
 
@@ -231,6 +239,11 @@ class _SyncPageState extends State<SyncPage>
                               'Warehouse',
                               state.warehouseState,
                             ),
+                            const SizedBox(height: 8),
+                            _buildApiLogSection(
+                              'Company Info',
+                              state.companyInfoState,
+                            ),
                           ],
                         ),
                       ),
@@ -259,7 +272,8 @@ class _SyncPageState extends State<SyncPage>
         state.inventoryItemsState.isLoading ||
         state.inventoryUnitsState.isLoading ||
         state.salesTaxesState.isLoading ||
-        state.warehouseState.isLoading;
+        state.warehouseState.isLoading ||
+        state.companyInfoState.isLoading;
 
     final bool hasError =
         state.customersState.errorCode != null ||
@@ -268,7 +282,8 @@ class _SyncPageState extends State<SyncPage>
         state.inventoryItemsState.errorCode != null ||
         state.inventoryUnitsState.errorCode != null ||
         state.salesTaxesState.errorCode != null ||
-        state.warehouseState.errorCode != null;
+        state.warehouseState.errorCode != null ||
+        state.companyInfoState.errorCode != null;
 
     final bool isSuccess =
         state.customersState.isSuccess &&
@@ -277,7 +292,8 @@ class _SyncPageState extends State<SyncPage>
         state.inventoryItemsState.isSuccess &&
         state.inventoryUnitsState.isSuccess &&
         state.salesTaxesState.isSuccess &&
-        state.warehouseState.isSuccess;
+        state.warehouseState.isSuccess &&
+        state.companyInfoState.isSuccess;
 
     if (isSuccess && !hasError) {
       SharedPrefs.setSynced(true);
@@ -405,6 +421,7 @@ class _SyncPageState extends State<SyncPage>
     context.read<SyncBloc>().add(const SyncEvent.syncPrices());
     context.read<SyncBloc>().add(const SyncEvent.syncInventoryUnits());
     context.read<SyncBloc>().add(const SyncEvent.syncSalesTaxes());
+    context.read<SyncBloc>().add(const SyncEvent.syncCompanyInfo());
 
     // Sync warehouse first, then listen for its success before syncing inventory items
     final bloc = context.read<SyncBloc>();

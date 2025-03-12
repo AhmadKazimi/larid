@@ -188,4 +188,26 @@ class ApiService {
       throw Exception('Network error: ${e.toString()}');
     }
   }
+
+
+Future<List<Map<String, dynamic>>> getCompanyInfo({
+    required String userid,
+    required String workspace,
+    required String password,
+  }) async {
+    try {
+      final response = await _dioClient.get(
+        ApiEndpoints.getCompanyInfo,
+        queryParameters: {
+        ApiParameters.userid: userid,
+        ApiParameters.workspace: workspace,
+        ApiParameters.password: password,
+      },
+    );
+    return List<Map<String, dynamic>>.from(response.data);
+  } catch (e) {
+    throw Exception('Network error: ${e.toString()}');
+  }
 }
+}
+

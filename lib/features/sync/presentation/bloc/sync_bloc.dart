@@ -5,7 +5,6 @@ import '../../domain/entities/inventory/inventory_item_entity.dart';
 import '../../domain/entities/inventory/inventory_unit_entity.dart';
 import '../../domain/entities/prices/prices_entity.dart';
 import '../../domain/entities/sales_tax_entity.dart';
-import '../../domain/entities/warehouse/warehouse_entity.dart';
 import '../../domain/usecases/sync_customers_usecase.dart';
 import '../../domain/usecases/sync_inventory_items_usecase.dart';
 import '../../domain/usecases/sync_inventory_units_usecase.dart';
@@ -13,6 +12,7 @@ import '../../domain/usecases/sync_prices_usecase.dart';
 import '../../domain/usecases/sync_sales_rep_customers_usecase.dart';
 import '../../domain/usecases/sync_sales_taxes_usecase.dart';
 import '../../domain/usecases/sync_user_warehouse_usecase.dart';
+import '../../domain/usecases/sync_company_info_usecase.dart';
 import 'sync_event.dart';
 import 'sync_state.dart';
 
@@ -24,6 +24,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
   final SyncInventoryUnitsUseCase _syncInventoryUnitsUseCase;
   final SyncSalesTaxesUseCase _syncSalesTaxesUseCase;
   final SyncUserWarehouseUseCase _syncUserWarehouseUseCase;
+  final SyncCompanyInfoUseCase _syncCompanyInfoUseCase;
 
   SyncBloc({
     required SyncCustomersUseCase syncCustomersUseCase,
@@ -33,6 +34,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
     required SyncInventoryUnitsUseCase syncInventoryUnitsUseCase,
     required SyncSalesTaxesUseCase syncSalesTaxesUseCase,
     required SyncUserWarehouseUseCase syncUserWarehouseUseCase,
+    required SyncCompanyInfoUseCase syncCompanyInfoUseCase,
   }) : _syncCustomersUseCase = syncCustomersUseCase,
        _syncSalesRepCustomersUseCase = syncSalesRepCustomersUseCase,
        _syncPricesUseCase = syncPricesUseCase,
@@ -40,6 +42,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
        _syncInventoryUnitsUseCase = syncInventoryUnitsUseCase,
        _syncSalesTaxesUseCase = syncSalesTaxesUseCase,
        _syncUserWarehouseUseCase = syncUserWarehouseUseCase,
+       _syncCompanyInfoUseCase = syncCompanyInfoUseCase,
        super(SyncState()) {
     on<SyncEvent>((event, emit) async {
       await event.when(
@@ -50,6 +53,7 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
         syncInventoryUnits: () => _onSyncInventoryUnits(emit),
         syncSalesTaxes: () => _onSyncSalesTaxes(emit),
         syncUserWarehouse: () => _onSyncUserWarehouse(emit),
+        syncCompanyInfo: () => _onSyncCompanyInfo(emit),
       );
     });
   }
@@ -382,6 +386,48 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
             errorCode: ApiErrorCode.unknown.message,
             errorMessage: e.toString(),
             data: const [],
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onSyncCompanyInfo(Emitter<SyncState> emit) async {
+    emit(state.copyWith(companyInfoState: const ApiCallState(isLoading: true)));
+
+    try {
+      final response = await _syncCompanyInfoUseCase();
+
+      if (response.isSuccess && response.data != null) {
+        emit(
+          state.copyWith(
+            companyInfoState: ApiCallState(
+              isLoading: false,
+              isSuccess: true,
+              data: response.data,
+            ),
+          ),
+        );
+      } else {
+        emit(
+          state.copyWith(
+            companyInfoState: ApiCallState(
+              isLoading: false,
+              isSuccess: false,
+              errorCode: response.errorCode,
+              errorMessage: response.message,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      emit(
+        state.copyWith(
+          companyInfoState: ApiCallState(
+            isLoading: false,
+            isSuccess: false,
+            errorCode: ApiErrorCode.exceptionFailure.code.toString(),
+            errorMessage: e.toString(),
           ),
         ),
       );

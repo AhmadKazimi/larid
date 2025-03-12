@@ -7,6 +7,7 @@ import 'package:larid/database/inventory_units_table.dart';
 import 'package:larid/database/prices_table.dart';
 import 'package:larid/database/sales_taxes_table.dart';
 import 'package:larid/database/user_table.dart';
+import 'package:larid/database/company_info_table.dart';
 
 import 'package:larid/features/auth/domain/entities/user_entity.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
@@ -15,6 +16,7 @@ import 'package:larid/features/sync/domain/entities/inventory/inventory_unit_ent
 import 'package:larid/features/sync/domain/entities/prices/prices_entity.dart';
 import 'package:larid/features/sync/domain/entities/sales_tax_entity.dart';
 import 'package:larid/features/sync/domain/entities/warehouse/warehouse_entity.dart';
+import 'package:larid/features/sync/domain/entities/company_info_entity.dart';
 
 import 'package:larid/core/models/api_response.dart';
 import '../../../sync/domain/repositories/sync_repository.dart';
@@ -30,6 +32,7 @@ class SyncRepositoryImpl implements SyncRepository {
   final InventoryItemsTable _inventoryItemsTable;
   final InventoryUnitsTable _inventoryUnitsTable;
   final SalesTaxesTable _salesTaxesTable;
+  final CompanyInfoTable _companyInfoTable;
   final DioClient _dioClient;
   UserEntity? _user;
 
@@ -41,6 +44,7 @@ class SyncRepositoryImpl implements SyncRepository {
     required InventoryItemsTable inventoryItemsTable,
     required InventoryUnitsTable inventoryUnitsTable,
     required SalesTaxesTable salesTaxesTable,
+    required CompanyInfoTable companyInfoTable,
     required DioClient dioClient,
   }) : _apiService = apiService,
        _customerTable = customerTable,
@@ -49,6 +53,7 @@ class SyncRepositoryImpl implements SyncRepository {
        _inventoryItemsTable = inventoryItemsTable,
        _inventoryUnitsTable = inventoryUnitsTable,
        _salesTaxesTable = salesTaxesTable,
+       _companyInfoTable = companyInfoTable,
        _dioClient = dioClient {
     // Initialize user when repository is created
     _initUser().then((_) {
@@ -441,5 +446,88 @@ class SyncRepositoryImpl implements SyncRepository {
   @override
   Future<void> saveUserWarehouse(String warehouse, String currency) async {
     await _userTable.updateUserWarehouse(warehouse, currency);
+  }
+
+  @override
+  Future<ApiResponse<List<CompanyInfoEntity>>> getCompanyInfo() async {
+    try {
+      // Get the currently logged in user
+      final user = await _userTable.getCurrentUser();
+      if (user == null) {
+        dev.log('No logged in user found, cannot sync company info');
+        return ApiResponse(
+          errorCode: ApiErrorCode.userNotExist.code.toString(),
+          message: 'User not logged in',
+        );
+      }
+
+      dev.log(
+        'Fetching company info with user: ${user.userid}, workspace: ${user.workspace}',
+      );
+
+      // Build API request
+      final response = await _dioClient.get(
+        ApiEndpoints.buildUrl(ApiEndpoints.getCompanyInfo),
+        queryParameters: {
+          'userid': user.userid,
+          'workspace': user.workspace,
+          'password': user.password,
+        },
+      );
+
+      // Process the response
+      if (response.statusCode != 200) {
+        dev.log(
+          'Company info API returned error: ${response.statusCode}, body: ${response.data}',
+        );
+        return ApiResponse(
+          errorCode: ApiErrorCode.exceptionFailure.code.toString(),
+          message:
+              'Failed to fetch company info: Status ${response.statusCode}',
+        );
+      }
+
+      dev.log('Company info API response: ${response.data}');
+      final data = response.data as List<dynamic>;
+
+      if (data.isEmpty) {
+        dev.log('Company info API returned empty data');
+        return ApiResponse(
+          errorCode: ApiErrorCode.noItems.code.toString(),
+          message: 'No company info data received',
+        );
+      }
+
+      // Convert to entities
+      final companyInfoList =
+          data
+              .map(
+                (json) =>
+                    CompanyInfoEntity.fromJson(json as Map<String, dynamic>),
+              )
+              .toList();
+
+      dev.log(
+        'Successfully parsed company info: ${companyInfoList.length} items with first company: ${companyInfoList[0].companyName}',
+      );
+      return ApiResponse(data: companyInfoList);
+    } catch (e, stackTrace) {
+      dev.log('Error fetching company info: $e\n$stackTrace');
+      return ApiResponse(
+        errorCode: ApiErrorCode.exceptionFailure.code.toString(),
+        message: 'Error fetching company info: $e',
+      );
+    }
+  }
+
+  @override
+  Future<void> saveCompanyInfo(CompanyInfoEntity companyInfo) async {
+    try {
+      await _companyInfoTable.saveCompanyInfo(companyInfo);
+      dev.log('Successfully saved company info to database');
+    } catch (e) {
+      dev.log('Error saving company info to database: $e');
+      throw Exception('Failed to save company info: $e');
+    }
   }
 }

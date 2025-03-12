@@ -290,6 +290,8 @@ mixin _$SyncState {
       throw _privateConstructorUsedError;
   ApiCallState<WarehouseEntity> get warehouseState =>
       throw _privateConstructorUsedError;
+  ApiCallState<CompanyInfoEntity> get companyInfoState =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of SyncState
   /// with the given fields replaced by the non-null parameter values.
@@ -311,6 +313,7 @@ abstract class $SyncStateCopyWith<$Res> {
     ApiCallState<InventoryUnitEntity> inventoryUnitsState,
     ApiCallState<SalesTaxEntity> salesTaxesState,
     ApiCallState<WarehouseEntity> warehouseState,
+    ApiCallState<CompanyInfoEntity> companyInfoState,
   });
 
   $ApiCallStateCopyWith<CustomerEntity, $Res> get customersState;
@@ -320,6 +323,7 @@ abstract class $SyncStateCopyWith<$Res> {
   $ApiCallStateCopyWith<InventoryUnitEntity, $Res> get inventoryUnitsState;
   $ApiCallStateCopyWith<SalesTaxEntity, $Res> get salesTaxesState;
   $ApiCallStateCopyWith<WarehouseEntity, $Res> get warehouseState;
+  $ApiCallStateCopyWith<CompanyInfoEntity, $Res> get companyInfoState;
 }
 
 /// @nodoc
@@ -344,6 +348,7 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
     Object? inventoryUnitsState = null,
     Object? salesTaxesState = null,
     Object? warehouseState = null,
+    Object? companyInfoState = null,
   }) {
     return _then(
       _value.copyWith(
@@ -382,6 +387,11 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
                     ? _value.warehouseState
                     : warehouseState // ignore: cast_nullable_to_non_nullable
                         as ApiCallState<WarehouseEntity>,
+            companyInfoState:
+                null == companyInfoState
+                    ? _value.companyInfoState
+                    : companyInfoState // ignore: cast_nullable_to_non_nullable
+                        as ApiCallState<CompanyInfoEntity>,
           )
           as $Val,
     );
@@ -472,6 +482,19 @@ class _$SyncStateCopyWithImpl<$Res, $Val extends SyncState>
       return _then(_value.copyWith(warehouseState: value) as $Val);
     });
   }
+
+  /// Create a copy of SyncState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ApiCallStateCopyWith<CompanyInfoEntity, $Res> get companyInfoState {
+    return $ApiCallStateCopyWith<CompanyInfoEntity, $Res>(
+      _value.companyInfoState,
+      (value) {
+        return _then(_value.copyWith(companyInfoState: value) as $Val);
+      },
+    );
+  }
 }
 
 /// @nodoc
@@ -491,6 +514,7 @@ abstract class _$$SyncStateImplCopyWith<$Res>
     ApiCallState<InventoryUnitEntity> inventoryUnitsState,
     ApiCallState<SalesTaxEntity> salesTaxesState,
     ApiCallState<WarehouseEntity> warehouseState,
+    ApiCallState<CompanyInfoEntity> companyInfoState,
   });
 
   @override
@@ -507,6 +531,8 @@ abstract class _$$SyncStateImplCopyWith<$Res>
   $ApiCallStateCopyWith<SalesTaxEntity, $Res> get salesTaxesState;
   @override
   $ApiCallStateCopyWith<WarehouseEntity, $Res> get warehouseState;
+  @override
+  $ApiCallStateCopyWith<CompanyInfoEntity, $Res> get companyInfoState;
 }
 
 /// @nodoc
@@ -530,6 +556,7 @@ class __$$SyncStateImplCopyWithImpl<$Res>
     Object? inventoryUnitsState = null,
     Object? salesTaxesState = null,
     Object? warehouseState = null,
+    Object? companyInfoState = null,
   }) {
     return _then(
       _$SyncStateImpl(
@@ -568,6 +595,11 @@ class __$$SyncStateImplCopyWithImpl<$Res>
                 ? _value.warehouseState
                 : warehouseState // ignore: cast_nullable_to_non_nullable
                     as ApiCallState<WarehouseEntity>,
+        companyInfoState:
+            null == companyInfoState
+                ? _value.companyInfoState
+                : companyInfoState // ignore: cast_nullable_to_non_nullable
+                    as ApiCallState<CompanyInfoEntity>,
       ),
     );
   }
@@ -584,6 +616,7 @@ class _$SyncStateImpl extends _SyncState {
     this.inventoryUnitsState = const ApiCallState(),
     this.salesTaxesState = const ApiCallState(),
     this.warehouseState = const ApiCallState(),
+    this.companyInfoState = const ApiCallState(),
   }) : super._();
 
   @override
@@ -607,10 +640,13 @@ class _$SyncStateImpl extends _SyncState {
   @override
   @JsonKey()
   final ApiCallState<WarehouseEntity> warehouseState;
+  @override
+  @JsonKey()
+  final ApiCallState<CompanyInfoEntity> companyInfoState;
 
   @override
   String toString() {
-    return 'SyncState(customersState: $customersState, salesRepState: $salesRepState, pricesState: $pricesState, inventoryItemsState: $inventoryItemsState, inventoryUnitsState: $inventoryUnitsState, salesTaxesState: $salesTaxesState, warehouseState: $warehouseState)';
+    return 'SyncState(customersState: $customersState, salesRepState: $salesRepState, pricesState: $pricesState, inventoryItemsState: $inventoryItemsState, inventoryUnitsState: $inventoryUnitsState, salesTaxesState: $salesTaxesState, warehouseState: $warehouseState, companyInfoState: $companyInfoState)';
   }
 
   @override
@@ -631,7 +667,9 @@ class _$SyncStateImpl extends _SyncState {
             (identical(other.salesTaxesState, salesTaxesState) ||
                 other.salesTaxesState == salesTaxesState) &&
             (identical(other.warehouseState, warehouseState) ||
-                other.warehouseState == warehouseState));
+                other.warehouseState == warehouseState) &&
+            (identical(other.companyInfoState, companyInfoState) ||
+                other.companyInfoState == companyInfoState));
   }
 
   @override
@@ -644,6 +682,7 @@ class _$SyncStateImpl extends _SyncState {
     inventoryUnitsState,
     salesTaxesState,
     warehouseState,
+    companyInfoState,
   );
 
   /// Create a copy of SyncState
@@ -664,6 +703,7 @@ abstract class _SyncState extends SyncState {
     final ApiCallState<InventoryUnitEntity> inventoryUnitsState,
     final ApiCallState<SalesTaxEntity> salesTaxesState,
     final ApiCallState<WarehouseEntity> warehouseState,
+    final ApiCallState<CompanyInfoEntity> companyInfoState,
   }) = _$SyncStateImpl;
   const _SyncState._() : super._();
 
@@ -681,6 +721,8 @@ abstract class _SyncState extends SyncState {
   ApiCallState<SalesTaxEntity> get salesTaxesState;
   @override
   ApiCallState<WarehouseEntity> get warehouseState;
+  @override
+  ApiCallState<CompanyInfoEntity> get companyInfoState;
 
   /// Create a copy of SyncState
   /// with the given fields replaced by the non-null parameter values.
