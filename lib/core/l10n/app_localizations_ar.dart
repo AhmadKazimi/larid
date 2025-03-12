@@ -346,7 +346,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addComment => 'إضافة تعليق';
 
   @override
-  String get submit => 'تقديم';
+  String get submit => 'حفظ';
 
   @override
   String get print => 'طباعة';
