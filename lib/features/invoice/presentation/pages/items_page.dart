@@ -446,52 +446,45 @@ class _ItemsPageState extends State<ItemsPage> {
         // Check if selected quantity reached available inventory
         final bool isMaxQuantityReached = quantity >= item.qty;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(20),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildQuantityButton(
-                icon: Icons.remove,
-                onPressed:
-                    quantity > 0
-                        ? () => _itemsBloc.add(
-                          UpdateItemQuantity(
-                            itemCode: itemCode,
-                            quantity: quantity - 1,
-                          ),
-                        )
-                        : null,
-              ),
-              SizedBox(
-                width: 32,
-                child: Text(
-                  quantity.toString(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              _buildQuantityButton(
-                icon: Icons.add,
-                onPressed:
-                    isMaxQuantityReached
-                        ? null
-                        : () => _itemsBloc.add(
-                          UpdateItemQuantity(
-                            itemCode: itemCode,
-                            quantity: quantity + 1,
-                          ),
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildQuantityButton(
+              icon: Icons.remove,
+              onPressed:
+                  quantity > 0
+                      ? () => _itemsBloc.add(
+                        UpdateItemQuantity(
+                          itemCode: itemCode,
+                          quantity: quantity - 1,
                         ),
+                      )
+                      : null,
+            ),
+            SizedBox(
+              width: 32,
+              child: Text(
+                quantity.toString(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ],
-          ),
+            ),
+            _buildQuantityButton(
+              icon: Icons.add,
+              onPressed:
+                  isMaxQuantityReached
+                      ? null
+                      : () => _itemsBloc.add(
+                        UpdateItemQuantity(
+                          itemCode: itemCode,
+                          quantity: quantity + 1,
+                        ),
+                      ),
+            ),
+          ],
         );
       },
     );
@@ -504,14 +497,17 @@ class _ItemsPageState extends State<ItemsPage> {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        width: 32,
-        height: 32,
+        width: 36,
+        height: 36,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color:
               onPressed == null
-                  ? Colors.grey[200]
+                  ? Colors.grey[300]
                   : AppColors.primary.withOpacity(0.1),
           shape: BoxShape.circle,
+          border: Border.all(color: Colors.grey.shade300, width: 0.5),
         ),
         child: Icon(
           icon,
