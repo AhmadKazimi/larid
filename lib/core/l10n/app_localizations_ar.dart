@@ -313,7 +313,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get discount => 'الخصم';
 
   @override
-  String get total => 'اجمالي الضريبة';
+  String get total => 'اجمالي ';
 
   @override
   String get salesTax => 'اجمالي الضريبة';

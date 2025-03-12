@@ -292,20 +292,16 @@ class _PrintPageState extends State<PrintPage> {
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(32),
+          margin: const pw.EdgeInsets.all(16),
           theme: theme,
           textDirection: pw.TextDirection.rtl,
           build:
               (context) => [
                 _buildHeader(),
-                pw.SizedBox(height: 20),
                 _buildCustomerInfo(),
-                _buildInvoiceDetails(),
-                pw.SizedBox(height: 20),
+                pw.SizedBox(height: 8),
                 _buildItemsTable(context),
-                pw.SizedBox(height: 20),
                 _buildTotals(),
-                pw.SizedBox(height: 40),
                 _buildFooter(),
               ],
           footer:
@@ -398,7 +394,6 @@ class _PrintPageState extends State<PrintPage> {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Text("فاتورة مبيعات"),
                 pw.Text(
                   _companyInfo!.companyName,
                   style: pw.TextStyle(
@@ -407,32 +402,33 @@ class _PrintPageState extends State<PrintPage> {
                   ),
                   textAlign: pw.TextAlign.center,
                 ),
+                if (true /*_companyInfo!.address1.isNotEmpty*/ )
+                  pw.Text(
+                    "عمان - الاردن",
+                    style: const pw.TextStyle(fontSize: 12),
+                    textAlign: pw.TextAlign.center,
+                  ),
 
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.center,
                   children: [
-                    if (_companyInfo!.address1.isNotEmpty)
+                    pw.SizedBox(width: 16),
+                    if (_companyInfo!.taxId.isEmpty)
                       pw.Text(
-                        "${l10n.address}: ${_companyInfo!.address1}",
+                        'الرقم الضريبي: 1234566789',
                         style: const pw.TextStyle(fontSize: 12),
-                        textAlign: pw.TextAlign.center,
                       ),
                     pw.SizedBox(width: 16),
-                    if (_companyInfo!.phone.isNotEmpty) ...[
+                    if (true) ...[
                       pw.Text(
-                        '${l10n.phone}: ${_companyInfo!.phone}',
+                        '${l10n.phone}: 0780282893',
                         style: const pw.TextStyle(fontSize: 12),
                       ),
                       pw.SizedBox(width: 8),
                     ],
-                    pw.SizedBox(width: 16),
-                    if (_companyInfo!.taxId.isNotEmpty)
-                      pw.Text(
-                        'الرقم الضريبي: ${_companyInfo!.taxId}',
-                        style: const pw.TextStyle(fontSize: 12),
-                      ),
                   ],
                 ),
+                pw.Text("فاتورة مبيعات"),
               ],
             ),
           ),
@@ -472,7 +468,6 @@ class _PrintPageState extends State<PrintPage> {
           //   l10n.customerInformation,
           //   style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
           // ),
-          pw.SizedBox(height: 5),
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -518,16 +513,16 @@ class _PrintPageState extends State<PrintPage> {
       ),
       child: pw.Row(
         children: [
-          pw.Expanded(
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text('${l10n.paymentType}: ${widget.invoice.paymentType}'),
-                if (widget.invoice.comment.isNotEmpty)
-                  pw.Text('${l10n.comment}: ${widget.invoice.comment}'),
-              ],
-            ),
-          ),
+          // pw.Expanded(
+          //   child: pw.Column(
+          //     crossAxisAlignment: pw.CrossAxisAlignment.start,
+          //     children: [
+          //       pw.Text('${l10n.paymentType}: ${widget.invoice.paymentType}'),
+          //       if (widget.invoice.comment.isNotEmpty)
+          //         pw.Text('${l10n.comment}: ${widget.invoice.comment}'),
+          //     ],
+          //   ),
+          // ),
           // pw.Expanded(
           //   child: pw.Column(
           //     crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -587,12 +582,9 @@ class _PrintPageState extends State<PrintPage> {
             borderRadius: pw.BorderRadius.vertical(top: pw.Radius.circular(2)),
           ),
           children: [
-            _buildTableCell(l10n.total, isHeader: true), // Price after tax
+            _buildTableCell(l10n.grandTotal, isHeader: true), // Price after tax
             _buildTableCell('الضريبة', isHeader: true), // Tax
-            _buildTableCell(
-              'السعر قبل الضريبة',
-              isHeader: true,
-            ), // Price before tax
+            _buildTableCell('السعر', isHeader: true), // Price before tax
             _buildTableCell(l10n.quantity, isHeader: true), // Quantity
             _buildTableCell(l10n.description, isHeader: true), // Description
             _buildTableCell(l10n.itemCode, isHeader: true), // Item Code
@@ -642,15 +634,15 @@ class _PrintPageState extends State<PrintPage> {
           return pw.TableRow(
             children: [
               _buildTableCell(
-                '${priceAfterTax.toStringAsFixed(2)} JOD',
+                priceAfterTax.toStringAsFixed(2),
               ), // Price after tax
               _buildTableCell(
                 taxAmount > 0 || taxRate > 0
-                    ? '${taxAmount.toStringAsFixed(2)} JOD\n(${taxRate.toStringAsFixed(1)}%)'
+                    ? '${taxAmount.toStringAsFixed(2)}\n(${taxRate.toStringAsFixed(1)}%)'
                     : 'معفى من الضريبة', // "Tax exempt" in Arabic
               ), // Tax + percentage or exempt
               _buildTableCell(
-                '${priceBeforeTax.toStringAsFixed(2)} JOD',
+                priceBeforeTax.toStringAsFixed(2),
               ), // Price before tax
               _buildTableCell(quantity.toString()), // Quantity
               _buildTableCell(item.item.description), // Description
@@ -761,11 +753,10 @@ class _PrintPageState extends State<PrintPage> {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.end,
         children: [
+          pw.Divider(color: PdfColors.grey300),
+
           _buildTotalRow(l10n.subTotal, subtotal),
-          if (discount > 0) _buildTotalRow(l10n.discount, discount),
-          pw.Divider(),
           _buildTotalRow(l10n.salesTax, finalTaxAmount, isPrimary: true),
-          pw.Divider(),
           _buildTotalRow(
             l10n.grandTotal,
             finalGrandTotal,
@@ -805,6 +796,9 @@ class _PrintPageState extends State<PrintPage> {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
+        if (widget.invoice.comment.isNotEmpty)
+          pw.Text('${l10n.comment}: ${widget.invoice.comment}'),
+        pw.SizedBox(height: 8),
         pw.Text("المندوب: $_userId"),
         pw.Divider(),
         pw.SizedBox(height: 10),
