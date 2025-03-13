@@ -14,11 +14,16 @@ abstract class InvoiceEvent extends Equatable {
 class InitializeInvoice extends InvoiceEvent {
   final String customerCode;
   final bool forceNew;
+  final bool isReturn;
 
-  const InitializeInvoice({required this.customerCode, this.forceNew = false});
+  const InitializeInvoice({
+    required this.customerCode,
+    this.forceNew = false,
+    this.isReturn = false,
+  });
 
   @override
-  List<Object?> get props => [customerCode, forceNew];
+  List<Object?> get props => [customerCode, forceNew, isReturn];
 }
 
 class NavigateToItemsPage extends InvoiceEvent {

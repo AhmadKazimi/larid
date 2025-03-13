@@ -16,10 +16,6 @@ class InvoiceTable {
       discount REAL NOT NULL,
       salesTax REAL NOT NULL,
       grandTotal REAL NOT NULL,
-      returnSubtotal REAL DEFAULT 0,
-      returnDiscount REAL DEFAULT 0,
-      returnSalesTax REAL DEFAULT 0,
-      returnGrandTotal REAL DEFAULT 0,
       paymentType TEXT NOT NULL,
       comment TEXT,
       isReturn INTEGER NOT NULL DEFAULT 0,
@@ -60,7 +56,7 @@ class InvoiceTable {
   }) async {
     // Begin transaction
     print(
-      'Saving invoice: $invoiceNumber for customer: ${customer.customerCode}',
+      'Saving invoice: $invoiceNumber for customer: ${customer.customerCode}, isReturn: $isReturn',
     );
     try {
       return await db.transaction((txn) async {
@@ -75,14 +71,16 @@ class InvoiceTable {
           'customerId': customer.customerCode,
           'customerName': customer.customerName,
           'invoiceDate': DateTime.now().toIso8601String(),
-          'subtotal': invoiceState.subtotal,
-          'discount': invoiceState.discount,
-          'salesTax': invoiceState.salesTax,
-          'grandTotal': invoiceState.grandTotal,
-          'returnSubtotal': invoiceState.returnSubtotal,
-          'returnDiscount': invoiceState.returnDiscount,
-          'returnSalesTax': invoiceState.returnSalesTax,
-          'returnGrandTotal': invoiceState.returnGrandTotal,
+          'subtotal':
+              isReturn ? invoiceState.returnSubtotal : invoiceState.subtotal,
+          'discount':
+              isReturn ? invoiceState.returnDiscount : invoiceState.discount,
+          'salesTax':
+              isReturn ? invoiceState.returnSalesTax : invoiceState.salesTax,
+          'grandTotal':
+              isReturn
+                  ? invoiceState.returnGrandTotal
+                  : invoiceState.grandTotal,
           'paymentType': invoiceState.paymentType.toString(),
           'comment': invoiceState.comment,
           'isReturn': isReturn ? 1 : 0,
@@ -94,7 +92,7 @@ class InvoiceTable {
         final invoiceId = await txn.insert(tableName, invoiceData);
         print('Invoice inserted with ID: $invoiceId');
 
-        // Insert all invoice items
+        // Insert all invoice items for this invoice type (regular or return)
         final items = isReturn ? invoiceState.returnItems : invoiceState.items;
         print('Inserting ${items.length} items for invoice ID: $invoiceId');
 
@@ -121,63 +119,7 @@ class InvoiceTable {
         }
 
         await batch.commit();
-        print(
-          'Committed ${items.length} main items for invoice ID: $invoiceId',
-        );
-
-        // Now also save non-return items if we're saving a return invoice,
-        // or save return items if we're saving a regular invoice
-        if (isReturn && invoiceState.items.isNotEmpty) {
-          print(
-            'Saving ${invoiceState.items.length} regular items for return invoice',
-          );
-          final regularBatch = txn.batch();
-          for (final item in invoiceState.items) {
-            regularBatch.insert(invoiceItemsTableName, {
-              'invoiceId': invoiceId,
-              'itemCode': item.item.itemCode,
-              'description': item.item.description,
-              'quantity': item.quantity,
-              'unitPrice': item.item.sellUnitPrice,
-              'totalPrice': item.totalPrice,
-              'isReturn': 0, // These are regular items
-              'taxCode': item.item.taxCode,
-              'taxableFlag': item.item.taxableFlag,
-              'tax_amt': item.taxAmount,
-              'tax_pc': item.taxRate,
-              'sellUnitCode': item.item.sellUnitCode,
-            });
-          }
-          await regularBatch.commit();
-          print(
-            'Committed ${invoiceState.items.length} regular items for return invoice',
-          );
-        } else if (!isReturn && invoiceState.returnItems.isNotEmpty) {
-          print(
-            'Saving ${invoiceState.returnItems.length} return items for regular invoice',
-          );
-          final returnBatch = txn.batch();
-          for (final item in invoiceState.returnItems) {
-            returnBatch.insert(invoiceItemsTableName, {
-              'invoiceId': invoiceId,
-              'itemCode': item.item.itemCode,
-              'description': item.item.description,
-              'quantity': item.quantity,
-              'unitPrice': item.item.sellUnitPrice,
-              'totalPrice': item.totalPrice,
-              'isReturn': 1, // These are return items
-              'taxCode': item.item.taxCode,
-              'taxableFlag': item.item.taxableFlag,
-              'tax_amt': item.taxAmount,
-              'tax_pc': item.taxRate,
-              'sellUnitCode': item.item.sellUnitCode,
-            });
-          }
-          await returnBatch.commit();
-          print(
-            'Committed ${invoiceState.returnItems.length} return items for regular invoice',
-          );
-        }
+        print('Committed ${items.length} items for invoice ID: $invoiceId');
 
         print('Successfully saved invoice ID: $invoiceId');
         return invoiceId;
@@ -197,47 +139,42 @@ class InvoiceTable {
   }) async {
     // Begin transaction
     print(
-      'Updating invoice: $invoiceNumber for customer: ${customer.customerCode}',
+      'Updating invoice: $invoiceNumber for customer: ${customer.customerCode}, isReturn: $isReturn',
     );
-
     try {
       return await db.transaction((txn) async {
-        // Find the invoice by its invoice number
-        print('Finding existing invoice with invoice number: $invoiceNumber');
-
-        final List<Map<String, dynamic>> invoices = await txn.query(
+        // Find the invoice ID by invoice number
+        final List<Map<String, dynamic>> invoiceResult = await txn.query(
           tableName,
+          columns: ['id'],
           where: 'invoiceNumber = ?',
           whereArgs: [invoiceNumber],
         );
 
-        if (invoices.isEmpty) {
-          print('Invoice not found: $invoiceNumber');
-          throw Exception('Invoice not found: $invoiceNumber');
+        if (invoiceResult.isEmpty) {
+          print(
+            'Invoice not found for updating, invoice number: $invoiceNumber',
+          );
+          throw Exception('Invoice not found for updating');
         }
 
-        final invoiceId = invoices.first['id'] as int;
-        print('Found invoice with ID: $invoiceId');
+        final int invoiceId = invoiceResult.first['id'] as int;
+        print('Found invoice ID: $invoiceId for update');
 
-        // Update the invoice header
-        print('Updating invoice header...');
-        print(
-          'Customer data: ID=${customer.customerCode}, Name=${customer.customerName}',
-        );
-
+        // Update the invoice header with appropriate values based on isReturn
         final Map<String, dynamic> invoiceData = {
           'customerId': customer.customerCode,
           'customerName': customer.customerName,
-          'invoiceDate':
-              DateTime.now().toIso8601String(), // Update the date to now
-          'subtotal': invoiceState.subtotal,
-          'discount': invoiceState.discount,
-          'salesTax': invoiceState.salesTax,
-          'grandTotal': invoiceState.grandTotal,
-          'returnSubtotal': invoiceState.returnSubtotal,
-          'returnDiscount': invoiceState.returnDiscount,
-          'returnSalesTax': invoiceState.returnSalesTax,
-          'returnGrandTotal': invoiceState.returnGrandTotal,
+          'subtotal':
+              isReturn ? invoiceState.returnSubtotal : invoiceState.subtotal,
+          'discount':
+              isReturn ? invoiceState.returnDiscount : invoiceState.discount,
+          'salesTax':
+              isReturn ? invoiceState.returnSalesTax : invoiceState.salesTax,
+          'grandTotal':
+              isReturn
+                  ? invoiceState.returnGrandTotal
+                  : invoiceState.grandTotal,
           'paymentType': invoiceState.paymentType.toString(),
           'comment': invoiceState.comment,
           'isReturn': isReturn ? 1 : 0,
@@ -268,14 +205,14 @@ class InvoiceTable {
           'Deleted $deletedCount existing items for invoice ID: $invoiceId',
         );
 
-        // Insert all items - both regular and return items
+        // Insert all items - only the relevant type (regular or return)
         print('Inserting new items for invoice ID: $invoiceId');
 
         final batch = txn.batch();
 
-        // First add the main items (either regular or return based on isReturn flag)
+        // Add only the items for this invoice type
         final items = isReturn ? invoiceState.returnItems : invoiceState.items;
-        print('Adding ${items.length} main items (isReturn: $isReturn)');
+        print('Adding ${items.length} items (isReturn: $isReturn)');
 
         for (final item in items) {
           print(
@@ -289,33 +226,6 @@ class InvoiceTable {
             'unitPrice': item.item.sellUnitPrice,
             'totalPrice': item.totalPrice,
             'isReturn': isReturn ? 1 : 0,
-            'taxCode': item.item.taxCode,
-            'taxableFlag': item.item.taxableFlag,
-            'tax_amt': item.taxAmount,
-            'tax_pc': item.taxRate,
-            'sellUnitCode': item.item.sellUnitCode,
-          });
-        }
-
-        // Now add the other type of items
-        final otherItems =
-            isReturn ? invoiceState.items : invoiceState.returnItems;
-        print(
-          'Adding ${otherItems.length} other items (isReturn: ${!isReturn})',
-        );
-
-        for (final item in otherItems) {
-          print(
-            'Adding other item: ${item.item.itemCode}, quantity: ${item.quantity}',
-          );
-          batch.insert(invoiceItemsTableName, {
-            'invoiceId': invoiceId,
-            'itemCode': item.item.itemCode,
-            'description': item.item.description,
-            'quantity': item.quantity,
-            'unitPrice': item.item.sellUnitPrice,
-            'totalPrice': item.totalPrice,
-            'isReturn': isReturn ? 0 : 1, // Opposite of the main items
             'taxCode': item.item.taxCode,
             'taxableFlag': item.item.taxableFlag,
             'tax_amt': item.taxAmount,
@@ -429,8 +339,7 @@ class InvoiceTable {
         print('Discount: ${invoice['discount']}');
         print('Sales Tax: ${invoice['salesTax']}');
         print('Grand Total: ${invoice['grandTotal']}');
-        print('Return Subtotal: ${invoice['returnSubtotal']}');
-        print('Return Grand Total: ${invoice['returnGrandTotal']}');
+        print('Is Return: ${invoice['isReturn'] == 1 ? "Yes" : "No"}');
         print('Is Synced: ${invoice['isSynced']}');
         print('----------------------------\n');
       }
@@ -562,26 +471,8 @@ class InvoiceTable {
       final invoiceColumns =
           invoiceInfoMap.map((col) => col['name'] as String).toList();
 
-      if (!invoiceColumns.contains('returnSubtotal')) {
-        await db.execute(
-          'ALTER TABLE $tableName ADD COLUMN returnSubtotal REAL DEFAULT 0',
-        );
-      }
-      if (!invoiceColumns.contains('returnDiscount')) {
-        await db.execute(
-          'ALTER TABLE $tableName ADD COLUMN returnDiscount REAL DEFAULT 0',
-        );
-      }
-      if (!invoiceColumns.contains('returnSalesTax')) {
-        await db.execute(
-          'ALTER TABLE $tableName ADD COLUMN returnSalesTax REAL DEFAULT 0',
-        );
-      }
-      if (!invoiceColumns.contains('returnGrandTotal')) {
-        await db.execute(
-          'ALTER TABLE $tableName ADD COLUMN returnGrandTotal REAL DEFAULT 0',
-        );
-      }
+      // No longer need to check for return fields since we use separate records now
+
       if (!invoiceColumns.contains('comment')) {
         await db.execute('ALTER TABLE $tableName ADD COLUMN comment TEXT');
       }

@@ -62,10 +62,13 @@ class _InvoicePageState extends State<InvoicePage> {
 
     // Initialize the invoice after setup
     debugPrint(
-      'Initializing invoice for customer: ${widget.customer.customerCode}',
+      'Initializing invoice for customer: ${widget.customer.customerCode}, isReturn: $_isReturn',
     );
     _invoiceBloc.add(
-      InitializeInvoice(customerCode: widget.customer.customerCode),
+      InitializeInvoice(
+        customerCode: widget.customer.customerCode,
+        isReturn: _isReturn,
+      ),
     );
   }
 
@@ -1129,8 +1132,11 @@ class _InvoicePageState extends State<InvoicePage> {
     final apiService = getIt<ApiService>();
     final invoiceTable = getIt<InvoiceTable>();
 
-    // Check if there are items to upload
-    if (state.items.isEmpty) {
+    // Check if there are items to upload based on the current mode
+    final hasItemsToUpload =
+        _isReturn ? state.returnItems.isNotEmpty : state.items.isNotEmpty;
+
+    if (!hasItemsToUpload) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('No items to upload')));
@@ -1150,29 +1156,53 @@ class _InvoicePageState extends State<InvoicePage> {
       }
 
       // Convert invoice items to the format needed for the API
+      // Use either regular items or return items based on the current mode
       final List<Map<String, dynamic>> formattedItems =
-          state.items.map((item) {
-            // Use the actual tax percentage from the item
-            final taxPercentage = item.taxRate;
+          _isReturn
+              ? state.returnItems.map((item) {
+                // Use the actual tax percentage from the item
+                final taxPercentage = item.taxRate;
 
-            // Use the pre-calculated tax amount from the item
-            final taxAmount = item.taxAmount;
+                // Use the pre-calculated tax amount from the item
+                final taxAmount = item.taxAmount;
 
-            // Ensure all numeric values are cast to double
-            final quantity = item.quantity.toDouble();
-            final price = item.item.sellUnitPrice.toDouble();
+                // Ensure all numeric values are cast to double
+                final quantity = item.quantity.toDouble();
+                final price = item.item.sellUnitPrice.toDouble();
 
-            return {
-              'sItem_cd': item.item.itemCode,
-              'sDescription': item.item.description,
-              'sSellUnit_cd': item.item.sellUnitCode,
-              'qty': quantity,
-              'mSellUnitPrice_amt': price,
-              'sTax_cd': item.item.taxCode,
-              'taxAmount': taxAmount,
-              'taxPercentage': taxPercentage,
-            };
-          }).toList();
+                return {
+                  'sItem_cd': item.item.itemCode,
+                  'sDescription': item.item.description,
+                  'sSellUnit_cd': item.item.sellUnitCode,
+                  'qty': quantity,
+                  'mSellUnitPrice_amt': price,
+                  'sTax_cd': item.item.taxCode,
+                  'taxAmount': taxAmount,
+                  'taxPercentage': taxPercentage,
+                };
+              }).toList()
+              : state.items.map((item) {
+                // Use the actual tax percentage from the item
+                final taxPercentage = item.taxRate;
+
+                // Use the pre-calculated tax amount from the item
+                final taxAmount = item.taxAmount;
+
+                // Ensure all numeric values are cast to double
+                final quantity = item.quantity.toDouble();
+                final price = item.item.sellUnitPrice.toDouble();
+
+                return {
+                  'sItem_cd': item.item.itemCode,
+                  'sDescription': item.item.description,
+                  'sSellUnit_cd': item.item.sellUnitCode,
+                  'qty': quantity,
+                  'mSellUnitPrice_amt': price,
+                  'sTax_cd': item.item.taxCode,
+                  'taxAmount': taxAmount,
+                  'taxPercentage': taxPercentage,
+                };
+              }).toList();
 
       // Upload the invoice
       final invoiceNumber = await apiService.uploadInvoice(
@@ -1207,6 +1237,9 @@ class _InvoicePageState extends State<InvoicePage> {
           if (currentInvoice.isNotEmpty && currentInvoice.containsKey('id')) {
             final invoiceId = currentInvoice['id'] as int;
 
+            // Mark the invoice as synced in the database
+            await invoiceTable.markInvoicesAsSynced([invoiceId]);
+
             debugPrint(
               'Invoice ID: $invoiceId marked as synced and updated with API invoice number: $invoiceNumber',
             );
@@ -1226,7 +1259,7 @@ class _InvoicePageState extends State<InvoicePage> {
       _showSuccessDialog(context, invoiceNumber);
 
       // Update UI to reflect the successful sync
-      bloc.add(const CalculateInvoiceTotals());
+      bloc.add(const SyncInvoice());
     } catch (e) {
       // Close loading dialog
       Navigator.of(context, rootNavigator: true).pop();

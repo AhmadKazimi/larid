@@ -36,8 +36,14 @@ class InvoiceState with _$InvoiceState {
     @Default(false) bool isLoading,
   }) = _InvoiceState;
 
-  factory InvoiceState.initial(CustomerEntity customer) =>
-      InvoiceState(customer: customer);
+  factory InvoiceState.initial(
+    CustomerEntity customer, {
+    bool isReturn = false,
+  }) => InvoiceState(
+    customer: customer,
+    items: isReturn ? [] : [],
+    returnItems: isReturn ? [] : [],
+  );
 }
 
 @freezed

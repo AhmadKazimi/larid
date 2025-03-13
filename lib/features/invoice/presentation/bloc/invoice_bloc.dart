@@ -74,6 +74,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       debugPrint(
         '\n======= INITIALIZING INVOICE FOR CUSTOMER: ${event.customerCode} =======',
       );
+      debugPrint('Is Return: ${event.isReturn}, Force New: ${event.forceNew}');
       emit(state.copyWith(isLoading: true));
 
       final customer = await _customerTable.getCustomerByCode(
@@ -89,22 +90,61 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
       debugPrint('✅ Customer found: ${customer.customerName}');
 
-      // Check if there's an existing unsynchronized invoice for this customer
-      final existingInvoices = await _invoiceTable.getInvoicesForCustomer(
+      // Check if there's an existing invoice for this customer
+      final allInvoices = await _invoiceTable.getInvoicesForCustomer(
         customer.customerCode,
       );
 
       debugPrint(
-        '\n📋 Found ${existingInvoices.length} invoices total for customer ${customer.customerName}',
+        '\n📋 Found ${allInvoices.length} total invoices for customer ${customer.customerName}',
       );
 
-      // Always use the first (most recent) invoice for this customer, regardless of sync status
-      // This ensures we always show an invoice if one exists
-      if (existingInvoices.isNotEmpty && !event.forceNew) {
-        debugPrint('Using the most recent invoice for this customer');
+      // Debug all invoices before filtering
+      if (allInvoices.isNotEmpty) {
+        debugPrint('\n------ All Available Invoices Before Filtering ------');
+        for (final invoice in allInvoices) {
+          final isReturnInvoice = invoice['isReturn'] == 1;
+          final isSynced = invoice['isSynced'] == 1;
+          final invoiceNumber =
+              invoice['invoiceNumber'] as String? ?? 'no number';
+          debugPrint(
+            '- Invoice #$invoiceNumber: Return=$isReturnInvoice, Synced=$isSynced',
+          );
+        }
+        debugPrint('----------------------------------------------------\n');
+      }
+
+      // Filter invoices based on the isReturn flag and sync status
+      final filteredInvoices =
+          allInvoices.where((invoice) {
+            final isReturnInvoice = invoice['isReturn'] == 1;
+            final isSynced = invoice['isSynced'] == 1;
+
+            // Log each invoice evaluation
+            final invoiceNumber =
+                invoice['invoiceNumber'] as String? ?? 'no number';
+            final matches = (isReturnInvoice == event.isReturn) && !isSynced;
+            debugPrint(
+              'Evaluating invoice #$invoiceNumber: isReturn=$isReturnInvoice (requested=${event.isReturn}), '
+              'isSynced=$isSynced, matches=$matches',
+            );
+
+            // Only show unsynchronized invoices that match the requested type (return or normal)
+            return matches;
+          }).toList();
+
+      debugPrint(
+        'Unsynchronized ${event.isReturn ? "Return" : "Regular"} invoices for this customer: ${filteredInvoices.length}',
+      );
+
+      // Always use the first (most recent) matching invoice for this customer, unless forceNew is true
+      if (filteredInvoices.isNotEmpty && !event.forceNew) {
+        debugPrint(
+          'Using the most recent ${event.isReturn ? "return" : "regular"} invoice for this customer',
+        );
 
         // Use the existing invoice
-        final invoice = existingInvoices.first;
+        final invoice = filteredInvoices.first;
 
         // Check if the invoice has a valid items array
         final hasItems =
@@ -286,10 +326,17 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       } else {
         // Create new invoice
         debugPrint(
-          '\n🆕 Creating new invoice for customer: ${customer.customerName}',
+          '\n🆕 Creating new ${event.isReturn ? "return" : "regular"} invoice for customer: ${customer.customerName}',
         );
-        emit(InvoiceState.initial(customer).copyWith(isLoading: false));
-        debugPrint('✅ New invoice initialized');
+        emit(
+          InvoiceState.initial(
+            customer,
+            isReturn: event.isReturn,
+          ).copyWith(isLoading: false),
+        );
+        debugPrint(
+          '✅ New ${event.isReturn ? "return" : "regular"} invoice initialized',
+        );
       }
     } catch (e, stackTrace) {
       debugPrint('\n❌ ERROR INITIALIZING INVOICE: $e');
@@ -571,6 +618,11 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       return;
     }
 
+    // Ensure tax calculator is initialized
+    if (_taxCalculator == null) {
+      _initTaxCalculator();
+    }
+
     if (event.isReturn) {
       final List<InvoiceItemModel> updatedReturnItems = List.from(
         state.returnItems,
@@ -582,9 +634,35 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       if (itemIndex != -1) {
         // Update existing item
         final existingItem = updatedReturnItems[itemIndex];
+        final item = existingItem.item;
+
+        // Calculate price and tax values
+        final priceBeforeTax = item.sellUnitPrice * event.quantity;
+        double taxAmount = 0.0;
+        double taxRate = existingItem.taxRate;
+
+        // Recalculate tax amount
+        if (_taxCalculator != null && item.taxCode.isNotEmpty) {
+          taxRate = _taxCalculator!.getTaxPercentage(item.taxCode);
+          taxAmount = _taxCalculator!.calculateTax(
+            item.taxCode,
+            priceBeforeTax,
+          );
+          debugPrint(
+            'Recalculated tax for return item ${item.itemCode}: $taxAmount',
+          );
+        }
+
+        final priceAfterTax = priceBeforeTax + taxAmount;
+
+        // Create updated item with new values
         updatedReturnItems[itemIndex] = existingItem.copyWith(
           quantity: event.quantity,
-          totalPrice: existingItem.item.sellUnitPrice * event.quantity,
+          priceBeforeTax: priceBeforeTax,
+          taxAmount: taxAmount,
+          taxRate: taxRate,
+          priceAfterTax: priceAfterTax,
+          totalPrice: priceAfterTax,
         );
 
         emit(state.copyWith(returnItems: updatedReturnItems));
@@ -598,15 +676,40 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       if (itemIndex != -1) {
         // Update existing item
         final existingItem = updatedItems[itemIndex];
+        final item = existingItem.item;
+
+        // Calculate price and tax values
+        final priceBeforeTax = item.sellUnitPrice * event.quantity;
+        double taxAmount = 0.0;
+        double taxRate = existingItem.taxRate;
+
+        // Recalculate tax amount
+        if (_taxCalculator != null && item.taxCode.isNotEmpty) {
+          taxRate = _taxCalculator!.getTaxPercentage(item.taxCode);
+          taxAmount = _taxCalculator!.calculateTax(
+            item.taxCode,
+            priceBeforeTax,
+          );
+          debugPrint('Recalculated tax for item ${item.itemCode}: $taxAmount');
+        }
+
+        final priceAfterTax = priceBeforeTax + taxAmount;
+
+        // Create updated item with new values
         updatedItems[itemIndex] = existingItem.copyWith(
           quantity: event.quantity,
-          totalPrice: existingItem.item.sellUnitPrice * event.quantity,
+          priceBeforeTax: priceBeforeTax,
+          taxAmount: taxAmount,
+          taxRate: taxRate,
+          priceAfterTax: priceAfterTax,
+          totalPrice: priceAfterTax,
         );
 
         emit(state.copyWith(items: updatedItems));
       }
     }
 
+    // Calculate invoice totals
     add(const CalculateInvoiceTotals());
   }
 
@@ -746,18 +849,54 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     try {
       // Get all unsynced invoices
       final unsyncedInvoices = await _invoiceTable.getUnsyncedInvoices();
+      debugPrint('Found ${unsyncedInvoices.length} unsynced invoices to sync');
+
+      bool currentInvoiceSynced = false;
 
       if (unsyncedInvoices.isNotEmpty) {
+        // Simulate API sync
         await Future.delayed(const Duration(seconds: 1));
+        debugPrint('API sync completed successfully');
 
-        // Mark invoices as synced
+        // Check if current invoice is in the synced list
+        if (state.invoiceNumber != null) {
+          final currentInvoice = unsyncedInvoices.firstWhere(
+            (invoice) => invoice['invoiceNumber'] == state.invoiceNumber,
+            orElse: () => <String, dynamic>{},
+          );
+
+          currentInvoiceSynced = currentInvoice.isNotEmpty;
+
+          if (currentInvoiceSynced) {
+            debugPrint('Current invoice #${state.invoiceNumber} was synced');
+          }
+        }
+
+        // Mark invoices as synced in the database
         final invoiceIds =
             unsyncedInvoices.map<int>((i) => i['id'] as int).toList();
         await _invoiceTable.markInvoicesAsSynced(invoiceIds);
+        debugPrint(
+          'Marked ${invoiceIds.length} invoices as synced in database',
+        );
       }
 
-      emit(state.copyWith(isSyncing: false));
+      // Update the UI state
+      if (currentInvoiceSynced) {
+        // If the current invoice was synced, clear the screen to show no invoice
+        debugPrint('Current invoice synced, updating UI to show no invoice');
+        emit(
+          InvoiceState.initial(
+            state.customer,
+            isReturn: state.returnItems.isNotEmpty && state.items.isEmpty,
+          ).copyWith(isSyncing: false),
+        );
+      } else {
+        // Otherwise just update the syncing status
+        emit(state.copyWith(isSyncing: false));
+      }
     } catch (e) {
+      debugPrint('Error during sync: $e');
       emit(
         state.copyWith(
           isSyncing: false,
@@ -771,8 +910,12 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     emit(state.copyWith(isSubmitting: true, errorMessage: null));
 
     try {
-      // Validate invoice data
-      if (event.isReturn && state.returnItems.isEmpty) {
+      // Determine what we're submitting
+      final bool hasRegularItems = state.items.isNotEmpty;
+      final bool hasReturnItems = state.returnItems.isNotEmpty;
+
+      // Validate based on what we're trying to submit
+      if (event.isReturn && !hasReturnItems) {
         emit(
           state.copyWith(
             isSubmitting: false,
@@ -780,7 +923,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
           ),
         );
         return;
-      } else if (!event.isReturn && state.items.isEmpty) {
+      } else if (!event.isReturn && !hasRegularItems) {
         emit(
           state.copyWith(
             isSubmitting: false,
@@ -790,30 +933,49 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
         return;
       }
 
-      // Get existing invoice number or generate a new one
-      String invoiceNumber =
-          state.invoiceNumber ?? await _invoiceTable.getNextInvoiceNumber();
+      String invoiceNumber;
+      bool isUpdate = false;
 
-      // Check if invoice already exists
-      bool isUpdate = state.invoiceNumber != null;
+      if (event.isReturn) {
+        // For return invoices, ALWAYS get a new invoice number
+        // This ensures return invoices are always saved as new records
+        invoiceNumber = await _invoiceTable.getNextInvoiceNumber();
+        isUpdate = false; // Force treating it as a new invoice
+        debugPrint(
+          'Creating new return invoice with new number: $invoiceNumber',
+        );
+      } else {
+        // For regular invoices, use existing number or get a new one
+        invoiceNumber =
+            state.invoiceNumber ?? await _invoiceTable.getNextInvoiceNumber();
+        isUpdate = state.invoiceNumber != null;
+      }
+
       int invoiceId;
 
-      if (isUpdate) {
-        // Update existing invoice
+      // Main invoice submission
+      if (isUpdate && !event.isReturn) {
+        // Update existing invoice (only for regular invoices)
+        debugPrint('Updating existing regular invoice: $invoiceNumber');
         invoiceId = await _invoiceTable.updateInvoice(
           invoiceNumber: invoiceNumber,
           customer: state.customer,
           invoiceState: state,
           isReturn: event.isReturn,
         );
+        debugPrint('Updated invoice ID: $invoiceId');
       } else {
         // Save new invoice
+        debugPrint(
+          'Saving new ${event.isReturn ? "return" : "regular"} invoice: $invoiceNumber',
+        );
         invoiceId = await _invoiceTable.saveInvoice(
           invoiceNumber: invoiceNumber,
           customer: state.customer,
           invoiceState: state,
           isReturn: event.isReturn,
         );
+        debugPrint('Saved new invoice with ID: $invoiceId');
       }
 
       // Mark invoice as submitted
@@ -838,6 +1000,51 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     emit(state.copyWith(isPrinting: true, errorMessage: null));
 
     try {
+      // First determine if we need to save or update the invoice
+      if (state.items.isEmpty && state.returnItems.isEmpty) {
+        emit(
+          state.copyWith(
+            isPrinting: false,
+            errorMessage: 'Cannot print an invoice with no items',
+          ),
+        );
+        return;
+      }
+
+      // Save invoice if it hasn't been saved yet
+      String invoiceNumber = state.invoiceNumber ?? '';
+      bool isReturn = state.returnItems.isNotEmpty && state.items.isEmpty;
+
+      if (invoiceNumber.isEmpty) {
+        debugPrint('Invoice not yet saved, saving before printing...');
+        // Save the invoice first by submitting it
+        add(SubmitInvoice(isReturn: isReturn));
+
+        // Wait a moment for the submit operation to complete
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Get the invoice number from the updated state
+        invoiceNumber = state.invoiceNumber ?? '';
+
+        if (invoiceNumber.isEmpty) {
+          emit(
+            state.copyWith(
+              isPrinting: false,
+              errorMessage: 'Failed to save invoice before printing',
+            ),
+          );
+          return;
+        }
+
+        debugPrint(
+          'Successfully saved invoice #$invoiceNumber before printing',
+        );
+      } else {
+        debugPrint('Using existing invoice #$invoiceNumber for printing');
+      }
+
+      // Now proceed with printing
+      debugPrint('Printing invoice #$invoiceNumber...');
       await Future.delayed(const Duration(seconds: 1));
 
       emit(state.copyWith(isPrinting: false));
