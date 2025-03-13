@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/network/api_service.dart';
 import '../../../../core/utils/dialogs.dart';
 import '../../../../features/auth/domain/repositories/auth_repository.dart';
+import '../../../../database/invoice_table.dart';
 
 class InvoicePage extends StatefulWidget {
   final CustomerEntity customer;
@@ -30,12 +31,16 @@ class _InvoicePageState extends State<InvoicePage> {
   final TextEditingController _commentController = TextEditingController();
   late final InvoiceBloc _invoiceBloc;
   late final bool _isReturn;
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
     _isReturn = widget.isReturn;
     _invoiceBloc = getIt<InvoiceBloc>();
+
+    // Get the user ID for invoice number formatting
+    _getUserId();
 
     // Listen for state changes to update the comment controller
     _invoiceBloc.stream.listen((state) {
@@ -1074,10 +1079,55 @@ class _InvoicePageState extends State<InvoicePage> {
     );
   }
 
+  // Add this method to show the success dialog
+  void _showSuccessDialog(BuildContext context, String invoiceNumber) {
+    // Format the invoice number with userid
+    final formattedNumber = getFormattedInvoiceNumber(invoiceNumber);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Make it non-dismissable
+      builder: (BuildContext context) {
+        return WillPopScope(
+          // Prevent back button from dismissing the dialog
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: Text(
+              'Success',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              'Invoice uploaded successfully. Invoice #$formattedNumber',
+              style: TextStyle(fontSize: 16),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  // Close the dialog and navigate back
+                  Navigator.of(context).pop();
+                  context.pop(); // Go back to previous screen
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _syncInvoice(BuildContext context) async {
     final bloc = context.read<InvoiceBloc>();
     final state = bloc.state;
     final apiService = getIt<ApiService>();
+    final invoiceTable = getIt<InvoiceTable>();
 
     // Check if there are items to upload
     if (state.items.isEmpty) {
@@ -1098,11 +1148,6 @@ class _InvoicePageState extends State<InvoicePage> {
       if (user == null) {
         throw Exception('User not logged in');
       }
-
-      // Alternative to using AuthRepository directly:
-      // final userid = await bloc.getUserId();
-      // final workspace = await bloc.getWorkspace();
-      // final password = await bloc.getPassword();
 
       // Convert invoice items to the format needed for the API
       final List<Map<String, dynamic>> formattedItems =
@@ -1140,24 +1185,45 @@ class _InvoicePageState extends State<InvoicePage> {
         customerCode: state.customer.customerCode,
         customerName: state.customer.customerName,
         customerAddress: state.customer.address ?? '',
-        invoiceReference: state.invoiceNumber ?? '',
+        invoiceReference: getFormattedInvoiceNumber(state.invoiceNumber),
         comments: state.comment,
 
         // Invoice items
         items: formattedItems,
       );
 
+      // Update the database to mark the invoice as synced
+      if (state.invoiceNumber != null) {
+        try {
+          // Get the invoice ID from the database based on invoice number
+          final invoices = await invoiceTable.getInvoicesForCustomer(
+            state.customer.customerCode,
+          );
+          final currentInvoice = invoices.firstWhere(
+            (invoice) => invoice['invoiceNumber'] == state.invoiceNumber,
+            orElse: () => {},
+          );
+
+          if (currentInvoice.isNotEmpty && currentInvoice.containsKey('id')) {
+            final invoiceId = currentInvoice['id'] as int;
+           
+            debugPrint(
+              'Invoice ID: $invoiceId marked as synced and updated with API invoice number: $invoiceNumber',
+            );
+          } else {
+            debugPrint('Warning: Could not find invoice ID to mark as synced');
+          }
+        } catch (dbError) {
+          debugPrint('Error updating sync status in database: $dbError');
+          // Continue with showing success - this is not a critical error
+        }
+      }
+
       // Close loading dialog
       Navigator.of(context, rootNavigator: true).pop();
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Invoice uploaded successfully. Invoice #$invoiceNumber',
-          ),
-        ),
-      );
+      // Show success dialog with redirection instead of a snackbar
+      _showSuccessDialog(context, invoiceNumber);
 
       // Update UI to reflect the successful sync
       bloc.add(const CalculateInvoiceTotals());
@@ -1173,5 +1239,28 @@ class _InvoicePageState extends State<InvoicePage> {
         ),
       );
     }
+  }
+
+  // Add method to get the user ID
+  Future<void> _getUserId() async {
+    try {
+      final authRepository = getIt<AuthRepository>();
+      final user = await authRepository.getCurrentUser();
+      if (user != null) {
+        setState(() {
+          _userId = user.userid;
+        });
+        debugPrint('User ID for invoice formatting: $_userId');
+      }
+    } catch (e) {
+      debugPrint('Error getting user ID: $e');
+    }
+  }
+
+  // Add method to get formatted invoice number
+  String getFormattedInvoiceNumber(String? invoiceNumber) {
+    return _userId != null && _userId!.isNotEmpty
+        ? '${_userId!}-${invoiceNumber ?? "New"}'
+        : invoiceNumber ?? "New";
   }
 }

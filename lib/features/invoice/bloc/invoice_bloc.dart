@@ -1,6 +1,7 @@
 import '../../../../core/di/service_locator.dart'; // Import for getIt
 import '../../../../features/auth/domain/repositories/auth_repository.dart'; // Import for AuthRepository
 import '../../../../core/network/api_service.dart';
+import '../../../../database/invoice_table.dart'; // Fixed import path
 import '../presentation/bloc/invoice_event.dart';
 import '../presentation/bloc/invoice_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +22,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       ) {
     // Event handlers
     on<SyncInvoice>(_onSyncInvoice);
+    on<SubmitInvoice>(_onSubmitInvoice);
     // Other event handlers...
   }
 
@@ -143,6 +145,52 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
       // Log error
       print('Error syncing invoice: ${e.toString()}');
+    }
+  }
+
+  Future<void> _onSubmitInvoice(
+    SubmitInvoice event,
+    Emitter<InvoiceState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(isSubmitting: true));
+
+      // Get user ID for formatting invoice number
+      final userId = await getUserId();
+
+      // Get next invoice number and format it with user ID
+      final nextInvoiceNumber =
+          await getIt<InvoiceTable>().getNextInvoiceNumber();
+      final formattedInvoiceNumber =
+          userId.isNotEmpty ? '$userId-$nextInvoiceNumber' : nextInvoiceNumber;
+
+      // Save invoice with formatted number
+      final invoiceId = await getIt<InvoiceTable>().saveInvoice(
+        invoiceNumber: formattedInvoiceNumber, // Use formatted number here
+        customer: state.customer,
+        invoiceState: state,
+        isReturn: event.isReturn,
+      );
+
+      // Update state with the new formatted invoice number
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          invoiceNumber: formattedInvoiceNumber,
+        ),
+      );
+
+      print(
+        'Invoice saved successfully with ID: $invoiceId and number: $formattedInvoiceNumber',
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          errorMessage: 'Error submitting invoice: ${e.toString()}',
+        ),
+      );
+      print('Error submitting invoice: $e');
     }
   }
 }
