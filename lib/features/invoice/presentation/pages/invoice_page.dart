@@ -1155,6 +1155,40 @@ class _InvoicePageState extends State<InvoicePage> {
         throw Exception('User not logged in');
       }
 
+      // If this is a return invoice and we don't have an invoice number yet,
+      // we need to submit it first to get an invoice number
+      String? currentInvoiceNumber = state.invoiceNumber;
+      if (_isReturn &&
+          (currentInvoiceNumber == null || currentInvoiceNumber.isEmpty)) {
+        debugPrint(
+          'Return invoice has no invoice number, submitting it first...',
+        );
+
+        // Submit the invoice to get a number
+        bloc.add(SubmitInvoice(isReturn: true));
+
+        // Wait for the submission to complete
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Get the updated state with the invoice number
+        currentInvoiceNumber = bloc.state.invoiceNumber;
+
+        if (currentInvoiceNumber == null || currentInvoiceNumber.isEmpty) {
+          // Close loading dialog
+          Navigator.of(context, rootNavigator: true).pop();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Failed to generate invoice number for return. Please try submitting first.',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      }
+
       // Convert invoice items to the format needed for the API
       // Use either regular items or return items based on the current mode
       final List<Map<String, dynamic>> formattedItems =
@@ -1204,6 +1238,14 @@ class _InvoicePageState extends State<InvoicePage> {
                 };
               }).toList();
 
+      // Get the formatted invoice reference using the current invoice number
+      final formattedInvoiceReference = getFormattedInvoiceNumber(
+        currentInvoiceNumber,
+      );
+      debugPrint(
+        'Using formatted invoice reference: $formattedInvoiceReference',
+      );
+
       // Upload the invoice
       final invoiceNumber = await apiService.uploadInvoice(
         // Auth parameters from user
@@ -1215,7 +1257,7 @@ class _InvoicePageState extends State<InvoicePage> {
         customerCode: state.customer.customerCode,
         customerName: state.customer.customerName,
         customerAddress: state.customer.address ?? '',
-        invoiceReference: getFormattedInvoiceNumber(state.invoiceNumber),
+        invoiceReference: formattedInvoiceReference,
         comments: state.comment,
 
         // Invoice items
@@ -1223,14 +1265,14 @@ class _InvoicePageState extends State<InvoicePage> {
       );
 
       // Update the database to mark the invoice as synced
-      if (state.invoiceNumber != null) {
+      if (currentInvoiceNumber != null && currentInvoiceNumber.isNotEmpty) {
         try {
           // Get the invoice ID from the database based on invoice number
           final invoices = await invoiceTable.getInvoicesForCustomer(
             state.customer.customerCode,
           );
           final currentInvoice = invoices.firstWhere(
-            (invoice) => invoice['invoiceNumber'] == state.invoiceNumber,
+            (invoice) => invoice['invoiceNumber'] == currentInvoiceNumber,
             orElse: () => {},
           );
 
@@ -1290,10 +1332,16 @@ class _InvoicePageState extends State<InvoicePage> {
     }
   }
 
-  // Add method to get formatted invoice number
+  // Update method to properly format invoice numbers
   String getFormattedInvoiceNumber(String? invoiceNumber) {
+    if (invoiceNumber == null || invoiceNumber.isEmpty) {
+      debugPrint('Warning: Empty invoice number, using fallback');
+      invoiceNumber = "New";
+    }
+
+    // Ensure proper userid-invoiceNumber format
     return _userId != null && _userId!.isNotEmpty
-        ? '${_userId!}-${invoiceNumber ?? "New"}'
-        : invoiceNumber ?? "New";
+        ? '${_userId!}-$invoiceNumber'
+        : invoiceNumber;
   }
 }
