@@ -157,10 +157,12 @@ class _PrintPageState extends State<PrintPage> {
     if (_taxCalculator != null) {
       return _taxCalculator!.getTaxPercentage(taxCode);
     }
-    // Default fallback rates based on common tax codes
-    if (taxCode.contains('VAT') || taxCode.contains('GST')) {
-      return 16.0; // Standard VAT/GST rate in Jordan
-    }
+
+    // Log warning when tax calculator isn't available
+    debugPrint('WARNING: Tax calculator not available for code $taxCode');
+
+    // No hardcoded defaults - return 0% if tax calculator isn't available
+    // This is safer than assuming an arbitrary rate
     return 0.0;
   }
 
@@ -611,16 +613,33 @@ class _PrintPageState extends State<PrintPage> {
           // 2. If we have a taxCode but no rate, try to get it from calculator
           if (taxRate <= 0 && taxCode.isNotEmpty && _taxCalculator != null) {
             taxRate = _taxCalculator!.getTaxPercentage(taxCode);
+            debugPrint('Using tax calculator: code=$taxCode, rate=$taxRate%');
           }
 
-          // 3. If still no rate but we have a taxCode, use default
+          // 3. If still no rate but we have a taxCode, use gentle fallback
           if (taxRate <= 0 && taxCode.isNotEmpty) {
-            taxRate = 16.0; // Default VAT rate
+            // Attempt one more time with tax calculator
+            if (_taxCalculator != null) {
+              taxRate = _taxCalculator!.getTaxPercentage(taxCode);
+              debugPrint(
+                'Second attempt to get tax rate: code=$taxCode, rate=$taxRate%',
+              );
+            }
+
+            // If still no rate, log warning but use 0% instead of arbitrary default
+            if (taxRate <= 0) {
+              debugPrint(
+                'WARNING: Could not determine tax rate for code $taxCode, using 0%',
+              );
+              taxRate =
+                  0.0; // Don't use arbitrary default rate, use 0% if truly unknown
+            }
           }
 
           // 4. Calculate tax amount if needed
           if (taxAmount <= 0 && taxRate > 0) {
             taxAmount = priceBeforeTax * (taxRate / 100);
+            debugPrint('Calculated tax amount: $taxAmount for rate $taxRate%');
           }
 
           // 5. Calculate final price
@@ -726,14 +745,26 @@ class _PrintPageState extends State<PrintPage> {
         // Use tax calculator if available
         if (_taxCalculator != null) {
           itemTaxAmount = calculateTaxAmount(taxCode, priceBeforeTax);
+          debugPrint(
+            'Using tax calculator for total: code=$taxCode, tax=$itemTaxAmount',
+          );
         } else {
-          // Fall back to stored tax rate or default
+          // Fall back to stored tax rate or attempt to get it
           double taxRate =
               item.taxRate > 0 ? item.taxRate : getTaxRate(taxCode);
+
+          // If still no rate, log warning but use 0% instead of arbitrary default
           if (taxRate <= 0 && taxCode.isNotEmpty) {
-            taxRate = 16.0; // Default if all else fails
+            debugPrint(
+              'WARNING: Could not determine tax rate for totals with code $taxCode, using 0%',
+            );
+            taxRate = 0.0; // Don't use arbitrary default, use 0% if unknown
           }
+
           itemTaxAmount = priceBeforeTax * (taxRate / 100);
+          debugPrint(
+            'Calculated tax amount for totals: $itemTaxAmount for rate $taxRate%',
+          );
         }
       }
 
@@ -859,36 +890,32 @@ class _PrintPageState extends State<PrintPage> {
   // Helper method to directly log tax information for all items
   void _logInvoiceItemTaxes() {
     if (_taxCalculator == null) {
-      debugPrint('Cannot log taxes: Tax calculator not initialized');
+      debugPrint(
+        'WARNING: Cannot log invoice item taxes - tax calculator not initialized',
+      );
       return;
     }
 
     final items =
         widget.isReturn ? widget.invoice.returnItems : widget.invoice.items;
 
-    debugPrint('\n============ INVOICE ITEM TAX DETAILS ============');
+    debugPrint('\n======= INVOICE ITEM TAX CODES =======');
     debugPrint('Total items: ${items.length}');
 
-    for (int i = 0; i < items.length; i++) {
-      final item = items[i];
+    for (var item in items) {
       final taxCode = item.item.taxCode;
-      final price = item.item.sellUnitPrice * item.quantity;
-
       final taxRate = _taxCalculator!.getTaxPercentage(taxCode);
-      final taxAmount = _taxCalculator!.calculateTax(taxCode, price);
+      final priceBeforeTax = item.item.sellUnitPrice * item.quantity;
+      final taxAmount = _taxCalculator!.calculateTax(taxCode, priceBeforeTax);
 
       debugPrint(
-        'Item ${i + 1}: ${item.item.itemCode} - ${item.item.description}',
+        'Item: ${item.item.itemCode}, TaxCode: $taxCode, ' +
+            'Rate: $taxRate%, Amount: $taxAmount, ' +
+            'Price: ${priceBeforeTax.toStringAsFixed(2)}',
       );
-      debugPrint('- Tax Code: ${taxCode.isEmpty ? "NONE" : taxCode}');
-      debugPrint('- Tax Rate: ${taxRate.toStringAsFixed(2)}%');
-      debugPrint('- Price: ${price.toStringAsFixed(2)} JOD');
-      debugPrint('- Tax Amount: ${taxAmount.toStringAsFixed(2)} JOD');
-      debugPrint('- Total: ${(price + taxAmount).toStringAsFixed(2)} JOD');
-      debugPrint('-------------------------------------------');
     }
 
-    debugPrint('==================================================\n');
+    debugPrint('======================================\n');
   }
 
   @override

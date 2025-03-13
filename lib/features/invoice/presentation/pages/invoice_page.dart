@@ -1206,7 +1206,7 @@ class _InvoicePageState extends State<InvoicePage> {
 
           if (currentInvoice.isNotEmpty && currentInvoice.containsKey('id')) {
             final invoiceId = currentInvoice['id'] as int;
-           
+
             debugPrint(
               'Invoice ID: $invoiceId marked as synced and updated with API invoice number: $invoiceNumber',
             );

@@ -618,45 +618,87 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     CalculateInvoiceTotals event,
     Emitter<InvoiceState> emit,
   ) {
+    // Ensure tax calculator is initialized
+    if (_taxCalculator == null) {
+      debugPrint('Tax calculator not initialized, initializing now...');
+      _initTaxCalculator();
+    }
+
     // Calculate invoice totals
     double subtotal = 0.0;
     double discount = 0.0;
+    double salesTax = 0.0;
     int itemCount = 0;
 
     debugPrint('Calculating invoice totals...');
     debugPrint('Regular items: ${state.items.length}');
 
     for (final item in state.items) {
-      subtotal += item.totalPrice;
+      // Calculate price before tax
+      final priceBeforeTax = item.item.sellUnitPrice * item.quantity;
+
+      // Calculate tax amount if tax calculator is available
+      double taxAmount = 0.0;
+      if (_taxCalculator != null) {
+        taxAmount = _taxCalculator!.calculateTax(
+          item.item.taxCode,
+          priceBeforeTax,
+        );
+        debugPrint(
+          'Tax for item ${item.item.itemCode} (code: ${item.item.taxCode}): $taxAmount',
+        );
+      } else {
+        debugPrint('Warning: Tax calculator not available, using zero tax');
+      }
+
+      subtotal += priceBeforeTax;
       discount += item.discount;
+      salesTax += taxAmount;
       itemCount += item.quantity;
+
       debugPrint(
-        'Item: ${item.item.itemCode}, Qty: ${item.quantity}, Price: ${item.item.sellUnitPrice}, Total: ${item.totalPrice}',
+        'Item: ${item.item.itemCode}, Qty: ${item.quantity}, Price: ${item.item.sellUnitPrice}, Total: ${priceBeforeTax}, Tax: $taxAmount',
       );
     }
 
     final total = subtotal - discount;
-    final salesTax = total * 0.15; // Assuming 15% sales tax
     final grandTotal = total + salesTax;
 
     // Calculate return totals
     double returnSubtotal = 0.0;
     double returnDiscount = 0.0;
+    double returnSalesTax = 0.0;
     int returnCount = 0;
 
     debugPrint('Return items: ${state.returnItems.length}');
 
     for (final item in state.returnItems) {
-      returnSubtotal += item.totalPrice;
+      // Calculate price before tax
+      final priceBeforeTax = item.item.sellUnitPrice * item.quantity;
+
+      // Calculate tax amount if tax calculator is available
+      double taxAmount = 0.0;
+      if (_taxCalculator != null) {
+        taxAmount = _taxCalculator!.calculateTax(
+          item.item.taxCode,
+          priceBeforeTax,
+        );
+        debugPrint(
+          'Tax for return item ${item.item.itemCode} (code: ${item.item.taxCode}): $taxAmount',
+        );
+      }
+
+      returnSubtotal += priceBeforeTax;
       returnDiscount += item.discount;
+      returnSalesTax += taxAmount;
       returnCount += item.quantity;
+
       debugPrint(
-        'Return Item: ${item.item.itemCode}, Qty: ${item.quantity}, Price: ${item.item.sellUnitPrice}, Total: ${item.totalPrice}',
+        'Return Item: ${item.item.itemCode}, Qty: ${item.quantity}, Price: ${item.item.sellUnitPrice}, Total: ${priceBeforeTax}, Tax: $taxAmount',
       );
     }
 
     final returnTotal = returnSubtotal - returnDiscount;
-    final returnSalesTax = returnTotal * 0.15; // Assuming 15% sales tax
     final returnGrandTotal = returnTotal + returnSalesTax;
 
     debugPrint('CALCULATED TOTALS:');
