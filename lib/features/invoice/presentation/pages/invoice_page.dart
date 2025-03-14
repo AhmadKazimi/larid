@@ -1246,23 +1246,47 @@ class _InvoicePageState extends State<InvoicePage> {
         'Using formatted invoice reference: $formattedInvoiceReference',
       );
 
-      // Upload the invoice
-      final invoiceNumber = await apiService.uploadInvoice(
-        // Auth parameters from user
-        userid: user.userid,
-        workspace: user.workspace,
-        password: user.password,
+      // Upload the invoice using the appropriate API endpoint based on invoice type
+      String invoiceNumber;
+      if (_isReturn) {
+        debugPrint('Using UploadCM API for return invoice');
+        // Use the uploadCM API for return invoices
+        invoiceNumber = await apiService.uploadCM(
+          // Auth parameters from user
+          userid: user.userid,
+          workspace: user.workspace,
+          password: user.password,
 
-        // Customer details
-        customerCode: state.customer.customerCode,
-        customerName: state.customer.customerName,
-        customerAddress: state.customer.address ?? '',
-        invoiceReference: formattedInvoiceReference,
-        comments: state.comment,
+          // Customer details
+          customerCode: state.customer.customerCode,
+          customerName: state.customer.customerName,
+          customerAddress: state.customer.address ?? '',
+          invoiceReference: formattedInvoiceReference,
+          comments: state.comment,
 
-        // Invoice items
-        items: formattedItems,
-      );
+          // Invoice items
+          items: formattedItems,
+        );
+      } else {
+        debugPrint('Using UploadInvoice API for regular invoice');
+        // Use the uploadInvoice API for regular invoices
+        invoiceNumber = await apiService.uploadInvoice(
+          // Auth parameters from user
+          userid: user.userid,
+          workspace: user.workspace,
+          password: user.password,
+
+          // Customer details
+          customerCode: state.customer.customerCode,
+          customerName: state.customer.customerName,
+          customerAddress: state.customer.address ?? '',
+          invoiceReference: formattedInvoiceReference,
+          comments: state.comment,
+
+          // Invoice items
+          items: formattedItems,
+        );
+      }
 
       // Update the database to mark the invoice as synced
       if (currentInvoiceNumber != null && currentInvoiceNumber.isNotEmpty) {

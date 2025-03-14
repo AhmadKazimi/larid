@@ -348,4 +348,110 @@ class ApiService {
         return 'Unknown error: $errorCode';
     }
   }
+
+  /// Uploads a return invoice (Credit Memo) to the server
+  /// Returns the CM number on success, throws an exception with appropriate message on failure
+  Future<String> uploadCM({
+    // Auth parameters
+    required String userid,
+    required String workspace,
+    required String password,
+
+    // Customer details
+    required String customerCode,
+    required String customerName,
+    required String customerAddress,
+    required String invoiceReference,
+    String? comments,
+
+    // Invoice items
+    required List<Map<String, dynamic>> items,
+  }) async {
+    try {
+      // Ensure warehouse is set
+      if (_warehouse == null || _warehouse!.isEmpty) {
+        throw Exception(
+          'Warehouse must be set before uploading return invoice',
+        );
+      }
+
+      // Prepare the request JSON body (same structure as uploadInvoice)
+      final Map<String, dynamic> requestBody = {
+        "customer": {
+          "code": customerCode,
+          "name": customerName,
+          "address": customerAddress,
+          "reference": invoiceReference,
+          "comments": comments ?? "",
+        },
+        "items":
+            items.asMap().entries.map((entry) {
+              final int index = entry.key;
+              final item = entry.value;
+
+              return {
+                "index": index + 1, // itemIndex starts from 1
+                "code": item['sItem_cd'],
+                "description": item['sDescription'],
+                "unit": item['sSellUnit_cd'],
+                "qty": item['qty'],
+                "price": item['mSellUnitPrice_amt'],
+                "total_price": item['mSellUnitPrice_amt'] * item['qty'],
+                "tax_cd": item['sTax_cd'],
+                "tax_amt": item['taxAmount'] ?? 0.0,
+                "tax_pc": item['taxPercentage'] ?? 0.0,
+              };
+            }).toList(),
+      };
+
+      // Log the request for debugging
+      print('Upload CM (Return Invoice) Request: ${requestBody.toString()}');
+
+      // Make the API call with auth parameters in headers
+      final response = await _dioClient.post(
+        ApiEndpoints.buildUrl(ApiEndpoints.uploadCM),
+        options: Options(
+          headers: {
+            ApiParameters.userid: userid,
+            ApiParameters.workspace: workspace,
+            ApiParameters.password: password,
+            ApiParameters.warehouse: _warehouse,
+          },
+        ),
+        data: requestBody,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> responseData = response.data;
+
+        // Check if we have an error in the response
+        if (responseData.isNotEmpty &&
+            responseData[0] is Map<String, dynamic>) {
+          final Map<String, dynamic> firstItem = responseData[0];
+
+          // Check for error code
+          if (firstItem.containsKey('ERROR')) {
+            final String errorCode = firstItem['ERROR'];
+            final String errorMessage = _getErrorMessageForCode(errorCode);
+            throw Exception(errorMessage);
+          }
+
+          // Check for success (invoice number)
+          if (firstItem.containsKey('number')) {
+            return firstItem['number'];
+          }
+        }
+
+        throw Exception('Invalid response format');
+      } else {
+        throw Exception(
+          'Failed to upload return invoice: ${response.statusCode}',
+        );
+      }
+    } on DioException catch (e) {
+      throw Exception('Network error: ${e.message}');
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

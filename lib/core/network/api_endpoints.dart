@@ -11,6 +11,7 @@ class ApiEndpoints {
   static const String uploadPayment = '/UploadPayment';
   static const String getCompanyInfo = '/GetCompanyInfo';
   static const String uploadInvoice = '/UploadInvoice';
+  static const String uploadCM = '/UploadCM';
 
   // Helper method to build full endpoint URL
   static String buildUrl(String endpoint) {
