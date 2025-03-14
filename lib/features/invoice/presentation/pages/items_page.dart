@@ -582,35 +582,24 @@ class _ItemsPageState extends State<ItemsPage> {
             children: [
               // Message to clarify that items need to be saved
               if (itemCount > 0)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: Text(
-                    '⚠️ ${localizations.saveItems}',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange[800],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${localizations.items}: $itemCount',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
+                    Text(
+                      '${localizations.total}: ${totalAmount.toStringAsFixed(2)} ${_currency ?? "?"}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
                 ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${localizations.items}: $itemCount',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    '${localizations.total}: ${totalAmount.toStringAsFixed(2)} ${_currency ?? "?"}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed:

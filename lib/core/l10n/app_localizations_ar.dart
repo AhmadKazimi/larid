@@ -271,7 +271,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get startCustomerVisit => 'بدء زيارة العميل';
 
   @override
-  String get receiptDetails => 'تفاصيل السند';
+  String get receiptDetails => 'تفاصيل سند القبض';
 
   @override
   String get amount => 'المبلغ';

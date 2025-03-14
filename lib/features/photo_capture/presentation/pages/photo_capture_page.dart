@@ -148,8 +148,18 @@ class PhotoCapturePage extends StatelessWidget {
                 ),
                 // Save Button
                 if (state.isComplete)
-                  Padding(
+                  Container(
                     padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: Offset(0, -4),
+                        ),
+                      ],
+                    ),
                     child: ElevatedButton(
                       onPressed:
                           state.isLoading
@@ -158,23 +168,36 @@ class PhotoCapturePage extends StatelessWidget {
                                 SavePhotoCapture(customerCode),
                               ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
+                        backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 5,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       child:
                           state.isLoading
-                              ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
+                              ? const CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 3,
                               )
-                              : Text(localizations.submit),
+                              : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.save),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    localizations.submit,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                     ),
                   ),
               ],

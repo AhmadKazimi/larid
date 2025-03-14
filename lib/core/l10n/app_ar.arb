@@ -135,7 +135,7 @@
     "noExist": "غير متوفر",
     "startCustomerVisit": "بدء زيارة العميل",
     
-    "receiptDetails": "تفاصيل السند",
+    "receiptDetails": "تفاصيل سند القبض",
     "amount": "المبلغ",
     "pleaseEnterAmount": "الرجاء إدخال المبلغ",
     "pleaseEnterValidNumber": "الرجاء إدخال رقم صحيح",

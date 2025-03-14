@@ -260,7 +260,6 @@ class _InvoicePageState extends State<InvoicePage> {
     );
   }
 
-
   Widget _buildBody(
     BuildContext context,
     InvoiceState state,
@@ -524,7 +523,10 @@ class _InvoicePageState extends State<InvoicePage> {
                   ),
                   // Total price with prominent styling
                   Text(
-                    localizations.currency(priceAfterTax.toStringAsFixed(2), _currency ?? "?"),
+                    localizations.currency(
+                      priceAfterTax.toStringAsFixed(2),
+                      _currency ?? "?",
+                    ),
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.secondary,
@@ -1016,58 +1018,47 @@ class _InvoicePageState extends State<InvoicePage> {
         children: [
           // Message to clarify that items need to be submitted to save to database
           if (hasItems)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: Text(
-                '⚠️ ${localizations.submit}',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.orange[800],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ElevatedButton(
-            onPressed:
-                hasItems
-                    ? () {
-                      // Debug log when submit button is clicked
-                      debugPrint(
-                        'Submitting invoice with ${state.items.length + state.returnItems.length} items',
-                      );
-                      context.read<InvoiceBloc>().add(
-                        SubmitInvoice(isReturn: _isReturn),
-                      );
-                    }
-                    : null, // Disable button when no items
-            style: ElevatedButton.styleFrom(
-              backgroundColor: hasItems ? AppColors.primary : Colors.grey,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              elevation: hasItems ? 5 : 0,
-            ),
-            child:
-                state.isSubmitting
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Builder(
-                      builder: (context) {
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.save),
-                            const SizedBox(width: 8),
-                            Text(
-                              _isReturn
-                                  ? '${localizations.submit} ${localizations.returnItem}'
-                                  : '${localizations.submit} ${localizations.invoice}',
-                              style: Theme.of(context).textTheme.labelLarge
-                                  ?.copyWith(color: Colors.white),
-                            ),
-                          ],
+            ElevatedButton(
+              onPressed:
+                  hasItems
+                      ? () {
+                        // Debug log when submit button is clicked
+                        debugPrint(
+                          'Submitting invoice with ${state.items.length + state.returnItems.length} items',
                         );
-                      },
-                    ),
-          ),
+                        context.read<InvoiceBloc>().add(
+                          SubmitInvoice(isReturn: _isReturn),
+                        );
+                      }
+                      : null, // Disable button when no items
+              style: ElevatedButton.styleFrom(
+                backgroundColor: hasItems ? AppColors.primary : Colors.grey,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: hasItems ? 5 : 0,
+              ),
+              child:
+                  state.isSubmitting
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Builder(
+                        builder: (context) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.save),
+                              const SizedBox(width: 8),
+                              Text(
+                                _isReturn
+                                    ? '${localizations.submit} ${localizations.returnItem}'
+                                    : '${localizations.submit} ${localizations.invoice}',
+                                style: Theme.of(context).textTheme.labelLarge
+                                    ?.copyWith(color: Colors.white),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+            ),
         ],
       ),
     );
