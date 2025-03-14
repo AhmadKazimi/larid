@@ -369,53 +369,55 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    bool isSelected = false,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border:
-              isSelected ? Border.all(color: Colors.green, width: 2.5) : null,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: AppColors.primary, size: 30),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        splashColor: AppColors.primary.withOpacity(0.1),
+        highlightColor: AppColors.primary.withOpacity(0.05),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: AppColors.primary, size: 30),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -535,21 +537,19 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
       crossAxisCount: 3,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 0.75, // Add aspect ratio to make cells taller
+      childAspectRatio: 0.75,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
         _buildSquareActivityButton(
           icon: Icons.receipt_long,
           title: l10n.createInvoice,
-          isSelected: _selectedActivityIndex == 0,
           onTap:
               () => _handleActivitySelection(0, RouteConstants.invoice, false),
         ),
         _buildSquareActivityButton(
           icon: Icons.camera_alt,
           title: l10n.takePhoto,
-          isSelected: _selectedActivityIndex == 1,
           onTap:
               () => _handleActivitySelection(
                 1,
@@ -560,7 +560,6 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
         _buildSquareActivityButton(
           icon: Icons.receipt,
           title: l10n.receiptVoucher,
-          isSelected: _selectedActivityIndex == 2,
           onTap:
               () => _handleActivitySelection(
                 2,
@@ -571,7 +570,6 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
         _buildSquareActivityButton(
           icon: Icons.assignment_return,
           title: l10n.returnItem,
-          isSelected: _selectedActivityIndex == 3,
           onTap:
               () => _handleActivitySelection(3, RouteConstants.invoice, true),
         ),
@@ -584,14 +582,6 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
     String routeName,
     bool isReturn,
   ) async {
-    // First, toggle selection state
-    setState(() {
-      _selectedActivityIndex = _selectedActivityIndex == index ? null : index;
-    });
-
-    // If not selected (toggled off), just return
-    if (_selectedActivityIndex != index) return;
-
     // Check if we can navigate to the activity
     if (!_hasActiveSession) {
       // We need to start a session first
@@ -610,7 +600,6 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
     // Navigate to the selected activity
     final extra =
         isReturn ? {'customer': _customer, 'isReturn': true} : _customer;
-
     NavigationService.push(context, routeName, extra: extra);
   }
 }
