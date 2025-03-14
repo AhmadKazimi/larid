@@ -481,4 +481,118 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invoiceNumber => 'Invoice #';
+
+  @override
+  String get newInvoice => 'New Invoice';
+
+  @override
+  String get noInvoiceToDelete => 'No invoice to delete';
+
+  @override
+  String get uploadingInvoice => 'Uploading invoice...';
+
+  @override
+  String get userNotLoggedIn => 'User not logged in';
+
+  @override
+  String get noItemsToUpload => 'No items to upload';
+
+  @override
+  String get failedToGenerateInvoiceNumber => 'Failed to generate invoice number for return. Please try submitting first.';
+
+  @override
+  String get success => 'Success';
+
+  @override
+  String invoiceUploadedSuccessfully(String number) {
+    return 'Invoice uploaded successfully. Invoice #$number';
+  }
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String errorUploadingInvoice(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String tax(String percentage, String amount) {
+    return 'Tax $percentage%: $amount';
+  }
+
+  @override
+  String currency(String amount) {
+    return '$amount JOD';
+  }
+
+  @override
+  String quantityTimesPrice(String price, String quantity) {
+    return '$price × $quantity';
+  }
+
+  @override
+  String get customerNotFound => 'Customer not found';
+
+  @override
+  String get noNumber => 'no number';
+
+  @override
+  String get regular => 'Regular';
+
+  @override
+  String get returnType => 'Return';
+
+  @override
+  String unsynchronizedInvoices(String type, int count) {
+    return 'Unsynchronized $type invoices for this customer: $count';
+  }
+
+  @override
+  String usingMostRecentInvoice(String type) {
+    return 'Using the most recent $type invoice for this customer';
+  }
+
+  @override
+  String get itemMissingFields => 'Item missing required fields, skipping';
+
+  @override
+  String itemNotFound(String code) {
+    return 'Item $code not found in inventory, skipping';
+  }
+
+  @override
+  String itemFound(String description) {
+    return 'Item found in inventory: $description';
+  }
+
+  @override
+  String unitPriceFromDatabase(String price, String converted) {
+    return 'Unit price from database: $price (converted to: $converted)';
+  }
+
+  @override
+  String calculatedTotalPrice(String price) {
+    return 'Calculated total price: $price';
+  }
+
+  @override
+  String addedToReturnItems(String code, int quantity) {
+    return 'Added to RETURN items: $code, quantity: $quantity';
+  }
+
+  @override
+  String addedToRegularItems(String code, int quantity) {
+    return 'Added to REGULAR items: $code, quantity: $quantity';
+  }
+
+  @override
+  String errorProcessingItem(String error) {
+    return 'ERROR processing item: $error';
+  }
+
+  @override
+  String createdItemsSummary(int regular, int returns) {
+    return 'Created $regular regular items and $returns return items';
+  }
 }

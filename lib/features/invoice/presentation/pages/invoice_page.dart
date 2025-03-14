@@ -32,6 +32,8 @@ class _InvoicePageState extends State<InvoicePage> {
   late final InvoiceBloc _invoiceBloc;
   late final bool _isReturn;
   String? _userId;
+  final _formKey = GlobalKey<FormState>();
+  late final AppLocalizations localizations;
 
   @override
   void initState() {
@@ -53,7 +55,9 @@ class _InvoicePageState extends State<InvoicePage> {
       // Debug current invoice state
       if (!state.isLoading) {
         debugPrint('Invoice state updated:');
-        debugPrint('- Invoice Number: ${state.invoiceNumber ?? "New Invoice"}');
+        debugPrint(
+          '- Invoice Number: ${state.invoiceNumber ?? localizations.newInvoice}',
+        );
         debugPrint('- Items Count: ${state.items.length}');
         debugPrint('- Return Items Count: ${state.returnItems.length}');
         debugPrint('- Grand Total: ${state.grandTotal}');
@@ -73,6 +77,14 @@ class _InvoicePageState extends State<InvoicePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize localizations here instead of initState
+    localizations = AppLocalizations.of(context)!;
+    _invoiceBloc.initializeLocalizations(context);
+  }
+
+  @override
   void dispose() {
     _commentController.dispose();
     _invoiceBloc.close();
@@ -82,7 +94,6 @@ class _InvoicePageState extends State<InvoicePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final localizations = AppLocalizations.of(context);
 
     return BlocProvider.value(
       value: _invoiceBloc,
@@ -100,7 +111,7 @@ class _InvoicePageState extends State<InvoicePage> {
                       CircularProgressIndicator(color: AppColors.primary),
                       const SizedBox(height: 16),
                       Text(
-                        'Loading invoice...',
+                        localizations.uploadingInvoice,
                         style: theme.textTheme.titleMedium,
                       ),
                     ],
@@ -114,7 +125,7 @@ class _InvoicePageState extends State<InvoicePage> {
             '🏗️ Building invoice page for ${state.customer.customerName} with:',
           );
           debugPrint(
-            '- Invoice Number: ${state.invoiceNumber ?? "New Invoice"}',
+            '- Invoice Number: ${state.invoiceNumber ?? localizations.newInvoice}',
           );
           debugPrint(
             '- Items: ${state.items.length}, Return Items: ${state.returnItems.length}',
@@ -469,7 +480,7 @@ class _InvoicePageState extends State<InvoicePage> {
             children: [
               Text(label, style: labelStyle),
               Text(
-                '${amount.toStringAsFixed(2)} JOD',
+                localizations.currency(amount.toStringAsFixed(2)),
                 style: (isBold || isPrimary
                         ? textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
@@ -541,7 +552,7 @@ class _InvoicePageState extends State<InvoicePage> {
                   ),
                   // Total price with prominent styling
                   Text(
-                    '${priceAfterTax.toStringAsFixed(2)} JOD',
+                    localizations.currency(priceAfterTax.toStringAsFixed(2)),
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.secondary,
@@ -580,7 +591,12 @@ class _InvoicePageState extends State<InvoicePage> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '${invoiceItem.item.sellUnitPrice.toStringAsFixed(2)} × ${invoiceItem.quantity}',
+                              localizations.quantityTimesPrice(
+                                invoiceItem.item.sellUnitPrice.toStringAsFixed(
+                                  2,
+                                ),
+                                invoiceItem.quantity.toString(),
+                              ),
                               style: textTheme.bodySmall?.copyWith(
                                 color: Colors.grey[600],
                               ),
@@ -600,7 +616,10 @@ class _InvoicePageState extends State<InvoicePage> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'ضريبة ${taxRate.toStringAsFixed(1)}%: ${taxAmount.toStringAsFixed(2)}',
+                                localizations.tax(
+                                  taxRate.toStringAsFixed(1),
+                                  taxAmount.toStringAsFixed(2),
+                                ),
                                 style: textTheme.bodySmall?.copyWith(
                                   color: AppColors.primary.withOpacity(0.8),
                                 ),
@@ -665,7 +684,7 @@ class _InvoicePageState extends State<InvoicePage> {
                         constraints: const BoxConstraints(minWidth: 32),
                         alignment: Alignment.center,
                         child: Text(
-                          '${invoiceItem.quantity}',
+                          invoiceItem.quantity.toString(),
                           style: textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -943,8 +962,8 @@ class _InvoicePageState extends State<InvoicePage> {
     // We can only delete if there's an existing invoice number
     if (currentInvoiceData.invoiceNumber == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No invoice to delete'),
+        SnackBar(
+          content: Text(localizations.noInvoiceToDelete),
           backgroundColor: Colors.orange,
         ),
       );
@@ -1096,15 +1115,15 @@ class _InvoicePageState extends State<InvoicePage> {
           onWillPop: () async => false,
           child: AlertDialog(
             title: Text(
-              'Success',
+              localizations.success,
               style: TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
             content: Text(
-              'Invoice uploaded successfully. Invoice #$formattedNumber',
-              style: TextStyle(fontSize: 16),
+              localizations.invoiceUploadedSuccessfully(formattedNumber),
+              style: const TextStyle(fontSize: 16),
             ),
             actions: [
               ElevatedButton(
@@ -1139,12 +1158,12 @@ class _InvoicePageState extends State<InvoicePage> {
     if (!hasItemsToUpload) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('No items to upload')));
+      ).showSnackBar(SnackBar(content: Text(localizations.noItemsToUpload)));
       return;
     }
 
     // Show loading dialog
-    Dialogs.showLoadingDialog(context, 'Uploading invoice...');
+    Dialogs.showLoadingDialog(context, localizations.uploadingInvoice);
 
     try {
       // Get user credentials directly from AuthRepository
@@ -1152,7 +1171,7 @@ class _InvoicePageState extends State<InvoicePage> {
       final user = await authRepository.getCurrentUser();
 
       if (user == null) {
-        throw Exception('User not logged in');
+        throw Exception(localizations.userNotLoggedIn);
       }
 
       // If this is a return invoice and we don't have an invoice number yet,
@@ -1178,10 +1197,8 @@ class _InvoicePageState extends State<InvoicePage> {
           Navigator.of(context, rootNavigator: true).pop();
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Failed to generate invoice number for return. Please try submitting first.',
-              ),
+            SnackBar(
+              content: Text(localizations.failedToGenerateInvoiceNumber),
               backgroundColor: Colors.red,
             ),
           );
@@ -1333,7 +1350,7 @@ class _InvoicePageState extends State<InvoicePage> {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text(localizations.errorUploadingInvoice(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -1360,7 +1377,7 @@ class _InvoicePageState extends State<InvoicePage> {
   String getFormattedInvoiceNumber(String? invoiceNumber) {
     if (invoiceNumber == null || invoiceNumber.isEmpty) {
       debugPrint('Warning: Empty invoice number, using fallback');
-      invoiceNumber = "New";
+      invoiceNumber = localizations.newInvoice;
     }
 
     // Ensure proper userid-invoiceNumber format

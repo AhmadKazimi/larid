@@ -15,6 +15,8 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart';
 import 'package:larid/features/taxes/domain/repositories/tax_repository.dart';
 import 'package:larid/features/taxes/domain/services/tax_calculator_service.dart';
+import 'package:larid/core/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
 
 class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   final CustomerTable _customerTable = getIt<CustomerTable>();
@@ -23,6 +25,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   final InvoiceRepository _invoiceRepository;
   final TaxRepository _taxRepository;
   TaxCalculatorService? _taxCalculator;
+  AppLocalizations? _localizations;
 
   InvoiceBloc({
     required InvoiceRepository invoiceRepository,
@@ -55,6 +58,21 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     _initTaxCalculator();
   }
 
+  // Add method to initialize localizations
+  void initializeLocalizations(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
+  }
+
+  // Helper method to get localizations with null check
+  AppLocalizations get localizations {
+    if (_localizations == null) {
+      throw StateError(
+        'Localizations not initialized. Call initializeLocalizations first.',
+      );
+    }
+    return _localizations!;
+  }
+
   Future<void> _initTaxCalculator() async {
     try {
       final taxes = await _taxRepository.getAllTaxes();
@@ -71,6 +89,16 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     Emitter<InvoiceState> emit,
   ) async {
     try {
+      if (_localizations == null) {
+        emit(
+          state.copyWith(
+            errorMessage: 'Localizations not initialized',
+            isLoading: false,
+          ),
+        );
+        return;
+      }
+
       debugPrint(
         '\n======= INITIALIZING INVOICE FOR CUSTOMER: ${event.customerCode} =======',
       );
@@ -83,7 +111,10 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       if (customer == null) {
         debugPrint('❌ CUSTOMER NOT FOUND: ${event.customerCode}');
         emit(
-          state.copyWith(errorMessage: 'Customer not found', isLoading: false),
+          state.copyWith(
+            errorMessage: localizations.customerNotFound,
+            isLoading: false,
+          ),
         );
         return;
       }
@@ -106,7 +137,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
           final isReturnInvoice = invoice['isReturn'] == 1;
           final isSynced = invoice['isSynced'] == 1;
           final invoiceNumber =
-              invoice['invoiceNumber'] as String? ?? 'no number';
+              invoice['invoiceNumber'] as String? ?? localizations.noNumber;
           debugPrint(
             '- Invoice #$invoiceNumber: Return=$isReturnInvoice, Synced=$isSynced',
           );
@@ -122,7 +153,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
             // Log each invoice evaluation
             final invoiceNumber =
-                invoice['invoiceNumber'] as String? ?? 'no number';
+                invoice['invoiceNumber'] as String? ?? localizations.noNumber;
             final matches = (isReturnInvoice == event.isReturn) && !isSynced;
             debugPrint(
               'Evaluating invoice #$invoiceNumber: isReturn=$isReturnInvoice (requested=${event.isReturn}), '
@@ -134,13 +165,18 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
           }).toList();
 
       debugPrint(
-        'Unsynchronized ${event.isReturn ? "Return" : "Regular"} invoices for this customer: ${filteredInvoices.length}',
+        localizations.unsynchronizedInvoices(
+          event.isReturn ? localizations.returnType : localizations.regular,
+          filteredInvoices.length,
+        ),
       );
 
       // Always use the first (most recent) matching invoice for this customer, unless forceNew is true
       if (filteredInvoices.isNotEmpty && !event.forceNew) {
         debugPrint(
-          'Using the most recent ${event.isReturn ? "return" : "regular"} invoice for this customer',
+          localizations.usingMostRecentInvoice(
+            event.isReturn ? localizations.returnType : localizations.regular,
+          ),
         );
 
         // Use the existing invoice
@@ -181,7 +217,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
             if (!itemData.containsKey('itemCode') ||
                 !itemData.containsKey('quantity') ||
                 !itemData.containsKey('unitPrice')) {
-              debugPrint('⚠️ Item missing required fields, skipping');
+              debugPrint(localizations.itemMissingFields);
               continue;
             }
 
@@ -198,12 +234,12 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
                 .getItemByCode(itemCode);
 
             if (currentInventoryItem == null) {
-              debugPrint('⚠️ Item $itemCode not found in inventory, skipping');
+              debugPrint(localizations.itemNotFound(itemCode));
               continue;
             }
 
             debugPrint(
-              '✅ Item found in inventory: ${currentInventoryItem.description}',
+              localizations.itemFound(currentInventoryItem.description),
             );
 
             // Use the saved unit price from the invoice, not the current inventory price
@@ -211,11 +247,16 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
             final double unitPrice = _parseDouble(rawUnitPrice);
 
             debugPrint(
-              'Unit price from database: $rawUnitPrice (converted to: $unitPrice)',
+              localizations.unitPriceFromDatabase(
+                rawUnitPrice.toString(),
+                unitPrice.toString(),
+              ),
             );
 
             final totalPrice = unitPrice * quantity;
-            debugPrint('Calculated total price: $totalPrice');
+            debugPrint(
+              localizations.calculatedTotalPrice(totalPrice.toString()),
+            );
 
             final item = InvoiceItemModel(
               item: InventoryItemEntity(
@@ -235,22 +276,18 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
             if (isReturn) {
               returnItems.add(item);
-              debugPrint(
-                'Added to RETURN items: $itemCode, quantity: $quantity',
-              );
+              debugPrint(localizations.addedToReturnItems(itemCode, quantity));
             } else {
               items.add(item);
-              debugPrint(
-                'Added to REGULAR items: $itemCode, quantity: $quantity',
-              );
+              debugPrint(localizations.addedToRegularItems(itemCode, quantity));
             }
           } catch (e) {
-            debugPrint('❌ ERROR processing item: $e');
+            debugPrint(localizations.errorProcessingItem(e.toString()));
           }
         }
 
         debugPrint(
-          '\n✅ Created ${items.length} regular items and ${returnItems.length} return items',
+          localizations.createdItemsSummary(items.length, returnItems.length),
         );
 
         // Get numeric values directly from the invoice to ensure we use the exact values from DB

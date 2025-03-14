@@ -93,7 +93,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prices => 'الأسعار';
 
   @override
-  String get inventoryItems => 'عناصر المخزون';
+  String get inventoryItems => 'مواد المخزون';
 
   @override
   String get inventoryUnits => 'وحدات المخزون';
@@ -352,13 +352,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get print => 'طباعة';
 
   @override
-  String get addItem => 'إضافة عنصر';
+  String get addItem => 'إضافة مادة';
 
   @override
-  String get returnItem => 'إرجاع عنصر';
+  String get returnItem => 'إرجاع مادة';
 
   @override
-  String get items => 'العناصر';
+  String get items => 'المواد';
 
   @override
   String get search => 'بحث';
@@ -373,27 +373,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get price => 'السعر';
 
   @override
-  String get saveItems => 'حفظ العناصر';
+  String get saveItems => 'حفظ المواد';
 
   @override
   String get cancelItems => 'إلغاء';
 
   @override
-  String get noItemsFound => 'لم يتم العثور على عناصر';
+  String get noItemsFound => 'لم يتم العثور على مواد';
 
   @override
-  String get loadingItems => 'جاري تحميل العناصر...';
+  String get loadingItems => 'جاري تحميل المواد...';
 
   @override
   String get loadMore => 'تحميل المزيد';
 
   @override
   String itemsSelected(int count) {
-    return 'تم اختيار $count عنصر';
+    return 'تم اختيار $count مادة';
   }
 
   @override
-  String get invoiceItems => 'عناصر الفاتورة';
+  String get invoiceItems => 'مواد الفاتورة';
 
   @override
   String get paymentType => 'طريقة الدفع';
@@ -481,4 +481,118 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get invoiceNumber => 'رقم الفاتورة';
+
+  @override
+  String get newInvoice => 'فاتورة جديدة';
+
+  @override
+  String get noInvoiceToDelete => 'لا توجد فاتورة للحذف';
+
+  @override
+  String get uploadingInvoice => 'جاري ترحيل الفاتورة...';
+
+  @override
+  String get userNotLoggedIn => 'المستخدم غير مسجل الدخول';
+
+  @override
+  String get noItemsToUpload => 'لا توجد مواد للرفع';
+
+  @override
+  String get failedToGenerateInvoiceNumber => 'فشل في إنشاء رقم الفاتورة للمرتجع. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get success => 'نجاح';
+
+  @override
+  String invoiceUploadedSuccessfully(String number) {
+    return 'تم رفع الفاتورة بنجاح. رقم الفاتورة #$number';
+  }
+
+  @override
+  String get error => 'خطأ';
+
+  @override
+  String errorUploadingInvoice(String message) {
+    return 'خطأ: $message';
+  }
+
+  @override
+  String tax(String percentage, String amount) {
+    return 'ضريبة $percentage%: $amount';
+  }
+
+  @override
+  String currency(String amount) {
+    return '$amount دينار';
+  }
+
+  @override
+  String quantityTimesPrice(String price, String quantity) {
+    return '$price × $quantity';
+  }
+
+  @override
+  String get customerNotFound => 'العميل غير موجود';
+
+  @override
+  String get noNumber => 'لا يوجد رقم';
+
+  @override
+  String get regular => 'عادي';
+
+  @override
+  String get returnType => 'مرتجع';
+
+  @override
+  String unsynchronizedInvoices(String type, int count) {
+    return 'فواتير $type غير متزامنة لهذا العميل: $count';
+  }
+
+  @override
+  String usingMostRecentInvoice(String type) {
+    return 'استخدام أحدث فاتورة $type لهذا العميل';
+  }
+
+  @override
+  String get itemMissingFields => 'المادة يفتقد إلى الحقول المطلوبة، يتم تخطيه';
+
+  @override
+  String itemNotFound(String code) {
+    return 'المادة $code غير موجود في المخزون، يتم تخطيه';
+  }
+
+  @override
+  String itemFound(String description) {
+    return 'تم العثور على مواد في المخزون: $description';
+  }
+
+  @override
+  String unitPriceFromDatabase(String price, String converted) {
+    return 'سعر الوحدة من قاعدة البيانات: $price (تم تحويله إلى: $converted)';
+  }
+
+  @override
+  String calculatedTotalPrice(String price) {
+    return 'إجمالي السعر المحسوب: $price';
+  }
+
+  @override
+  String addedToReturnItems(String code, int quantity) {
+    return 'تمت إضافة مواد إلى المرتجعات: $code, الكمية: $quantity';
+  }
+
+  @override
+  String addedToRegularItems(String code, int quantity) {
+    return 'تمت إضافة مواد إلى الفاتورة العادية: $code, الكمية: $quantity';
+  }
+
+  @override
+  String errorProcessingItem(String error) {
+    return 'خطأ في معالجة المادة: $error';
+  }
+
+  @override
+  String createdItemsSummary(int regular, int returns) {
+    return 'تم إنشاء $regular مادة عادي و $returns مادة المرتجع';
+  }
 }

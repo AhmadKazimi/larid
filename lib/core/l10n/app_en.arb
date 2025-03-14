@@ -234,6 +234,159 @@
     "unitPrice": "Unit Price",
     "itemCode": "Item Code",
     "thankYouForYourBusiness": "Thank you for your business!",
-    "invoiceNumber":"Invoice #"
-
+    "invoiceNumber":"Invoice #",
+    "newInvoice": "New Invoice",
+    "noInvoiceToDelete": "No invoice to delete",
+    "uploadingInvoice": "Uploading invoice...",
+    "userNotLoggedIn": "User not logged in",
+    "noItemsToUpload": "No items to upload",
+    "failedToGenerateInvoiceNumber": "Failed to generate invoice number for return. Please try submitting first.",
+    "success": "Success",
+    "invoiceUploadedSuccessfully": "Invoice uploaded successfully. Invoice #{number}",
+    "@invoiceUploadedSuccessfully": {
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "error": "Error",
+    "errorUploadingInvoice": "Error: {message}",
+    "@errorUploadingInvoice": {
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+    "tax": "Tax {percentage}%: {amount}",
+    "@tax": {
+        "placeholders": {
+            "percentage": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "currency": "{amount} JOD",
+    "@currency": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "quantityTimesPrice": "{price} × {quantity}",
+    "@quantityTimesPrice": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            },
+            "quantity": {
+                "type": "String"
+            }
+        }
+    },
+    "customerNotFound": "Customer not found",
+    "noNumber": "no number",
+    "regular": "Regular",
+    "returnType": "Return",
+    "unsynchronizedInvoices": "Unsynchronized {type} invoices for this customer: {count}",
+    "@unsynchronizedInvoices": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "usingMostRecentInvoice": "Using the most recent {type} invoice for this customer",
+    "@usingMostRecentInvoice": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "itemMissingFields": "Item missing required fields, skipping",
+    "itemNotFound": "Item {code} not found in inventory, skipping",
+    "@itemNotFound": {
+        "placeholders": {
+            "code": {
+                "type": "String"
+            }
+        }
+    },
+    "itemFound": "Item found in inventory: {description}",
+    "@itemFound": {
+        "placeholders": {
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "unitPriceFromDatabase": "Unit price from database: {price} (converted to: {converted})",
+    "@unitPriceFromDatabase": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            },
+            "converted": {
+                "type": "String"
+            }
+        }
+    },
+    "calculatedTotalPrice": "Calculated total price: {price}",
+    "@calculatedTotalPrice": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "addedToReturnItems": "Added to RETURN items: {code}, quantity: {quantity}",
+    "@addedToReturnItems": {
+        "placeholders": {
+            "code": {
+                "type": "String"
+            },
+            "quantity": {
+                "type": "int"
+            }
+        }
+    },
+    "addedToRegularItems": "Added to REGULAR items: {code}, quantity: {quantity}",
+    "@addedToRegularItems": {
+        "placeholders": {
+            "code": {
+                "type": "String"
+            },
+            "quantity": {
+                "type": "int"
+            }
+        }
+    },
+    "errorProcessingItem": "ERROR processing item: {error}",
+    "@errorProcessingItem": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "createdItemsSummary": "Created {regular} regular items and {returns} return items",
+    "@createdItemsSummary": {
+        "placeholders": {
+            "regular": {
+                "type": "int"
+            },
+            "returns": {
+                "type": "int"
+            }
+        }
+    }
 }

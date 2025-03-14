@@ -1006,6 +1006,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invoice #'**
   String get invoiceNumber;
+
+  /// No description provided for @newInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'New Invoice'**
+  String get newInvoice;
+
+  /// No description provided for @noInvoiceToDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'No invoice to delete'**
+  String get noInvoiceToDelete;
+
+  /// No description provided for @uploadingInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading invoice...'**
+  String get uploadingInvoice;
+
+  /// No description provided for @userNotLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'User not logged in'**
+  String get userNotLoggedIn;
+
+  /// No description provided for @noItemsToUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'No items to upload'**
+  String get noItemsToUpload;
+
+  /// No description provided for @failedToGenerateInvoiceNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate invoice number for return. Please try submitting first.'**
+  String get failedToGenerateInvoiceNumber;
+
+  /// No description provided for @success.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get success;
+
+  /// No description provided for @invoiceUploadedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice uploaded successfully. Invoice #{number}'**
+  String invoiceUploadedSuccessfully(String number);
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @errorUploadingInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String errorUploadingInvoice(String message);
+
+  /// No description provided for @tax.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax {percentage}%: {amount}'**
+  String tax(String percentage, String amount);
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} JOD'**
+  String currency(String amount);
+
+  /// No description provided for @quantityTimesPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} × {quantity}'**
+  String quantityTimesPrice(String price, String quantity);
+
+  /// No description provided for @customerNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer not found'**
+  String get customerNotFound;
+
+  /// No description provided for @noNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'no number'**
+  String get noNumber;
+
+  /// No description provided for @regular.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular'**
+  String get regular;
+
+  /// No description provided for @returnType.
+  ///
+  /// In en, this message translates to:
+  /// **'Return'**
+  String get returnType;
+
+  /// No description provided for @unsynchronizedInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsynchronized {type} invoices for this customer: {count}'**
+  String unsynchronizedInvoices(String type, int count);
+
+  /// No description provided for @usingMostRecentInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Using the most recent {type} invoice for this customer'**
+  String usingMostRecentInvoice(String type);
+
+  /// No description provided for @itemMissingFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Item missing required fields, skipping'**
+  String get itemMissingFields;
+
+  /// No description provided for @itemNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Item {code} not found in inventory, skipping'**
+  String itemNotFound(String code);
+
+  /// No description provided for @itemFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Item found in inventory: {description}'**
+  String itemFound(String description);
+
+  /// No description provided for @unitPriceFromDatabase.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit price from database: {price} (converted to: {converted})'**
+  String unitPriceFromDatabase(String price, String converted);
+
+  /// No description provided for @calculatedTotalPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculated total price: {price}'**
+  String calculatedTotalPrice(String price);
+
+  /// No description provided for @addedToReturnItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to RETURN items: {code}, quantity: {quantity}'**
+  String addedToReturnItems(String code, int quantity);
+
+  /// No description provided for @addedToRegularItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to REGULAR items: {code}, quantity: {quantity}'**
+  String addedToRegularItems(String code, int quantity);
+
+  /// No description provided for @errorProcessingItem.
+  ///
+  /// In en, this message translates to:
+  /// **'ERROR processing item: {error}'**
+  String errorProcessingItem(String error);
+
+  /// No description provided for @createdItemsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Created {regular} regular items and {returns} return items'**
+  String createdItemsSummary(int regular, int returns);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

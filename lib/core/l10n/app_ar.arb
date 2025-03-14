@@ -32,7 +32,7 @@
     "customers": "العملاء",
     "salesRepCustomers": "عملاء مندوب المبيعات",
     "prices": "الأسعار",
-    "inventoryItems": "عناصر المخزون",
+    "inventoryItems": "مواد المخزون",
     "inventoryUnits": "وحدات المخزون",
     "salesTaxes": "ضرائب المبيعات",
     "syncAllData": "مزامنة جميع البيانات",
@@ -182,21 +182,21 @@
     "addComment": "إضافة تعليق",
     "submit": "حفظ",
     "print": "طباعة",
-    "addItem": "إضافة عنصر",
-    "returnItem": "إرجاع عنصر",
+    "addItem": "إضافة مادة",
+    "returnItem": "إرجاع مادة",
     "sync": "مزامنة",
     
-    "items": "العناصر",
+    "items": "المواد",
     "search": "بحث",
     "searchHint": "البحث بالرمز أو الوصف",
     "quantity": "الكمية",
     "price": "السعر",
-    "saveItems": "حفظ العناصر",
+    "saveItems": "حفظ المواد",
     "cancelItems": "إلغاء",
-    "noItemsFound": "لم يتم العثور على عناصر",
-    "loadingItems": "جاري تحميل العناصر...",
+    "noItemsFound": "لم يتم العثور على مواد",
+    "loadingItems": "جاري تحميل المواد...",
     "loadMore": "تحميل المزيد",
-    "itemsSelected": "تم اختيار {count} عنصر",
+    "itemsSelected": "تم اختيار {count} مادة",
     "@itemsSelected": {
         "placeholders": {
             "count": {
@@ -204,7 +204,7 @@
             }
         }
     },
-    "invoiceItems": "عناصر الفاتورة",
+    "invoiceItems": "مواد الفاتورة",
     "paymentType": "طريقة الدفع",
     "cash": "نقداً",
     "credit": "ائتمان",
@@ -234,5 +234,159 @@
     "unitPrice": "سعر الوحدة",
     "itemCode": "رمز المنتج",
     "thankYouForYourBusiness": "شكراً لتعاملكم معنا!",
-    "invoiceNumber":"رقم الفاتورة"
+    "invoiceNumber":"رقم الفاتورة",
+    "newInvoice": "فاتورة جديدة",
+    "noInvoiceToDelete": "لا توجد فاتورة للحذف",
+    "uploadingInvoice": "جاري ترحيل الفاتورة...",
+    "userNotLoggedIn": "المستخدم غير مسجل الدخول",
+    "noItemsToUpload": "لا توجد مواد للرفع",
+    "failedToGenerateInvoiceNumber": "فشل في إنشاء رقم الفاتورة للمرتجع. يرجى المحاولة مرة أخرى.",
+    "success": "نجاح",
+    "invoiceUploadedSuccessfully": "تم رفع الفاتورة بنجاح. رقم الفاتورة #{number}",
+    "@invoiceUploadedSuccessfully": {
+        "placeholders": {
+            "number": {
+                "type": "String"
+            }
+        }
+    },
+    "error": "خطأ",
+    "errorUploadingInvoice": "خطأ: {message}",
+    "@errorUploadingInvoice": {
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+    "tax": "ضريبة {percentage}%: {amount}",
+    "@tax": {
+        "placeholders": {
+            "percentage": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "currency": "{amount} دينار",
+    "@currency": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "quantityTimesPrice": "{price} × {quantity}",
+    "@quantityTimesPrice": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            },
+            "quantity": {
+                "type": "String"
+            }
+        }
+    },
+    "customerNotFound": "العميل غير موجود",
+    "noNumber": "لا يوجد رقم",
+    "regular": "عادي",
+    "returnType": "مرتجع",
+    "unsynchronizedInvoices": "فواتير {type} غير متزامنة لهذا العميل: {count}",
+    "@unsynchronizedInvoices": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            },
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "usingMostRecentInvoice": "استخدام أحدث فاتورة {type} لهذا العميل",
+    "@usingMostRecentInvoice": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "itemMissingFields": "المادة يفتقد إلى الحقول المطلوبة، يتم تخطيه",
+    "itemNotFound": "المادة {code} غير موجود في المخزون، يتم تخطيه",
+    "@itemNotFound": {
+        "placeholders": {
+            "code": {
+                "type": "String"
+            }
+        }
+    },
+    "itemFound": "تم العثور على مواد في المخزون: {description}",
+    "@itemFound": {
+        "placeholders": {
+            "description": {
+                "type": "String"
+            }
+        }
+    },
+    "unitPriceFromDatabase": "سعر الوحدة من قاعدة البيانات: {price} (تم تحويله إلى: {converted})",
+    "@unitPriceFromDatabase": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            },
+            "converted": {
+                "type": "String"
+            }
+        }
+    },
+    "calculatedTotalPrice": "إجمالي السعر المحسوب: {price}",
+    "@calculatedTotalPrice": {
+        "placeholders": {
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "addedToReturnItems": "تمت إضافة مواد إلى المرتجعات: {code}, الكمية: {quantity}",
+    "@addedToReturnItems": {
+        "placeholders": {
+            "code": {
+                "type": "String"
+            },
+            "quantity": {
+                "type": "int"
+            }
+        }
+    },
+    "addedToRegularItems": "تمت إضافة مواد إلى الفاتورة العادية: {code}, الكمية: {quantity}",
+    "@addedToRegularItems": {
+        "placeholders": {
+            "code": {
+                "type": "String"
+            },
+            "quantity": {
+                "type": "int"
+            }
+        }
+    },
+    "errorProcessingItem": "خطأ في معالجة المادة: {error}",
+    "@errorProcessingItem": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "createdItemsSummary": "تم إنشاء {regular} مادة عادي و {returns} مادة المرتجع",
+    "@createdItemsSummary": {
+        "placeholders": {
+            "regular": {
+                "type": "int"
+            },
+            "returns": {
+                "type": "int"
+            }
+        }
+    }
 }
