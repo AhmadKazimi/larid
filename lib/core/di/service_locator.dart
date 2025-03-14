@@ -42,6 +42,7 @@ import '../../features/invoice/presentation/bloc/invoice_bloc.dart';
 import '../../features/taxes/domain/repositories/tax_repository.dart';
 import '../../features/taxes/data/repositories/tax_repository_impl.dart';
 import '../../features/taxes/domain/services/tax_calculator_service.dart';
+import '../../database/receipt_voucher_table.dart';
 
 final getIt = GetIt.instance;
 
@@ -69,6 +70,7 @@ Future<void> setupServiceLocator() async {
       await db.execute(InvoiceTable.createTableQuery);
       await db.execute(InvoiceTable.createInvoiceItemsTableQuery);
       await db.execute(CompanyInfoTable.createTableQuery);
+      await db.execute(ReceiptVoucherTable.createTableQuery);
     },
   );
 
@@ -87,9 +89,11 @@ Future<void> setupServiceLocator() async {
   final workingSessionTable = WorkingSessionTable(database);
   final invoiceTable = InvoiceTable(database);
   final companyInfoTable = CompanyInfoTable(database);
+  final receiptVoucherTable = ReceiptVoucherTable(database);
 
   // Ensure the invoice table schema is up to date
   await invoiceTable.ensureSchema();
+  await receiptVoucherTable.ensureSchema();
 
   getIt.registerSingleton<UserTable>(userTable);
   getIt.registerSingleton<CustomerTable>(customerTable);
@@ -100,6 +104,7 @@ Future<void> setupServiceLocator() async {
   getIt.registerSingleton<WorkingSessionTable>(workingSessionTable);
   getIt.registerSingleton<InvoiceTable>(invoiceTable);
   getIt.registerSingleton<CompanyInfoTable>(companyInfoTable);
+  getIt.registerSingleton<ReceiptVoucherTable>(receiptVoucherTable);
 
   // Get baseUrl from database
   final baseUrl = await getIt<UserTable>().getBaseUrl();

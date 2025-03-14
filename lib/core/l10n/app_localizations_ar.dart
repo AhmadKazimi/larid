@@ -628,4 +628,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String createdItemsSummary(int regular, int returns) {
     return 'تم إنشاء $regular مادة عادي و $returns مادة المرتجع';
   }
+
+  @override
+  String get receiptVoucherSaved => 'تم حفظ سند القبض بنجاح';
+
+  @override
+  String get errorSavingReceiptVoucher => 'خطأ في حفظ سند القبض';
 }

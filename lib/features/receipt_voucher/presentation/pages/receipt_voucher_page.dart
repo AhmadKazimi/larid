@@ -3,6 +3,8 @@ import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/core/l10n/app_localizations.dart';
 import 'package:larid/core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
+import 'package:larid/core/di/service_locator.dart';
+import 'package:larid/database/receipt_voucher_table.dart';
 
 class ReceiptVoucherPage extends StatefulWidget {
   final CustomerEntity customer;
@@ -221,10 +223,44 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
                       // Save receipt voucher button
                       Center(
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState!.validate()) {
-                              // To be implemented
-                              Navigator.pop(context);
+                              try {
+                                final receiptVoucherTable =
+                                    getIt<ReceiptVoucherTable>();
+                                await receiptVoucherTable.saveReceiptVoucher(
+                                  customerCode: widget.customer.customerCode,
+                                  paidAmount: double.parse(
+                                    _amountController.text,
+                                  ),
+                                  paymentType: _selectedPaymentMethod!,
+                                  description: _notesController.text,
+                                  comment: _notesController.text,
+                                );
+
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        localizations.receiptVoucherSaved,
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  context.pop();
+                                }
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        localizations.errorSavingReceiptVoucher,
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              }
                             }
                           },
                           style: ElevatedButton.styleFrom(

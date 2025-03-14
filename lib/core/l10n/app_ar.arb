@@ -400,5 +400,7 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "receiptVoucherSaved": "تم حفظ سند القبض بنجاح",
+    "errorSavingReceiptVoucher": "خطأ في حفظ سند القبض"
 }

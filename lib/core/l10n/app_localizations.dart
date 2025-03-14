@@ -1240,6 +1240,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Created {regular} regular items and {returns} return items'**
   String createdItemsSummary(int regular, int returns);
+
+  /// No description provided for @receiptVoucherSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt voucher saved successfully'**
+  String get receiptVoucherSaved;
+
+  /// No description provided for @errorSavingReceiptVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Error saving receipt voucher'**
+  String get errorSavingReceiptVoucher;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -628,4 +628,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String createdItemsSummary(int regular, int returns) {
     return 'Created $regular regular items and $returns return items';
   }
+
+  @override
+  String get receiptVoucherSaved => 'Receipt voucher saved successfully';
+
+  @override
+  String get errorSavingReceiptVoucher => 'Error saving receipt voucher';
 }

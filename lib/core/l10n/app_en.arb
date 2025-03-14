@@ -403,5 +403,7 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "receiptVoucherSaved": "Receipt voucher saved successfully",
+    "errorSavingReceiptVoucher": "Error saving receipt voucher"
 }
