@@ -45,6 +45,9 @@ import '../../features/taxes/domain/services/tax_calculator_service.dart';
 import '../../database/receipt_voucher_table.dart';
 import '../../features/receipt_voucher/data/repositories/receipt_voucher_repository_impl.dart';
 import '../../features/receipt_voucher/domain/repositories/receipt_voucher_repository.dart';
+import '../../features/photo_capture/data/repositories/photo_capture_repository_impl.dart';
+import '../../features/photo_capture/domain/repositories/photo_capture_repository.dart';
+import '../../features/photo_capture/domain/usecases/save_photo_capture_usecase.dart';
 
 final getIt = GetIt.instance;
 
@@ -210,6 +213,15 @@ Future<void> setupServiceLocator() async {
   // Register ReceiptVoucherRepository
   getIt.registerLazySingleton<ReceiptVoucherRepository>(
     () => ReceiptVoucherRepositoryImpl(apiService: getIt<ApiService>()),
+  );
+
+  // Photo Capture
+  getIt.registerLazySingleton<PhotoCaptureRepository>(
+    () => PhotoCaptureRepositoryImpl(),
+  );
+
+  getIt.registerLazySingleton<SavePhotoCaptureUseCase>(
+    () => SavePhotoCaptureUseCase(getIt<PhotoCaptureRepository>()),
   );
 
   // Update warehouse in ApiService if available

@@ -403,5 +403,10 @@
     },
     "receiptVoucherSaved": "تم حفظ سند القبض بنجاح",
     "errorSavingReceiptVoucher": "خطأ في حفظ سند القبض",
-    "savingReceiptVoucher": "جاري حفظ سند القبض"
+    "savingReceiptVoucher": "جاري حفظ سند القبض",
+    "beforePicture": "الصورة قبل",
+    "afterPicture": "الصورة بعد",
+    "cameraPermissionRequired": "إذن الكاميرا مطلوب لالتقاط الصور",
+    "errorTakingPhoto": "خطأ في التقاط الصورة. يرجى المحاولة مرة أخرى.",
+    "tapToTakePhoto": "انقر لالتقاط صورة"
 }

@@ -1,122 +1,211 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:larid/core/l10n/app_localizations.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:larid/core/theme/app_theme.dart';
-import 'package:larid/features/sync/domain/entities/customer_entity.dart';
+import 'package:larid/features/photo_capture/presentation/bloc/photo_capture_bloc.dart';
+import 'package:larid/features/photo_capture/presentation/bloc/photo_capture_event.dart';
+import 'package:larid/features/photo_capture/presentation/bloc/photo_capture_state.dart';
+import 'package:get_it/get_it.dart';
+import 'package:larid/features/photo_capture/domain/usecases/save_photo_capture_usecase.dart';
 
-class PhotoCapturePage extends StatefulWidget {
-  final CustomerEntity customer;
+class PhotoCapturePage extends StatelessWidget {
+  final String customerName;
+  final String customerCode;
 
   const PhotoCapturePage({
-    Key? key,
-    required this.customer,
-  }) : super(key: key);
+    super.key,
+    required this.customerName,
+    required this.customerCode,
+  });
 
-  @override
-  State<PhotoCapturePage> createState() => _PhotoCapturePageState();
-}
-
-class _PhotoCapturePageState extends State<PhotoCapturePage> {
-  // This will be expanded with actual camera functionality
-  
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.takePhoto),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: Column(
-        children: [
-          // Customer info header
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: AppColors.primary.withOpacity(0.1),
-            child: Row(
+    final localizations = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    return BlocProvider(
+      create:
+          (context) => PhotoCaptureBloc(
+            savePhotoCaptureUseCase: GetIt.I<SavePhotoCaptureUseCase>(),
+          ),
+      child: BlocConsumer<PhotoCaptureBloc, PhotoCaptureState>(
+        listener: (context, state) {
+          if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error!),
+                backgroundColor: Colors.red,
+              ),
+            );
+            context.read<PhotoCaptureBloc>().add(ClearError());
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            body: Column(
               children: [
-                Icon(
-                  Icons.person,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    widget.customer.customerName,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                // Custom Header with Gradient
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        theme.colorScheme.primary,
+                        theme.colorScheme.primary.withOpacity(0.8),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Camera preview placeholder
-          Expanded(
-            child: Container(
-              color: Colors.black87,
-              child: const Center(
-                child: Text(
-                  'Camera Preview will be implemented here',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
-          ),
-          
-          // Camera controls
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            color: Colors.black,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Gallery button
-                IconButton(
-                  onPressed: () {
-                    // To be implemented
-                  },
-                  icon: const Icon(Icons.photo_library, color: Colors.white, size: 32),
-                ),
-                
-                // Capture button
-                GestureDetector(
-                  onTap: () {
-                    // To be implemented
-                  },
-                  child: Container(
-                    height: 70,
-                    width: 70,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                    ),
-                    child: Container(
-                      margin: const EdgeInsets.all(5),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.arrow_back,
+                              color: Colors.white,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              customerName,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-                
-                // Switch camera button
-                IconButton(
-                  onPressed: () {
-                    // To be implemented
-                  },
-                  icon: const Icon(Icons.flip_camera_ios, color: Colors.white, size: 32),
+                // Main Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Before Picture Section
+                        _buildPictureSection(
+                          context: context,
+                          title: localizations.beforePicture,
+                          imagePath: state.beforeImagePath,
+                          onTap:
+                              () => context.read<PhotoCaptureBloc>().add(
+                                TakeBeforePicture(),
+                              ),
+                        ),
+                        const SizedBox(height: 24),
+                        // After Picture Section
+                        _buildPictureSection(
+                          context: context,
+                          title: localizations.afterPicture,
+                          imagePath: state.afterImagePath,
+                          onTap:
+                              () => context.read<PhotoCaptureBloc>().add(
+                                TakeAfterPicture(),
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
+                // Save Button
+                if (state.isComplete)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: ElevatedButton(
+                      onPressed:
+                          state.isLoading
+                              ? null
+                              : () => context.read<PhotoCaptureBloc>().add(
+                                SavePhotoCapture(customerCode),
+                              ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child:
+                          state.isLoading
+                              ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                              : Text(localizations.submit),
+                    ),
+                  ),
               ],
             ),
-          ),
-        ],
+          );
+        },
       ),
+    );
+  }
+
+  Widget _buildPictureSection({
+    required BuildContext context,
+    required String title,
+    required String? imagePath,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+              image:
+                  imagePath != null
+                      ? DecorationImage(
+                        image: FileImage(File(imagePath)),
+                        fit: BoxFit.cover,
+                      )
+                      : null,
+            ),
+            child:
+                imagePath == null
+                    ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.camera_alt,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            AppLocalizations.of(context)!.tapToTakePhoto,
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    )
+                    : null,
+          ),
+        ),
+      ],
     );
   }
 }

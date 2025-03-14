@@ -254,7 +254,10 @@ class AppRouter {
           return _buildSlideTransition(
             context: context,
             state: state,
-            child: PhotoCapturePage(customer: customer),
+            child: PhotoCapturePage(
+              customerName: customer.customerName,
+              customerCode: customer.customerCode,
+            ),
           );
         },
       ),

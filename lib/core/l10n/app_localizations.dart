@@ -1258,6 +1258,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saving voucher receipt'**
   String get savingReceiptVoucher;
+
+  /// No description provided for @beforePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Before Picture'**
+  String get beforePicture;
+
+  /// No description provided for @afterPicture.
+  ///
+  /// In en, this message translates to:
+  /// **'After Picture'**
+  String get afterPicture;
+
+  /// No description provided for @cameraPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera permission is required to take photos'**
+  String get cameraPermissionRequired;
+
+  /// No description provided for @errorTakingPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Error taking photo. Please try again.'**
+  String get errorTakingPhoto;
+
+  /// No description provided for @tapToTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to take photo'**
+  String get tapToTakePhoto;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

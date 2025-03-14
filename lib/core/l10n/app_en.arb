@@ -406,5 +406,10 @@
     },
     "receiptVoucherSaved": "Receipt voucher saved successfully",
     "errorSavingReceiptVoucher": "Error saving receipt voucher",
-    "savingReceiptVoucher": "Saving voucher receipt"
+    "savingReceiptVoucher": "Saving voucher receipt",
+    "beforePicture": "Before Picture",
+    "afterPicture": "After Picture",
+    "cameraPermissionRequired": "Camera permission is required to take photos",
+    "errorTakingPhoto": "Error taking photo. Please try again.",
+    "tapToTakePhoto": "Tap to take photo"
 }

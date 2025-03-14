@@ -637,4 +637,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get savingReceiptVoucher => 'جاري حفظ سند القبض';
+
+  @override
+  String get beforePicture => 'الصورة قبل';
+
+  @override
+  String get afterPicture => 'الصورة بعد';
+
+  @override
+  String get cameraPermissionRequired => 'إذن الكاميرا مطلوب لالتقاط الصور';
+
+  @override
+  String get errorTakingPhoto => 'خطأ في التقاط الصورة. يرجى المحاولة مرة أخرى.';
+
+  @override
+  String get tapToTakePhoto => 'انقر لالتقاط صورة';
 }

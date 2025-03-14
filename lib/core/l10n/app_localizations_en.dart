@@ -637,4 +637,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savingReceiptVoucher => 'Saving voucher receipt';
+
+  @override
+  String get beforePicture => 'Before Picture';
+
+  @override
+  String get afterPicture => 'After Picture';
+
+  @override
+  String get cameraPermissionRequired => 'Camera permission is required to take photos';
+
+  @override
+  String get errorTakingPhoto => 'Error taking photo. Please try again.';
+
+  @override
+  String get tapToTakePhoto => 'Tap to take photo';
 }

@@ -30,6 +30,8 @@
 	<string>This app needs access to location when open to show your current location on the map.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs access to location when in the background to show your current location on the map.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to camera to take photos of customer visits.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
