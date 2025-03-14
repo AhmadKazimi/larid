@@ -21,6 +21,59 @@ import '../di/service_locator.dart';
 import '../storage/shared_prefs.dart';
 import 'route_constants.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/home/presentation/pages/home_page.dart';
+
+class CustomTransitionPage<T> extends Page<T> {
+  final Widget child;
+  final Widget Function(
+    BuildContext,
+    Animation<double>,
+    Animation<double>,
+    Widget,
+  )
+  transitionsBuilder;
+
+  const CustomTransitionPage({
+    required this.child,
+    required this.transitionsBuilder,
+    super.key,
+  });
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    return PageRouteBuilder<T>(
+      settings: this,
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return transitionsBuilder(
+          context,
+          animation,
+          secondaryAnimation,
+          child,
+        );
+      },
+    );
+  }
+}
+
+CustomTransitionPage<void> _buildSlideTransition({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage(
+    key: state.pageKey,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = Offset(1.0, 0.0);
+      const end = Offset.zero;
+      const curve = Curves.easeInOut;
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      var offsetAnimation = animation.drive(tween);
+      return SlideTransition(position: offsetAnimation, child: child);
+    },
+  );
+}
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -28,29 +81,6 @@ class AppRouter {
   );
 
   static GoRouter get router => _router;
-
-  // Helper method to create a standard slide transition
-  static CustomTransitionPage<void> _buildSlideTransition({
-    required BuildContext context,
-    required GoRouterState state,
-    required Widget child,
-  }) {
-    return CustomTransitionPage<void>(
-      key: state.pageKey,
-      child: child,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return SlideTransition(
-          position: animation.drive(
-            Tween<Offset>(
-              begin: const Offset(1.0, 0.0),
-              end: Offset.zero,
-            ).chain(CurveTween(curve: Curves.easeInOut)),
-          ),
-          child: child,
-        );
-      },
-    );
-  }
 
   static final _router = GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -122,43 +152,19 @@ class AppRouter {
       }
     },
     routes: [
-      // API Config Route
-      GoRoute(
-        path: RouteConstants.apiConfig,
-        name: 'api-config',
-        pageBuilder:
-            (context, state) => _buildSlideTransition(
-              context: context,
-              state: state,
-              child: const ApiBaseUrlPage(),
-            ),
-      ),
-
-      // Login Route
       GoRoute(
         path: RouteConstants.login,
-        name: 'login',
-        pageBuilder:
-            (context, state) => _buildSlideTransition(
-              context: context,
-              state: state,
-              child: const LoginPage(),
-            ),
+        builder: (context, state) => const LoginPage(),
       ),
-
-      // Sync Route
+      GoRoute(
+        path: RouteConstants.apiConfig,
+        builder: (context, state) => const ApiBaseUrlPage(),
+      ),
       GoRoute(
         path: RouteConstants.sync,
         name: 'sync',
-        pageBuilder:
-            (context, state) => _buildSlideTransition(
-              context: context,
-              state: state,
-              child: const SyncPage(),
-            ),
+        builder: (context, state) => const SyncPage(),
       ),
-
-      // Map Route
       GoRoute(
         path: RouteConstants.map,
         name: 'map',
@@ -166,29 +172,12 @@ class AppRouter {
             (context, state) => _buildSlideTransition(
               context: context,
               state: state,
-              child: const MapPage(),
+              child: const HomePage(),
             ),
       ),
-
-      // Customer Search Route
-      GoRoute(
-        path: RouteConstants.customerSearch,
-        name: 'customer-search',
-        pageBuilder:
-            (context, state) => _buildSlideTransition(
-              context: context,
-              state: state,
-              child: BlocProvider(
-                create: (context) => CustomerSearchBloc(),
-                child: const SearchCustomerPage(),
-              ),
-            ),
-      ),
-
-      // Customer Activity Route
       GoRoute(
         path: RouteConstants.customerActivity,
-        name: 'customer-activity',
+        name: 'customerActivity',
         pageBuilder: (context, state) {
           final customer = state.extra as CustomerEntity;
           return _buildSlideTransition(
@@ -198,13 +187,10 @@ class AppRouter {
           );
         },
       ),
-
-      // Invoice Route
       GoRoute(
         path: RouteConstants.invoice,
         name: 'invoice',
         pageBuilder: (context, state) {
-          // Handle both direct CustomerEntity and Map with isReturn flag
           CustomerEntity customer;
           bool isReturn = false;
 
@@ -223,35 +209,21 @@ class AppRouter {
           );
         },
       ),
-
-      // Items Route
       GoRoute(
-        path: RouteConstants.items,
-        name: 'items',
+        path: RouteConstants.receiptVoucher,
+        name: 'receiptVoucher',
         pageBuilder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          final isReturn = extra?['isReturn'] as bool? ?? false;
-          final preselectedItems =
-              extra?['preselectedItems'] as Map<String, int>?;
-
+          final customer = state.extra as CustomerEntity;
           return _buildSlideTransition(
             context: context,
             state: state,
-            child: BlocProvider(
-              create: (context) => ItemsBloc(),
-              child: ItemsPage(
-                isReturn: isReturn,
-                preselectedItems: preselectedItems,
-              ),
-            ),
+            child: ReceiptVoucherPage(customer: customer),
           );
         },
       ),
-
-      // Photo Capture Route
       GoRoute(
         path: RouteConstants.photoCapture,
-        name: 'photo-capture',
+        name: 'photoCapture',
         pageBuilder: (context, state) {
           final customer = state.extra as CustomerEntity;
           return _buildSlideTransition(
@@ -265,38 +237,32 @@ class AppRouter {
           );
         },
       ),
-
-      // Receipt Voucher Route
-      GoRoute(
-        path: RouteConstants.receiptVoucher,
-        name: 'receipt-voucher',
-        pageBuilder: (context, state) {
-          final customer = state.extra as CustomerEntity;
-          return _buildSlideTransition(
-            context: context,
-            state: state,
-            child: ReceiptVoucherPage(customer: customer),
-          );
-        },
-      ),
-
-      // Settings Route
       GoRoute(
         path: RouteConstants.settings,
         name: 'settings',
-        pageBuilder: (context, state) {
-          return _buildSlideTransition(
-            context: context,
-            state: state,
-            child: const SettingsPage(),
-          );
-        },
+        pageBuilder:
+            (context, state) => _buildSlideTransition(
+              context: context,
+              state: state,
+              child: const SettingsPage(),
+            ),
       ),
-
-      // Print Invoice Route
+      GoRoute(
+        path: RouteConstants.customerSearch,
+        name: 'customerSearch',
+        pageBuilder:
+            (context, state) => _buildSlideTransition(
+              context: context,
+              state: state,
+              child: BlocProvider(
+                create: (context) => CustomerSearchBloc(),
+                child: const SearchCustomerPage(),
+              ),
+            ),
+      ),
       GoRoute(
         path: RouteConstants.printInvoice,
-        name: 'print-invoice',
+        name: 'printInvoice',
         pageBuilder: (context, state) {
           final extraData = state.extra as Map<String, dynamic>;
           final invoice = extraData['invoice'];

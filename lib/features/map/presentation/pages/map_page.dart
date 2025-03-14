@@ -1118,51 +1118,6 @@ class _MapPageState extends State<MapPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Show banner if there's an active customer visit session
-      bottomNavigationBar:
-          _hasActiveCustomerVisit && _customerWithActiveVisit != null
-              ? Container(
-                color: Colors.green,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.person, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        l10n.activeVisitWith(
-                          _customerWithActiveVisit!.customerName,
-                        ),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // Navigate to the customer activity page using GoRouter
-                        NavigationService.push(
-                          context,
-                          RouteConstants.customerActivity,
-                          extra: _customerWithActiveVisit!,
-                        );
-                      },
-                      child: Text(
-                        l10n.continueVisiting,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-              : null,
       body: Stack(
         children: [
           GoogleMap(
@@ -1184,77 +1139,155 @@ class _MapPageState extends State<MapPage>
             style: _mapStyle,
             zoomControlsEnabled: true, // Enable zoom controls to help debug
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
+          // Remove SafeArea and rebuild the top session indicator to extend behind status bar
+          Column(
+            children: [
+              // Active Session Indicator - Make it extend behind status bar
+              if (_hasActiveCustomerVisit && _customerWithActiveVisit != null)
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: EdgeInsets.only(
+                    top:
+                        MediaQuery.of(context).viewPadding.top +
+                        12, // Account for status bar
+                    bottom: 12,
+                    left: 16,
+                    right: 16,
+                  ),
+                  child: Row(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.search,
-                            color: AppColors.primary,
+                      const Icon(Icons.person, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n.activeVisitWith(
+                            _customerWithActiveVisit!.customerName,
                           ),
-                          onPressed: () {
-                            _hideCustomerInfo();
-                            NavigationService.push(
-                              context,
-                              RouteConstants.customerSearch,
-                            );
-                            // Session checking will be handled in didChangeDependencies
-                          },
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.settings,
-                            color: AppColors.primary,
+                      TextButton(
+                        onPressed: () {
+                          // Navigate to the customer activity page using GoRouter
+                          NavigationService.push(
+                            context,
+                            RouteConstants.customerActivity,
+                            extra: _customerWithActiveVisit!,
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.white.withOpacity(0.2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          onPressed: () {
-                            NavigationService.pushNamed(context, 'settings');
-                          },
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                        ),
+                        child: Text(
+                          l10n.continueVisiting,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  SessionClockWidget(
-                    isSessionActive: _activeSession,
-                    sessionStartTime: _sessionStartTime,
-                  ),
-                ],
+                ),
+
+              // Top Bar Controls - Add proper top padding when no active session
+              Padding(
+                padding: EdgeInsets.only(
+                  top:
+                      _hasActiveCustomerVisit
+                          ? 8.0
+                          : MediaQuery.of(context).viewPadding.top + 8.0,
+                  left: 16.0,
+                  right: 16.0,
+                  bottom: 8.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.search,
+                              color: AppColors.primary,
+                            ),
+                            onPressed: () {
+                              _hideCustomerInfo();
+                              NavigationService.push(
+                                context,
+                                RouteConstants.customerSearch,
+                              );
+                              // Session checking will be handled in didChangeDependencies
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.settings,
+                              color: AppColors.primary,
+                            ),
+                            onPressed: () {
+                              NavigationService.pushNamed(context, 'settings');
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    SessionClockWidget(
+                      isSessionActive: _activeSession,
+                      sessionStartTime: _sessionStartTime,
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
           if (_overlayEntry == null && _selectedCustomer != null)
             Positioned(

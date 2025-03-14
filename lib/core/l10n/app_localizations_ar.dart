@@ -333,10 +333,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bankTransfer => 'تحويل بنكي';
 
   @override
-  String get creditCard => 'بطاقة ائتمان';
+  String get creditCard => 'فيزا كارد';
 
   @override
-  String get masterCard => 'بطاقة ماستر كارد';
+  String get masterCard => 'ماستر كارد';
 
   @override
   String visitStartedAt(String time) {
@@ -393,7 +393,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get returnItems => 'المرتجعات';
 
   @override
-  String get summary => 'الملخص';
+  String get summary => 'ملخص';
 
   @override
   String get netSubTotal => 'صافي المجموع الفرعي';

@@ -1,6 +1,10 @@
 class RouteConstants {
+  // Initial Route - not needed since we're starting directly with login
+  // static const String initialRoute = '/';
+
   // API Config Routes
   static const String apiConfig = '/api-config';
+  // static const String apiConfiguration = '/api-configuration';
 
   // Auth Routes
   static const String login = '/login';
@@ -14,6 +18,7 @@ class RouteConstants {
   static const String sync = '/sync';
   static const String customerSearch = '/customer-search';
   static const String customerActivity = '/customer-activity';
+  // static const String customerDetails = '/customer-details';
 
   // Customer Activity Related Routes
   static const String invoice = '/invoice';
