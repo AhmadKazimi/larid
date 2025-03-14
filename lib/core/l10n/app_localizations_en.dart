@@ -102,15 +102,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get salesTaxes => 'Sales Taxes';
 
   @override
+  String get warehouse => 'Warehouse';
+
+  @override
+  String get companyInfo => 'Company Info';
+
+  @override
   String get syncAllData => 'Sync All Data';
 
   @override
-  String recordsSynced(Object count) {
+  String recordsSynced(int count) {
     return '$count records synced';
   }
 
   @override
   String get start => 'Start';
+
+  @override
+  String get syncError => 'Sync Error';
+
+  @override
+  String get syncSuccess => 'Sync Successful';
+
+  @override
+  String get syncInProgress => 'Sync in Progress';
+
+  @override
+  String get syncComplete => 'Sync Complete';
+
+  @override
+  String get syncFailed => 'Sync Failed';
+
+  @override
+  String get retrySync => 'Retry Sync';
+
+  @override
+  String syncProgress(int progress) {
+    return '$progress%';
+  }
 
   @override
   String get makeSureInternetConnected => 'Make sure you are connected to the internet';
@@ -305,6 +334,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creditCard => 'Credit Card';
+
+  @override
+  String get masterCard => 'Master Card';
 
   @override
   String visitStartedAt(String time) {

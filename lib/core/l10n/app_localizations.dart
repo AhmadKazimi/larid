@@ -281,6 +281,18 @@ abstract class AppLocalizations {
   /// **'Sales Taxes'**
   String get salesTaxes;
 
+  /// No description provided for @warehouse.
+  ///
+  /// In en, this message translates to:
+  /// **'Warehouse'**
+  String get warehouse;
+
+  /// No description provided for @companyInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Company Info'**
+  String get companyInfo;
+
   /// No description provided for @syncAllData.
   ///
   /// In en, this message translates to:
@@ -291,13 +303,55 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count} records synced'**
-  String recordsSynced(Object count);
+  String recordsSynced(int count);
 
   /// No description provided for @start.
   ///
   /// In en, this message translates to:
   /// **'Start'**
   String get start;
+
+  /// No description provided for @syncError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Error'**
+  String get syncError;
+
+  /// No description provided for @syncSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Successful'**
+  String get syncSuccess;
+
+  /// No description provided for @syncInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync in Progress'**
+  String get syncInProgress;
+
+  /// No description provided for @syncComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Complete'**
+  String get syncComplete;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Failed'**
+  String get syncFailed;
+
+  /// No description provided for @retrySync.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry Sync'**
+  String get retrySync;
+
+  /// No description provided for @syncProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{progress}%'**
+  String syncProgress(int progress);
 
   /// No description provided for @makeSureInternetConnected.
   ///
@@ -670,6 +724,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Credit Card'**
   String get creditCard;
+
+  /// No description provided for @masterCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Master Card'**
+  String get masterCard;
 
   /// No description provided for @visitStartedAt.
   ///

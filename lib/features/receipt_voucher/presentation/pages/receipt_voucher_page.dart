@@ -28,6 +28,7 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
   static const int CHECK_TYPE = 1;
   static const int CASH_TYPE = 2;
   static const int VISA_TYPE = 3;
+  static const int MASTER_CARD_TYPE = 4;
   static const int TRANSFER_TYPE = 11;
 
   // Method to map selected payment method to API payment method type
@@ -41,6 +42,8 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
       return CASH_TYPE;
     } else if (paymentMethod == localizations.creditCard) {
       return VISA_TYPE;
+    } else if (paymentMethod == localizations.masterCard) {
+      return MASTER_CARD_TYPE;
     } else if (paymentMethod == localizations.bankTransfer) {
       return TRANSFER_TYPE;
     }
@@ -253,6 +256,18 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
                                   () =>
                                       _selectedPaymentMethod =
                                           localizations.creditCard,
+                                ),
+                              ),
+                              _buildPaymentOption(
+                                context,
+                                localizations.masterCard,
+                                Icons.credit_card,
+                                _selectedPaymentMethod ==
+                                    localizations.masterCard,
+                                () => setState(
+                                  () =>
+                                      _selectedPaymentMethod =
+                                          localizations.masterCard,
                                 ),
                               ),
                             ],

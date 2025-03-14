@@ -32,19 +32,35 @@
     "customers": "العملاء",
     "salesRepCustomers": "عملاء مندوب المبيعات",
     "prices": "الأسعار",
-    "inventoryItems": "مواد المخزون",
+    "inventoryItems": "عناصر المخزون",
     "inventoryUnits": "وحدات المخزون",
     "salesTaxes": "ضرائب المبيعات",
+    "warehouse": "المستودع",
+    "companyInfo": "معلومات الشركة",
     "syncAllData": "مزامنة جميع البيانات",
     "recordsSynced": "تمت مزامنة {count} سجل",
     "@recordsSynced": {
         "placeholders": {
             "count": {
-                "type": "Object"
+                "type": "int"
             }
         }
     },
     "start": "ابدأ",
+    "syncError": "خطأ في المزامنة",
+    "syncSuccess": "تمت المزامنة بنجاح",
+    "syncInProgress": "جاري المزامنة",
+    "syncComplete": "اكتملت المزامنة",
+    "syncFailed": "فشلت المزامنة",
+    "retrySync": "إعادة محاولة المزامنة",
+    "syncProgress": "{progress}%",
+    "@syncProgress": {
+        "placeholders": {
+            "progress": {
+                "type": "int"
+            }
+        }
+    },
 
     "makeSureInternetConnected": "تأكد من اتصالك بالإنترنت",
     "dontClosePage": "لا تغلق هذه الصفحة حتى تكتمل المزامنة",
@@ -146,7 +162,8 @@
     "cash": "نقداً",
     "check": "شيك",
     "bankTransfer": "تحويل بنكي",
-    "creditCard": "بطاقة ائتمان",
+    "creditCard": "فيزا كارد",
+    "masterCard": "ماستر كارد",
     
     "visitStartedAt": "بدأت الزيارة في: {time}",
     "@visitStartedAt": {
@@ -192,11 +209,11 @@
     "netTotal": "صافي المجموع",
     "netSalesTax": "صافي ضريبة المبيعات",
     "netGrandTotal": "صافي الأجمالي",
-    "addComment": "إضافة تعليق",
+    "addComment": "إضافة ملاحظات",
     "submit": "حفظ",
     "print": "طباعة",
     "addItem": "إضافة مادة",
-    "returnItem": "إرجاع مادة",
+    "returnItem": "إنشاء مرتجع",
     "sync": "مزامنة",
     
     "items": "المواد",
@@ -282,7 +299,7 @@
             }
         }
     },
-    "currency": "{amount} دينار",
+    "currency": "{amount}",
     "@currency": {
         "placeholders": {
             "amount": {

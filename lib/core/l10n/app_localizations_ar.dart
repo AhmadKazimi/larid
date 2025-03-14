@@ -93,7 +93,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prices => 'الأسعار';
 
   @override
-  String get inventoryItems => 'مواد المخزون';
+  String get inventoryItems => 'عناصر المخزون';
 
   @override
   String get inventoryUnits => 'وحدات المخزون';
@@ -102,15 +102,44 @@ class AppLocalizationsAr extends AppLocalizations {
   String get salesTaxes => 'ضرائب المبيعات';
 
   @override
+  String get warehouse => 'المستودع';
+
+  @override
+  String get companyInfo => 'معلومات الشركة';
+
+  @override
   String get syncAllData => 'مزامنة جميع البيانات';
 
   @override
-  String recordsSynced(Object count) {
+  String recordsSynced(int count) {
     return 'تمت مزامنة $count سجل';
   }
 
   @override
   String get start => 'بدء';
+
+  @override
+  String get syncError => 'خطأ في المزامنة';
+
+  @override
+  String get syncSuccess => 'تمت المزامنة بنجاح';
+
+  @override
+  String get syncInProgress => 'جاري المزامنة';
+
+  @override
+  String get syncComplete => 'اكتملت المزامنة';
+
+  @override
+  String get syncFailed => 'فشلت المزامنة';
+
+  @override
+  String get retrySync => 'إعادة محاولة المزامنة';
+
+  @override
+  String syncProgress(int progress) {
+    return '$progress%';
+  }
 
   @override
   String get makeSureInternetConnected => 'تأكد من اتصالك بالإنترنت';
@@ -307,6 +336,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get creditCard => 'بطاقة ائتمان';
 
   @override
+  String get masterCard => 'بطاقة ماستر كارد';
+
+  @override
   String visitStartedAt(String time) {
     return 'بدأت الزيارة في: $time';
   }
@@ -379,7 +411,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get netGrandTotal => 'صافي الأجمالي';
 
   @override
-  String get addComment => 'إضافة تعليق';
+  String get addComment => 'إضافة ملاحظات';
 
   @override
   String get submit => 'حفظ';
@@ -391,7 +423,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addItem => 'إضافة مادة';
 
   @override
-  String get returnItem => 'إرجاع مادة';
+  String get returnItem => 'إنشاء مرتجع';
 
   @override
   String get items => 'المواد';
@@ -556,7 +588,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String currency(String amount, String symbol) {
-    return '$amount دينار';
+    return '$amount';
   }
 
   @override

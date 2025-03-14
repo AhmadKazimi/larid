@@ -35,16 +35,32 @@
     "inventoryItems": "Inventory Items",
     "inventoryUnits": "Inventory Units",
     "salesTaxes": "Sales Taxes",
+    "warehouse": "Warehouse",
+    "companyInfo": "Company Info",
     "syncAllData": "Sync All Data",
     "recordsSynced": "{count} records synced",
     "@recordsSynced": {
         "placeholders": {
             "count": {
-                "type": "Object"
+                "type": "int"
             }
         }
     },
     "start": "Start",
+    "syncError": "Sync Error",
+    "syncSuccess": "Sync Successful",
+    "syncInProgress": "Sync in Progress",
+    "syncComplete": "Sync Complete",
+    "syncFailed": "Sync Failed",
+    "retrySync": "Retry Sync",
+    "syncProgress": "{progress}%",
+    "@syncProgress": {
+        "placeholders": {
+            "progress": {
+                "type": "int"
+            }
+        }
+    },
 
     "makeSureInternetConnected": "Make sure you are connected to the internet",
     "dontClosePage": "Don't close this page until sync is complete",
@@ -147,6 +163,7 @@
     "check": "Check",
     "bankTransfer": "Bank Transfer",
     "creditCard": "Credit Card",
+    "masterCard": "Master Card",
     
     "visitStartedAt": "Visit started at: {time}",
     "@visitStartedAt": {

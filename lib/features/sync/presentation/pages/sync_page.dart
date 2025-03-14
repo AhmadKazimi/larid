@@ -183,7 +183,7 @@ class _SyncPageState extends State<SyncPage>
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${(progress * 100).toInt()}%',
+                          l10n.syncProgress((progress * 100).toInt()),
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: AppColors.primary),
                         ),
@@ -236,12 +236,12 @@ class _SyncPageState extends State<SyncPage>
                             ),
                             const SizedBox(height: 8),
                             _buildApiLogSection(
-                              'Warehouse',
+                              l10n.warehouse,
                               state.warehouseState,
                             ),
                             const SizedBox(height: 8),
                             _buildApiLogSection(
-                              'Company Info',
+                              l10n.companyInfo,
                               state.companyInfoState,
                             ),
                           ],
