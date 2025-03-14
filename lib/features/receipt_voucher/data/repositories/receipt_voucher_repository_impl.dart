@@ -15,6 +15,7 @@ class ReceiptVoucherRepositoryImpl implements ReceiptVoucherRepository {
     required String customerCode,
     required double paidAmount,
     required String description,
+    required int paymentmethod,
   }) async {
     return await _apiService.uploadReceiptVoucher(
       userid: userid,
@@ -23,6 +24,7 @@ class ReceiptVoucherRepositoryImpl implements ReceiptVoucherRepository {
       customerCode: customerCode,
       paidAmount: paidAmount,
       description: description,
+      paymentmethod: paymentmethod,
     );
   }
 }

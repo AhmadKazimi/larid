@@ -216,6 +216,7 @@ class ApiService {
     required String customerCode,
     required double paidAmount,
     required String description,
+    required int paymentmethod,
   }) async {
     try {
       final response = await _dioClient.get(
@@ -227,6 +228,7 @@ class ApiService {
           'customer_cd': customerCode,
           'paid_amt': paidAmount,
           'description': description,
+          'paymentmethod': paymentmethod,
         },
       );
 

@@ -24,6 +24,30 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
   final _notesController = TextEditingController();
   String? _selectedPaymentMethod;
 
+  // Payment method type mapping
+  static const int CHECK_TYPE = 1;
+  static const int CASH_TYPE = 2;
+  static const int VISA_TYPE = 3;
+  static const int TRANSFER_TYPE = 11;
+
+  // Method to map selected payment method to API payment method type
+  int getPaymentMethodType(
+    String? paymentMethod,
+    AppLocalizations localizations,
+  ) {
+    if (paymentMethod == localizations.check) {
+      return CHECK_TYPE;
+    } else if (paymentMethod == localizations.cash) {
+      return CASH_TYPE;
+    } else if (paymentMethod == localizations.creditCard) {
+      return VISA_TYPE;
+    } else if (paymentMethod == localizations.bankTransfer) {
+      return TRANSFER_TYPE;
+    }
+    // Default to cash if no valid selection
+    return CASH_TYPE;
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -326,6 +350,10 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
                       customerCode: widget.customer.customerCode,
                       paidAmount: double.parse(_amountController.text),
                       description: _notesController.text,
+                      paymentmethod: getPaymentMethodType(
+                        _selectedPaymentMethod,
+                        localizations,
+                      ),
                     );
 
                     // Close loading dialog

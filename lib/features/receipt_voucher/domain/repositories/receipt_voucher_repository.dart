@@ -6,5 +6,6 @@ abstract class ReceiptVoucherRepository {
     required String customerCode,
     required double paidAmount,
     required String description,
+    required int paymentmethod,
   });
 }
