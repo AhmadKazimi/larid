@@ -257,6 +257,7 @@ class AppRouter {
             child: PhotoCapturePage(
               customerName: customer.customerName,
               customerCode: customer.customerCode,
+              customerAddress: customer.address,
             ),
           );
         },

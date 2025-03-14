@@ -411,5 +411,6 @@
     "afterPicture": "After Picture",
     "cameraPermissionRequired": "Camera permission is required to take photos",
     "errorTakingPhoto": "Error taking photo. Please try again.",
-    "tapToTakePhoto": "Tap to take photo"
+    "tapToTakePhoto": "Tap to take photo",
+    "takingPicture": "Taking Picture"
 }

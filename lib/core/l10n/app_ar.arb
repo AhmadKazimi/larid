@@ -408,5 +408,6 @@
     "afterPicture": "الصورة بعد",
     "cameraPermissionRequired": "إذن الكاميرا مطلوب لالتقاط الصور",
     "errorTakingPhoto": "خطأ في التقاط الصورة. يرجى المحاولة مرة أخرى.",
-    "tapToTakePhoto": "انقر لالتقاط صورة"
+    "tapToTakePhoto": "انقر لالتقاط صورة",
+    "takingPicture": "التقاط صورة"
 }

@@ -652,4 +652,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tapToTakePhoto => 'انقر لالتقاط صورة';
+
+  @override
+  String get takingPicture => 'التقاط صورة';
 }

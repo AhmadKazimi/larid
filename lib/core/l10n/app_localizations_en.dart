@@ -652,4 +652,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapToTakePhoto => 'Tap to take photo';
+
+  @override
+  String get takingPicture => 'Taking Picture';
 }

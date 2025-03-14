@@ -1288,6 +1288,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to take photo'**
   String get tapToTakePhoto;
+
+  /// No description provided for @takingPicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Taking Picture'**
+  String get takingPicture;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
