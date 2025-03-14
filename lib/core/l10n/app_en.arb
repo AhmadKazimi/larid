@@ -270,10 +270,13 @@
             }
         }
     },
-    "currency": "{amount} JOD",
+    "currency": "{amount} {symbol}",
     "@currency": {
         "placeholders": {
             "amount": {
+                "type": "String"
+            },
+            "symbol": {
                 "type": "String"
             }
         }

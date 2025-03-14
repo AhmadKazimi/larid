@@ -522,8 +522,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String currency(String amount) {
-    return '$amount JOD';
+  String currency(String amount, String symbol) {
+    return '$amount $symbol';
   }
 
   @override

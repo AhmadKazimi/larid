@@ -5,16 +5,16 @@ import 'package:larid/core/l10n/app_localizations.dart';
 import 'package:larid/core/theme/app_theme.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
-import '../../../../core/di/service_locator.dart';
-import '../bloc/invoice_bloc.dart';
-import '../bloc/invoice_event.dart';
-import '../bloc/invoice_state.dart';
-import '../../../../core/router/route_constants.dart';
-import 'package:provider/provider.dart';
-import '../../../../core/network/api_service.dart';
-import '../../../../core/utils/dialogs.dart';
-import '../../../../features/auth/domain/repositories/auth_repository.dart';
-import '../../../../database/invoice_table.dart';
+import 'package:larid/features/invoice/presentation/bloc/invoice_bloc.dart';
+import 'package:larid/features/invoice/presentation/bloc/invoice_event.dart';
+import 'package:larid/features/invoice/presentation/bloc/invoice_state.dart';
+import 'package:larid/core/router/route_constants.dart';
+import 'package:larid/core/network/api_service.dart';
+import 'package:larid/core/utils/dialogs.dart';
+import 'package:larid/features/auth/domain/repositories/auth_repository.dart';
+import 'package:larid/database/invoice_table.dart';
+import 'package:larid/database/user_table.dart';
+import 'package:get_it/get_it.dart';
 
 class InvoicePage extends StatefulWidget {
   final CustomerEntity customer;
@@ -29,17 +29,17 @@ class InvoicePage extends StatefulWidget {
 
 class _InvoicePageState extends State<InvoicePage> {
   final TextEditingController _commentController = TextEditingController();
+  String? _currency;
   late final InvoiceBloc _invoiceBloc;
   late final bool _isReturn;
   String? _userId;
-  final _formKey = GlobalKey<FormState>();
   late final AppLocalizations localizations;
 
   @override
   void initState() {
     super.initState();
     _isReturn = widget.isReturn;
-    _invoiceBloc = getIt<InvoiceBloc>();
+    _invoiceBloc = GetIt.I<InvoiceBloc>();
 
     // Get the user ID for invoice number formatting
     _getUserId();
@@ -74,13 +74,15 @@ class _InvoicePageState extends State<InvoicePage> {
         isReturn: _isReturn,
       ),
     );
+
+    _getCurrency();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Initialize localizations here instead of initState
-    localizations = AppLocalizations.of(context)!;
+    localizations = AppLocalizations.of(context);
     _invoiceBloc.initializeLocalizations(context);
   }
 
@@ -258,58 +260,6 @@ class _InvoicePageState extends State<InvoicePage> {
     );
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-    InvoiceState state,
-    AppLocalizations localizations,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.arrow_back, color: AppColors.primary),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  state.customer.customerName,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.secondary,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              state.paymentType,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildBody(
     BuildContext context,
@@ -368,16 +318,22 @@ class _InvoicePageState extends State<InvoicePage> {
             title: localizations.invoice,
             child: Column(
               children: [
-                _buildAmountRow(localizations.subTotal, state.subtotal),
+                _buildTotalRow(context, localizations.subTotal, state.subtotal),
                 if (state.discount > 0)
-                  _buildAmountRow(localizations.discount, state.discount),
-                _buildAmountRow(localizations.total, state.total),
-                _buildAmountRow(
+                  _buildTotalRow(
+                    context,
+                    localizations.discount,
+                    state.discount,
+                  ),
+                _buildTotalRow(context, localizations.total, state.total),
+                _buildTotalRow(
+                  context,
                   localizations.salesTax,
                   state.salesTax,
                   isPrimary: true,
                 ),
-                _buildAmountRow(
+                _buildTotalRow(
+                  context,
                   localizations.grandTotal,
                   state.grandTotal,
                   isBold: true,
@@ -395,19 +351,34 @@ class _InvoicePageState extends State<InvoicePage> {
             title: localizations.returnItems,
             child: Column(
               children: [
-                _buildAmountRow(localizations.subTotal, state.returnSubtotal),
-                _buildAmountRow(localizations.discount, state.returnDiscount),
+                _buildTotalRow(
+                  context,
+                  localizations.subTotal,
+                  state.returnSubtotal,
+                ),
+                _buildTotalRow(
+                  context,
+                  localizations.discount,
+                  state.returnDiscount,
+                ),
                 const Divider(),
-                _buildAmountRow(
+                _buildTotalRow(
+                  context,
                   localizations.total,
                   state.returnTotal,
                   isBold: true,
                 ),
-                _buildAmountRow(localizations.salesTax, state.returnSalesTax),
+                _buildTotalRow(
+                  context,
+                  localizations.salesTax,
+                  state.returnSalesTax,
+                ),
                 const Divider(),
-                _buildAmountRow(
+                _buildTotalRow(
+                  context,
                   localizations.grandTotal,
                   state.returnGrandTotal,
+                  isBold: true,
                   isPrimary: true,
                 ),
               ],
@@ -459,7 +430,8 @@ class _InvoicePageState extends State<InvoicePage> {
     );
   }
 
-  Widget _buildAmountRow(
+  Widget _buildTotalRow(
+    BuildContext context,
     String label,
     double amount, {
     bool isBold = false,
@@ -480,7 +452,7 @@ class _InvoicePageState extends State<InvoicePage> {
             children: [
               Text(label, style: labelStyle),
               Text(
-                localizations.currency(amount.toStringAsFixed(2)),
+                '${amount.toStringAsFixed(2)} ${_currency ?? "?"}',
                 style: (isBold || isPrimary
                         ? textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
@@ -552,7 +524,7 @@ class _InvoicePageState extends State<InvoicePage> {
                   ),
                   // Total price with prominent styling
                   Text(
-                    localizations.currency(priceAfterTax.toStringAsFixed(2)),
+                    localizations.currency(priceAfterTax.toStringAsFixed(2), _currency ?? "?"),
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppColors.secondary,
@@ -1148,8 +1120,8 @@ class _InvoicePageState extends State<InvoicePage> {
   Future<void> _syncInvoice(BuildContext context) async {
     final bloc = context.read<InvoiceBloc>();
     final state = bloc.state;
-    final apiService = getIt<ApiService>();
-    final invoiceTable = getIt<InvoiceTable>();
+    final apiService = GetIt.I<ApiService>();
+    final invoiceTable = GetIt.I<InvoiceTable>();
 
     // Check if there are items to upload based on the current mode
     final hasItemsToUpload =
@@ -1167,7 +1139,7 @@ class _InvoicePageState extends State<InvoicePage> {
 
     try {
       // Get user credentials directly from AuthRepository
-      final authRepository = getIt<AuthRepository>();
+      final authRepository = GetIt.I<AuthRepository>();
       final user = await authRepository.getCurrentUser();
 
       if (user == null) {
@@ -1360,7 +1332,7 @@ class _InvoicePageState extends State<InvoicePage> {
   // Add method to get the user ID
   Future<void> _getUserId() async {
     try {
-      final authRepository = getIt<AuthRepository>();
+      final authRepository = GetIt.I<AuthRepository>();
       final user = await authRepository.getCurrentUser();
       if (user != null) {
         setState(() {
@@ -1384,5 +1356,22 @@ class _InvoicePageState extends State<InvoicePage> {
     return _userId != null && _userId!.isNotEmpty
         ? '${_userId!}-$invoiceNumber'
         : invoiceNumber;
+  }
+
+  Future<void> _getCurrency() async {
+    try {
+      final userTable = GetIt.I<UserTable>();
+      final currentUser = await userTable.getCurrentUser();
+      if (currentUser != null && currentUser.currency != null) {
+        setState(() {
+          _currency = currentUser.currency;
+        });
+        debugPrint('Currency loaded: $_currency');
+      } else {
+        debugPrint('No currency found in user table');
+      }
+    } catch (e) {
+      debugPrint('Error getting currency: $e');
+    }
   }
 }

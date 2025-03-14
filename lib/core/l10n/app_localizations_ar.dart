@@ -522,7 +522,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String currency(String amount) {
+  String currency(String amount, String symbol) {
     return '$amount دينار';
   }
 

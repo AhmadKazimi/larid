@@ -50,6 +50,7 @@ class _PrintPageState extends State<PrintPage> {
   bool _fontLoaded = false;
   bool _initialized = false;
   CompanyInfoEntity? _companyInfo;
+  String? _currency;
 
   @override
   void initState() {
@@ -58,6 +59,7 @@ class _PrintPageState extends State<PrintPage> {
     _loadFonts();
     _getUserId();
     _getCompanyInfo();
+    _getCurrency();
     _initTaxCalculator().then((_) {
       if (mounted) {
         _logInvoiceItemTaxes();
@@ -126,6 +128,23 @@ class _PrintPageState extends State<PrintPage> {
       }
     } catch (e) {
       debugPrint('Error getting company info: $e');
+    }
+  }
+
+  Future<void> _getCurrency() async {
+    try {
+      final userTable = GetIt.I<UserTable>();
+      final currentUser = await userTable.getCurrentUser();
+      if (currentUser != null && currentUser.currency != null) {
+        setState(() {
+          _currency = currentUser.currency;
+        });
+        debugPrint('Currency loaded: $_currency');
+      } else {
+        debugPrint('No currency found in user table');
+      }
+    } catch (e) {
+      debugPrint('Error getting currency: $e');
     }
   }
 
@@ -647,7 +666,7 @@ class _PrintPageState extends State<PrintPage> {
 
           // Show EXACTLY what will be displayed
           final taxDisplay =
-              '${taxAmount.toStringAsFixed(2)} JOD\n(${taxRate.toStringAsFixed(1)}%)';
+              '${taxAmount.toStringAsFixed(2)} ${_currency ?? ""}\n(${taxRate.toStringAsFixed(1)}%)';
           debugPrint('Tax display in PDF: $taxDisplay');
 
           return pw.TableRow(
@@ -817,7 +836,10 @@ class _PrintPageState extends State<PrintPage> {
         children: [
           pw.Text(label, style: textStyle),
           pw.SizedBox(width: 20),
-          pw.Text('${amount.toStringAsFixed(2)} JOD', style: textStyle),
+          pw.Text(
+            l10n.currency(amount.toStringAsFixed(2), _currency ?? "?"),
+            style: textStyle,
+          ),
         ],
       ),
     );

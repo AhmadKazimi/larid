@@ -1076,8 +1076,8 @@ abstract class AppLocalizations {
   /// No description provided for @currency.
   ///
   /// In en, this message translates to:
-  /// **'{amount} JOD'**
-  String currency(String amount);
+  /// **'{amount} {symbol}'**
+  String currency(String amount, String symbol);
 
   /// No description provided for @quantityTimesPrice.
   ///

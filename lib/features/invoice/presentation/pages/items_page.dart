@@ -8,6 +8,8 @@ import 'package:larid/features/invoice/presentation/bloc/items_bloc.dart';
 import 'package:larid/features/invoice/presentation/bloc/items_event.dart';
 import 'package:larid/features/invoice/presentation/bloc/items_state.dart';
 import 'package:larid/features/sync/domain/entities/inventory/inventory_item_entity.dart';
+import 'package:get_it/get_it.dart';
+import 'package:larid/database/user_table.dart';
 
 class ItemsPage extends StatefulWidget {
   final bool isReturn;
@@ -23,6 +25,10 @@ class ItemsPage extends StatefulWidget {
 class _ItemsPageState extends State<ItemsPage> {
   final TextEditingController _searchController = TextEditingController();
   late final ItemsBloc _itemsBloc;
+  List<InventoryItemEntity> _filteredItems = [];
+  String? _selectedItemCode;
+  int _selectedQuantity = 0;
+  String? _currency;
 
   @override
   void initState() {
@@ -42,6 +48,25 @@ class _ItemsPageState extends State<ItemsPage> {
           );
         }
       });
+    }
+
+    _getCurrency();
+  }
+
+  Future<void> _getCurrency() async {
+    try {
+      final userTable = GetIt.I<UserTable>();
+      final currentUser = await userTable.getCurrentUser();
+      if (currentUser != null && currentUser.currency != null) {
+        setState(() {
+          _currency = currentUser.currency;
+        });
+        debugPrint('Currency loaded: $_currency');
+      } else {
+        debugPrint('No currency found in user table');
+      }
+    } catch (e) {
+      debugPrint('Error getting currency: $e');
     }
   }
 
@@ -358,7 +383,7 @@ class _ItemsPageState extends State<ItemsPage> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '${item.sellUnitPrice.toStringAsFixed(2)} JOD',
+                                '${item.sellUnitPrice.toStringAsFixed(2)} ${_currency ?? "?"}',
                                 style: theme.textTheme.labelMedium?.copyWith(
                                   color: AppColors.secondary,
                                   fontWeight: FontWeight.w500,
@@ -380,7 +405,7 @@ class _ItemsPageState extends State<ItemsPage> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                'Total: ${(selectedQuantity * item.sellUnitPrice).toStringAsFixed(2)} JOD',
+                                'Total: ${(selectedQuantity * item.sellUnitPrice).toStringAsFixed(2)} ${_currency ?? "?"}',
                                 style: theme.textTheme.labelMedium?.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w500,
@@ -578,7 +603,7 @@ class _ItemsPageState extends State<ItemsPage> {
                     ),
                   ),
                   Text(
-                    '${localizations.total}: ${totalAmount.toStringAsFixed(2)} JOD',
+                    '${localizations.total}: ${totalAmount.toStringAsFixed(2)} ${_currency ?? "?"}',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
