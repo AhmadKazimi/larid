@@ -634,4 +634,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorSavingReceiptVoucher => 'Error saving receipt voucher';
+
+  @override
+  String get savingReceiptVoucher => 'Saving voucher receipt';
 }

@@ -405,5 +405,6 @@
         }
     },
     "receiptVoucherSaved": "Receipt voucher saved successfully",
-    "errorSavingReceiptVoucher": "Error saving receipt voucher"
+    "errorSavingReceiptVoucher": "Error saving receipt voucher",
+    "savingReceiptVoucher": "Saving voucher receipt"
 }

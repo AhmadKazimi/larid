@@ -634,4 +634,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get errorSavingReceiptVoucher => 'خطأ في حفظ سند القبض';
+
+  @override
+  String get savingReceiptVoucher => 'جاري حفظ سند القبض';
 }

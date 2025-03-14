@@ -43,6 +43,8 @@ import '../../features/taxes/domain/repositories/tax_repository.dart';
 import '../../features/taxes/data/repositories/tax_repository_impl.dart';
 import '../../features/taxes/domain/services/tax_calculator_service.dart';
 import '../../database/receipt_voucher_table.dart';
+import '../../features/receipt_voucher/data/repositories/receipt_voucher_repository_impl.dart';
+import '../../features/receipt_voucher/domain/repositories/receipt_voucher_repository.dart';
 
 final getIt = GetIt.instance;
 
@@ -204,6 +206,11 @@ Future<void> setupServiceLocator() async {
     final taxes = await taxRepository.getAllTaxes();
     return TaxCalculatorService(taxes);
   });
+
+  // Register ReceiptVoucherRepository
+  getIt.registerLazySingleton<ReceiptVoucherRepository>(
+    () => ReceiptVoucherRepositoryImpl(apiService: getIt<ApiService>()),
+  );
 
   // Update warehouse in ApiService if available
   await updateWarehouseInApiService();

@@ -209,6 +209,41 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> uploadReceiptVoucher({
+    required String userid,
+    required String workspace,
+    required String password,
+    required String customerCode,
+    required double paidAmount,
+    required String description,
+  }) async {
+    try {
+      final response = await _dioClient.get(
+        ApiEndpoints.buildUrl(ApiEndpoints.uploadPayment),
+        queryParameters: {
+          ApiParameters.userid: userid,
+          ApiParameters.workspace: workspace,
+          ApiParameters.password: password,
+          'customer_cd': customerCode,
+          'paid_amt': paidAmount,
+          'description': description,
+        },
+      );
+
+      if (response.data is List && response.data.isNotEmpty) {
+        final data = response.data[0];
+        if (data.containsKey('number')) {
+          return {'success': true, 'number': data['number']};
+        } else if (data.containsKey('ERROR')) {
+          return {'success': false, 'error': data['ERROR']};
+        }
+      }
+      return {'success': false, 'error': 'Unknown error'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
   /// Uploads an invoice to the server
   /// Returns the invoice number on success, throws an exception with appropriate message on failure
   Future<String> uploadInvoice({

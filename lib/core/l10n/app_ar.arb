@@ -402,5 +402,6 @@
         }
     },
     "receiptVoucherSaved": "تم حفظ سند القبض بنجاح",
-    "errorSavingReceiptVoucher": "خطأ في حفظ سند القبض"
+    "errorSavingReceiptVoucher": "خطأ في حفظ سند القبض",
+    "savingReceiptVoucher": "جاري حفظ سند القبض"
 }

@@ -5,6 +5,8 @@ import 'package:larid/core/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:larid/core/di/service_locator.dart';
 import 'package:larid/database/receipt_voucher_table.dart';
+import 'package:larid/features/receipt_voucher/domain/repositories/receipt_voucher_repository.dart';
+import 'package:larid/database/user_table.dart';
 
 class ReceiptVoucherPage extends StatefulWidget {
   final CustomerEntity customer;
@@ -226,6 +228,32 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
                               try {
+                                // Show loading dialog
+                                if (!mounted) return;
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder:
+                                      (context) => AlertDialog(
+                                        content: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            CircularProgressIndicator(
+                                              color: AppColors.primary,
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Text(
+                                              localizations
+                                                  .savingReceiptVoucher,
+                                              style:
+                                                  theme.textTheme.titleMedium,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                );
+
+                                // Save to local database
                                 final receiptVoucherTable =
                                     getIt<ReceiptVoucherTable>();
                                 await receiptVoucherTable.saveReceiptVoucher(
@@ -238,19 +266,58 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
                                   comment: _notesController.text,
                                 );
 
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        localizations.receiptVoucherSaved,
-                                      ),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-                                  context.pop();
+                                // Get user credentials
+                                final userTable = getIt<UserTable>();
+                                final user = await userTable.getCurrentUser();
+                                if (user == null) {
+                                  throw Exception('User not found');
                                 }
-                              } catch (e) {
-                                if (mounted) {
+
+                                // Upload to server
+                                final repository =
+                                    getIt<ReceiptVoucherRepository>();
+                                final result = await repository
+                                    .uploadReceiptVoucher(
+                                      userid: user.userid,
+                                      workspace: user.workspace,
+                                      password: user.password,
+                                      customerCode:
+                                          widget.customer.customerCode,
+                                      paidAmount: double.parse(
+                                        _amountController.text,
+                                      ),
+                                      description: _notesController.text,
+                                    );
+
+                                // Close loading dialog
+                                if (!mounted) return;
+                                Navigator.of(context).pop();
+
+                                if (result['success']) {
+                                  // Show success dialog with receipt number
+                                  if (!mounted) return;
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (context) => AlertDialog(
+                                          title: Text(localizations.success),
+                                          content: Text(
+                                            '${localizations.receiptVoucherSaved}\n${localizations.receiptVoucher} #${result['number']}',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                                context.pop();
+                                              },
+                                              child: Text(localizations.ok),
+                                            ),
+                                          ],
+                                        ),
+                                  );
+                                } else {
+                                  // Show error message
+                                  if (!mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
@@ -260,6 +327,22 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
                                     ),
                                   );
                                 }
+                              } catch (e) {
+                                // Close loading dialog if still showing
+                                if (mounted) {
+                                  Navigator.of(context).pop();
+                                }
+
+                                // Show error message
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      localizations.errorSavingReceiptVoucher,
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
                               }
                             }
                           },

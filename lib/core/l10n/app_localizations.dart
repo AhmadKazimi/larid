@@ -1252,6 +1252,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error saving receipt voucher'**
   String get errorSavingReceiptVoucher;
+
+  /// No description provided for @savingReceiptVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving voucher receipt'**
+  String get savingReceiptVoucher;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
