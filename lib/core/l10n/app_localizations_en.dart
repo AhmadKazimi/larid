@@ -271,6 +271,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startCustomerVisit => 'Start Customer Visit';
 
   @override
+  String get receiptDetails => 'Receipt Details';
+
+  @override
+  String get amount => 'Amount';
+
+  @override
+  String get pleaseEnterAmount => 'Please enter an amount';
+
+  @override
+  String get pleaseEnterValidNumber => 'Please enter a valid number';
+
+  @override
+  String get paymentMethod => 'Payment Method';
+
+  @override
+  String get pleaseSelectPaymentMethod => 'Please select a payment method';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get saveReceiptVoucher => 'Save Receipt Voucher';
+
+  @override
+  String get cash => 'Cash';
+
+  @override
+  String get check => 'Check';
+
+  @override
+  String get bankTransfer => 'Bank Transfer';
+
+  @override
+  String get creditCard => 'Credit Card';
+
+  @override
   String visitStartedAt(String time) {
     return 'Visit started at: $time';
   }
@@ -397,9 +433,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentType => 'Payment Type';
-
-  @override
-  String get cash => 'Cash';
 
   @override
   String get credit => 'Credit';

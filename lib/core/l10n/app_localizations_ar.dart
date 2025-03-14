@@ -271,6 +271,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String get startCustomerVisit => 'بدء زيارة العميل';
 
   @override
+  String get receiptDetails => 'تفاصيل السند';
+
+  @override
+  String get amount => 'المبلغ';
+
+  @override
+  String get pleaseEnterAmount => 'الرجاء إدخال المبلغ';
+
+  @override
+  String get pleaseEnterValidNumber => 'الرجاء إدخال رقم صحيح';
+
+  @override
+  String get paymentMethod => 'طريقة الدفع';
+
+  @override
+  String get pleaseSelectPaymentMethod => 'الرجاء اختيار طريقة الدفع';
+
+  @override
+  String get notes => 'ملاحظات';
+
+  @override
+  String get saveReceiptVoucher => 'حفظ سند القبض';
+
+  @override
+  String get cash => 'نقداً';
+
+  @override
+  String get check => 'شيك';
+
+  @override
+  String get bankTransfer => 'تحويل بنكي';
+
+  @override
+  String get creditCard => 'بطاقة ائتمان';
+
+  @override
   String visitStartedAt(String time) {
     return 'بدأت الزيارة في: $time';
   }
@@ -397,9 +433,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get paymentType => 'طريقة الدفع';
-
-  @override
-  String get cash => 'نقداً';
 
   @override
   String get credit => 'ائتمان';

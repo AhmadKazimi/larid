@@ -135,6 +135,19 @@
     "noExist": "Not Available",
     "startCustomerVisit": "Start Customer Visit",
     
+    "receiptDetails": "Receipt Details",
+    "amount": "Amount",
+    "pleaseEnterAmount": "Please enter an amount",
+    "pleaseEnterValidNumber": "Please enter a valid number",
+    "paymentMethod": "Payment Method",
+    "pleaseSelectPaymentMethod": "Please select a payment method",
+    "notes": "Notes",
+    "saveReceiptVoucher": "Save Receipt Voucher",
+    "cash": "Cash",
+    "check": "Check",
+    "bankTransfer": "Bank Transfer",
+    "creditCard": "Credit Card",
+    
     "visitStartedAt": "Visit started at: {time}",
     "@visitStartedAt": {
         "placeholders": {
@@ -206,7 +219,6 @@
     },
     "invoiceItems": "Invoice Items",
     "paymentType": "Payment Type",
-    "cash": "Cash",
     "credit": "Credit",
     "cheque": "Cheque",
     "invoiceDetails": "Invoice Details",

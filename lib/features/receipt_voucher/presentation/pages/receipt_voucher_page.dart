@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/core/l10n/app_localizations.dart';
 import 'package:larid/core/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
 
 class ReceiptVoucherPage extends StatefulWidget {
   final CustomerEntity customer;
 
-  const ReceiptVoucherPage({
-    Key? key,
-    required this.customer,
-  }) : super(key: key);
+  const ReceiptVoucherPage({Key? key, required this.customer})
+    : super(key: key);
 
   @override
   State<ReceiptVoucherPage> createState() => _ReceiptVoucherPageState();
@@ -19,184 +18,227 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _notesController = TextEditingController();
-  
+  String? _selectedPaymentMethod;
+
   @override
   void dispose() {
     _amountController.dispose();
     _notesController.dispose();
     super.dispose();
   }
-  
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+
+  Widget _buildGradientHeader(BuildContext context) {
     final localizations = AppLocalizations.of(context);
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.receiptVoucher),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Customer information card
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      localizations.customerDetails,
-                      style: theme.textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    _buildCustomerInfoRow(
-                      Icons.person,
                       widget.customer.customerName,
-                    ),
-                    _buildCustomerInfoRow(
-                      Icons.badge,
-                      '${localizations.customerCode}: ${widget.customer.customerCode}',
-                    ),
-                    if (widget.customer.address != null)
-                      _buildCustomerInfoRow(
-                        Icons.location_on,
-                        '${localizations.address}: ${widget.customer.address}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                    if (widget.customer.contactPhone != null)
-                      _buildCustomerInfoRow(
-                        Icons.phone,
-                        '${localizations.phone}: ${widget.customer.contactPhone}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      localizations.receiptVoucher,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withOpacity(0.9),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Receipt voucher form
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Receipt Details',
-                    style: theme.textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Amount field
-                  TextFormField(
-                    controller: _amountController,
-                    decoration: InputDecoration(
-                      labelText: 'Amount',
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.attach_money),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter an amount';
-                      }
-                      if (double.tryParse(value) == null) {
-                        return 'Please enter a valid number';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Payment method dropdown
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: 'Payment Method',
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.payment),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                    ),
-                    items: ['Cash', 'Check', 'Bank Transfer', 'Credit Card']
-                        .map((method) => DropdownMenuItem(
-                              value: method,
-                              child: Text(method),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      // To be implemented
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select a payment method';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Notes field
-                  TextFormField(
-                    controller: _notesController,
-                    decoration: InputDecoration(
-                      labelText: 'Notes',
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.note),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                    ),
-                    maxLines: 3,
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 32),
-            
-            // Save receipt voucher button
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // To be implemented
-                    Navigator.pop(context);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(200, 50),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
                 ),
-                child: const Text('Save Receipt Voucher'),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  localizations.receiptVoucher,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCustomerInfoRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final localizations = AppLocalizations.of(context);
+
+    return Scaffold(
+      body: Column(
         children: [
-          Icon(icon, size: 18, color: AppColors.primary),
-          const SizedBox(width: 8),
+          _buildGradientHeader(context),
           Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 16),
+            child: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        localizations.receiptDetails,
+                        style: theme.textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Amount field
+                      TextFormField(
+                        controller: _amountController,
+                        decoration: InputDecoration(
+                          labelText: localizations.amount,
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.attach_money),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return localizations.pleaseEnterAmount;
+                          }
+                          if (double.tryParse(value) == null) {
+                            return localizations.pleaseEnterValidNumber;
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Payment method dropdown
+                      DropdownButtonFormField<String>(
+                        value: _selectedPaymentMethod,
+                        decoration: InputDecoration(
+                          labelText: localizations.paymentMethod,
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.payment),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                        ),
+                        items:
+                            [
+                                  localizations.cash,
+                                  localizations.check,
+                                  localizations.bankTransfer,
+                                  localizations.creditCard,
+                                ]
+                                .map(
+                                  (method) => DropdownMenuItem(
+                                    value: method,
+                                    child: Text(method),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedPaymentMethod = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return localizations.pleaseSelectPaymentMethod;
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Notes field
+                      TextFormField(
+                        controller: _notesController,
+                        decoration: InputDecoration(
+                          labelText: localizations.notes,
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.note),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                        ),
+                        maxLines: 3,
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Save receipt voucher button
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              // To be implemented
+                              Navigator.pop(context);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(200, 50),
+                          ),
+                          child: Text(localizations.saveReceiptVoucher),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],

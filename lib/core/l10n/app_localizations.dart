@@ -599,6 +599,78 @@ abstract class AppLocalizations {
   /// **'Start Customer Visit'**
   String get startCustomerVisit;
 
+  /// No description provided for @receiptDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Details'**
+  String get receiptDetails;
+
+  /// No description provided for @amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// No description provided for @pleaseEnterAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter an amount'**
+  String get pleaseEnterAmount;
+
+  /// No description provided for @pleaseEnterValidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid number'**
+  String get pleaseEnterValidNumber;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethod;
+
+  /// No description provided for @pleaseSelectPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a payment method'**
+  String get pleaseSelectPaymentMethod;
+
+  /// No description provided for @notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// No description provided for @saveReceiptVoucher.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Receipt Voucher'**
+  String get saveReceiptVoucher;
+
+  /// No description provided for @cash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// No description provided for @check.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get check;
+
+  /// No description provided for @bankTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Transfer'**
+  String get bankTransfer;
+
+  /// No description provided for @creditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Card'**
+  String get creditCard;
+
   /// No description provided for @visitStartedAt.
   ///
   /// In en, this message translates to:
@@ -838,12 +910,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payment Type'**
   String get paymentType;
-
-  /// No description provided for @cash.
-  ///
-  /// In en, this message translates to:
-  /// **'Cash'**
-  String get cash;
 
   /// No description provided for @credit.
   ///

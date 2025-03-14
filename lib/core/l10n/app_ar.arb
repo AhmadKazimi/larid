@@ -135,6 +135,19 @@
     "noExist": "غير متوفر",
     "startCustomerVisit": "بدء زيارة العميل",
     
+    "receiptDetails": "تفاصيل السند",
+    "amount": "المبلغ",
+    "pleaseEnterAmount": "الرجاء إدخال المبلغ",
+    "pleaseEnterValidNumber": "الرجاء إدخال رقم صحيح",
+    "paymentMethod": "طريقة الدفع",
+    "pleaseSelectPaymentMethod": "الرجاء اختيار طريقة الدفع",
+    "notes": "ملاحظات",
+    "saveReceiptVoucher": "حفظ سند القبض",
+    "cash": "نقداً",
+    "check": "شيك",
+    "bankTransfer": "تحويل بنكي",
+    "creditCard": "بطاقة ائتمان",
+    
     "visitStartedAt": "بدأت الزيارة في: {time}",
     "@visitStartedAt": {
         "placeholders": {
@@ -206,7 +219,6 @@
     },
     "invoiceItems": "مواد الفاتورة",
     "paymentType": "طريقة الدفع",
-    "cash": "نقداً",
     "credit": "ائتمان",
     "cheque": "شيك",
     "invoiceDetails": "تفاصيل الفاتورة",
