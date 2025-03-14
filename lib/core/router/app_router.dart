@@ -20,6 +20,7 @@ import '../../database/user_table.dart';
 import '../di/service_locator.dart';
 import '../storage/shared_prefs.dart';
 import 'route_constants.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -75,6 +76,7 @@ class AppRouter {
             state.matchedLocation == RouteConstants.photoCapture;
         final isReceiptVoucherPage =
             state.matchedLocation == RouteConstants.receiptVoucher;
+        final isSettingsPage = state.matchedLocation == RouteConstants.settings;
 
         // If base URL is not set, redirect to API config page
         if ((baseUrl == null || baseUrl.isEmpty) && !isApiConfigPage) {
@@ -103,6 +105,7 @@ class AppRouter {
                 !isItemsPage &&
                 !isPhotoCaptureePage &&
                 !isReceiptVoucherPage &&
+                !isSettingsPage &&
                 state.matchedLocation != RouteConstants.printInvoice) {
               return RouteConstants.map;
             }
@@ -273,6 +276,19 @@ class AppRouter {
             context: context,
             state: state,
             child: ReceiptVoucherPage(customer: customer),
+          );
+        },
+      ),
+
+      // Settings Route
+      GoRoute(
+        path: RouteConstants.settings,
+        name: 'settings',
+        pageBuilder: (context, state) {
+          return _buildSlideTransition(
+            context: context,
+            state: state,
+            child: const SettingsPage(),
           );
         },
       ),

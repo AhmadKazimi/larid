@@ -655,4 +655,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get takingPicture => 'Taking Picture';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get logoutConfirmation => 'Are you sure you want to log out?';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get companyLogo => 'Company Logo';
+
+  @override
+  String get tapToAddLogo => 'Tap to add logo';
+
+  @override
+  String get logoUpdated => 'Logo updated successfully';
+
+  @override
+  String get errorUpdatingLogo => 'Error updating logo';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get languageChanged => 'Language changed successfully';
 }

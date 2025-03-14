@@ -1294,6 +1294,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Taking Picture'**
   String get takingPicture;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @logoutConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out?'**
+  String get logoutConfirmation;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @companyLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Company Logo'**
+  String get companyLogo;
+
+  /// No description provided for @tapToAddLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add logo'**
+  String get tapToAddLogo;
+
+  /// No description provided for @logoUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Logo updated successfully'**
+  String get logoUpdated;
+
+  /// No description provided for @errorUpdatingLogo.
+  ///
+  /// In en, this message translates to:
+  /// **'Error updating logo'**
+  String get errorUpdatingLogo;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Language changed successfully'**
+  String get languageChanged;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

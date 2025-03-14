@@ -655,4 +655,34 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get takingPicture => 'التقاط صورة';
+
+  @override
+  String get settings => 'الإعدادات';
+
+  @override
+  String get logout => 'تسجيل الخروج';
+
+  @override
+  String get logoutConfirmation => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
+
+  @override
+  String get yes => 'نعم';
+
+  @override
+  String get companyLogo => 'شعار الشركة';
+
+  @override
+  String get tapToAddLogo => 'انقر لإضافة شعار';
+
+  @override
+  String get logoUpdated => 'تم تحديث الشعار بنجاح';
+
+  @override
+  String get errorUpdatingLogo => 'خطأ في تحديث الشعار';
+
+  @override
+  String get language => 'اللغة';
+
+  @override
+  String get languageChanged => 'تم تغيير اللغة بنجاح';
 }

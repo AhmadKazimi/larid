@@ -412,5 +412,15 @@
     "cameraPermissionRequired": "Camera permission is required to take photos",
     "errorTakingPhoto": "Error taking photo. Please try again.",
     "tapToTakePhoto": "Tap to take photo",
-    "takingPicture": "Taking Picture"
+    "takingPicture": "Taking Picture",
+    "settings": "Settings",
+    "logout": "Logout",
+    "logoutConfirmation": "Are you sure you want to log out?",
+    "yes": "Yes",
+    "companyLogo": "Company Logo",
+    "tapToAddLogo": "Tap to add logo",
+    "logoUpdated": "Logo updated successfully",
+    "errorUpdatingLogo": "Error updating logo",
+    "language": "Language",
+    "languageChanged": "Language changed successfully"
 }

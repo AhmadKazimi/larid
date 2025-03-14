@@ -1193,29 +1193,60 @@ class _MapPageState extends State<MapPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.search, color: AppColors.primary),
-                      onPressed: () {
-                        _hideCustomerInfo();
-                        NavigationService.push(
-                          context,
-                          RouteConstants.customerSearch,
-                        );
-                        // Session checking will be handled in didChangeDependencies
-                      },
-                    ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.search,
+                            color: AppColors.primary,
+                          ),
+                          onPressed: () {
+                            _hideCustomerInfo();
+                            NavigationService.push(
+                              context,
+                              RouteConstants.customerSearch,
+                            );
+                            // Session checking will be handled in didChangeDependencies
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.settings,
+                            color: AppColors.primary,
+                          ),
+                          onPressed: () {
+                            NavigationService.pushNamed(context, 'settings');
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                   SessionClockWidget(
                     isSessionActive: _activeSession,
