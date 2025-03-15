@@ -339,14 +339,24 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
                           ),
                     );
 
-                    // Save to local database
+                    // Variables to store results
+                    int localId;
+                    bool isSynced = false;
+                    Map<String, dynamic> apiResult = {};
+                    String? receiptNumber;
+
+                    // Save to local database first
                     final receiptVoucherTable = getIt<ReceiptVoucherTable>();
-                    await receiptVoucherTable.saveReceiptVoucher(
+                    localId = await receiptVoucherTable.saveReceiptVoucher(
                       customerCode: widget.customer.customerCode,
+                      customerName: widget.customer.customerName,
                       paidAmount: double.parse(_amountController.text),
-                      paymentType: _selectedPaymentMethod!,
+                      paymentType: getPaymentMethodType(
+                        _selectedPaymentMethod,
+                        localizations,
+                      ),
                       description: _notesController.text,
-                      comment: _notesController.text,
+                      isSynced: 0, // Not synced yet
                     );
 
                     // Get user credentials
@@ -356,59 +366,104 @@ class _ReceiptVoucherPageState extends State<ReceiptVoucherPage> {
                       throw Exception('User not found');
                     }
 
-                    // Upload to server
-                    final repository = getIt<ReceiptVoucherRepository>();
-                    final result = await repository.uploadReceiptVoucher(
-                      userid: user.userid,
-                      workspace: user.workspace,
-                      password: user.password,
-                      customerCode: widget.customer.customerCode,
-                      paidAmount: double.parse(_amountController.text),
-                      description: _notesController.text,
-                      paymentmethod: getPaymentMethodType(
-                        _selectedPaymentMethod,
-                        localizations,
-                      ),
-                    );
+                    // Try to upload to server - but don't block if it fails
+                    try {
+                      final repository = getIt<ReceiptVoucherRepository>();
+                      apiResult = await repository.uploadReceiptVoucher(
+                        userid: user.userid,
+                        workspace: user.workspace,
+                        password: user.password,
+                        customerCode: widget.customer.customerCode,
+                        paidAmount: double.parse(_amountController.text),
+                        description: _notesController.text,
+                        paymentmethod: getPaymentMethodType(
+                          _selectedPaymentMethod,
+                          localizations,
+                        ),
+                      );
+
+                      // If API call was successful, update the local record
+                      if (apiResult['success'] == true) {
+                        isSynced = true;
+                        receiptNumber = apiResult['number']?.toString();
+                        // Update the local record to mark as synced
+                        await receiptVoucherTable.updateSyncStatus(localId, 1);
+                      }
+                    } catch (syncError) {
+                      // Log the error but continue - we already saved locally
+                      debugPrint('API sync error: $syncError');
+                      // isSynced remains false
+                    }
 
                     // Close loading dialog
                     if (!mounted) return;
                     Navigator.of(context).pop();
 
-                    if (result['success']) {
-                      // Show success dialog with receipt number
-                      if (!mounted) return;
-                      showDialog(
-                        context: context,
-                        builder:
-                            (context) => AlertDialog(
-                              title: Text(localizations.success),
-                              content: Text(
-                                '${localizations.receiptVoucherSaved}\n${localizations.receiptVoucher} #${result['number']}',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    context.pop();
-                                  },
-                                  child: Text(localizations.ok),
+                    // Show success dialog regardless of sync status
+                    if (!mounted) return;
+                    showDialog(
+                      context: context,
+                      builder:
+                          (context) => AlertDialog(
+                            title: Text(localizations.success),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(localizations.receiptVoucherSaved),
+                                if (receiptNumber != null)
+                                  Text(
+                                    '${localizations.receiptVoucher} #$receiptNumber',
+                                  ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      isSynced
+                                          ? Icons.cloud_done
+                                          : Icons.cloud_off,
+                                      color:
+                                          isSynced
+                                              ? Colors.green
+                                              : Colors.orange,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      isSynced
+                                          ? localizations.syncSuccess
+                                          : localizations.syncFailed,
+                                      style: TextStyle(
+                                        color:
+                                            isSynced
+                                                ? Colors.green
+                                                : Colors.orange,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                                if (!isSynced)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: Text(
+                                      'Sync later',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
                               ],
                             ),
-                      );
-                    } else {
-                      // Show error message
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            localizations.errorSavingReceiptVoucher,
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  context.pop();
+                                },
+                                child: Text(localizations.ok),
+                              ),
+                            ],
                           ),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
+                    );
                   } catch (e) {
                     // Close loading dialog if still showing
                     if (mounted) {

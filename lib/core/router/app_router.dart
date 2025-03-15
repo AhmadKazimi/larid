@@ -188,6 +188,27 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: RouteConstants.items,
+        name: 'items',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final isReturn = extra?['isReturn'] as bool? ?? false;
+          final preselectedItems =
+              extra?['preselectedItems'] as Map<String, int>?;
+          return _buildSlideTransition(
+            context: context,
+            state: state,
+            child: BlocProvider(
+              create: (context) => ItemsBloc(),
+              child: ItemsPage(
+                isReturn: isReturn,
+                preselectedItems: preselectedItems,
+              ),
+            ),
+          );
+        },
+      ),
+      GoRoute(
         path: RouteConstants.invoice,
         name: 'invoice',
         pageBuilder: (context, state) {
