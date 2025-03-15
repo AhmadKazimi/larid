@@ -436,5 +436,36 @@
     "logoUpdated": "تم تحديث الشعار بنجاح",
     "errorUpdatingLogo": "خطأ في تحديث الشعار",
     "language": "اللغة",
-    "languageChanged": "تم تغيير اللغة بنجاح"
+    "languageChanged": "تم تغيير اللغة بنجاح",
+    "synced": "تمت المزامنة",
+    "syncNow": "مزامنة",
+    "vouchers": "سندات القبض",
+    "salesData": "بيانات المبيعات",
+    "today": "اليوم",
+    "syncingItem": "جاري مزامنة {title}...",
+    "@syncingItem": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "syncingData": "جاري مزامنة البيانات...",
+    "@syncingData": {
+        "description": "Message shown when syncing all data"
+    },
+    "itemsSynced": "تمت مزامنة {synced} من {total} عنصر",
+    "@itemsSynced": {
+        "description": "Status of synced items",
+        "placeholders": {
+            "synced": {
+                "type": "int",
+                "example": "5"
+            },
+            "total": {
+                "type": "int",
+                "example": "10"
+            }
+        }
+    }
 }

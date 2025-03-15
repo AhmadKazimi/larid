@@ -1,229 +1,624 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:larid/core/l10n/app_localizations.dart';
 import 'package:larid/core/theme/app_theme.dart';
 import 'package:larid/core/widgets/gradient_page_layout.dart';
+import 'package:larid/features/summary/domain/entities/summary_item_entity.dart';
+import 'package:larid/features/summary/presentation/bloc/summary_bloc.dart';
+import 'package:larid/features/summary/presentation/bloc/summary_event.dart';
+import 'package:larid/features/summary/presentation/bloc/summary_state.dart';
+import 'package:intl/intl.dart';
+import 'package:get_it/get_it.dart';
+import 'package:larid/features/auth/domain/repositories/auth_repository.dart';
+import 'package:larid/database/user_table.dart';
+
+class CustomExpansionPanel {
+  String title;
+  final IconData icon;
+  List<SummaryItemEntity> items;
+  final String itemType;
+  bool isExpanded;
+
+  CustomExpansionPanel({
+    required this.title,
+    required this.icon,
+    required this.items,
+    required this.itemType,
+    this.isExpanded = false,
+  });
+}
+
+// Create a static global function to refresh the summary page
+void refreshSummaryPage(BuildContext context) {
+  final bloc = BlocProvider.of<SummaryBloc>(context, listen: false);
+  bloc.add(const LoadSummaryData());
+  debugPrint('Summary page refreshed directly via BlocProvider');
+}
 
 class SummaryPage extends StatefulWidget {
-  const SummaryPage({Key? key}) : super(key: key);
+  const SummaryPage({super.key});
+
+  // Static method to refresh the SummaryPage data if possible
+  static void refreshData(BuildContext context) {
+    try {
+      // Try to directly access the bloc from any ancestor that has it
+      refreshSummaryPage(context);
+    } catch (e) {
+      debugPrint('Error refreshing SummaryPage: $e');
+    }
+  }
 
   @override
   State<SummaryPage> createState() => _SummaryPageState();
 }
 
-class _SummaryPageState extends State<SummaryPage> {
-  // Track which panels are expanded
-  List<bool> _isExpanded = [false, false, false];
-
-  // Mock data - will be replaced with actual data from DB later
-  final List<String> _mockInvoices = [
-    'Invoice #001',
-    'Invoice #002',
-    'Invoice #003',
+class _SummaryPageState extends State<SummaryPage>
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+  bool _isDataLoaded = false;
+  String? _userId;
+  String? _currency;
+  final List<CustomExpansionPanel> _panels = [
+    CustomExpansionPanel(
+      title: '',
+      icon: Icons.receipt_long,
+      items: [],
+      itemType: 'invoice',
+    ),
+    CustomExpansionPanel(
+      title: '',
+      icon: Icons.assignment_return,
+      items: [],
+      itemType: 'returnInvoice',
+    ),
+    CustomExpansionPanel(
+      title: '',
+      icon: Icons.receipt,
+      items: [],
+      itemType: 'voucher',
+    ),
   ];
-  final List<String> _mockReturnInvoices = ['Return #001', 'Return #002'];
-  final List<String> _mockVouchers = [
-    'Voucher #001',
-    'Voucher #002',
-    'Voucher #003',
-    'Voucher #004',
-  ];
 
-  // Mock sync statuses - will be replaced with actual statuses later
-  final Map<String, bool> _syncStatus = {
-    'Invoice #001': true,
-    'Invoice #002': false,
-    'Invoice #003': true,
-    'Return #001': false,
-    'Return #002': true,
-    'Voucher #001': true,
-    'Voucher #002': false,
-    'Voucher #003': false,
-    'Voucher #004': true,
-  };
+  // Key to identify this widget
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // Get the user ID for invoice number formatting
+    _getUserId();
+    // Get currency
+    _getCurrency();
+
+    // Load data when widget is first built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadData();
+    });
+  }
+
+  // Simple method to load data
+  void loadData() {
+    debugPrint('Loading Summary page data - direct call');
+    if (!mounted) return;
+    context.read<SummaryBloc>().add(const LoadSummaryData());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Initialize panel titles with localized strings
+    final l10n = AppLocalizations.of(context);
+    _panels[0].title = '${l10n.invoice} (0)';
+    _panels[1].title = '${l10n.returnInvoice} (0)';
+    _panels[2].title = '${l10n.vouchers} (0)';
+
+    // Load data first time
+    if (!_isDataLoaded) {
+      loadData();
+      _isDataLoaded = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      loadData();
+    }
+  }
+
+  Future<void> _getUserId() async {
+    try {
+      final authRepository = GetIt.I<AuthRepository>();
+      final user = await authRepository.getCurrentUser();
+      if (user != null) {
+        setState(() {
+          _userId = user.userid;
+        });
+        debugPrint('User ID for invoice formatting: $_userId');
+      }
+    } catch (e) {
+      debugPrint('Error getting user ID: $e');
+    }
+  }
+
+  Future<void> _getCurrency() async {
+    try {
+      final userTable = GetIt.I<UserTable>();
+      final currentUser = await userTable.getCurrentUser();
+      if (currentUser != null && currentUser.currency != null) {
+        setState(() {
+          _currency = currentUser.currency;
+        });
+        debugPrint('Currency loaded: $_currency');
+      } else {
+        debugPrint('No currency found in user table');
+      }
+    } catch (e) {
+      debugPrint('Error getting currency: $e');
+    }
+  }
+
+  // Helper method to format invoice numbers with user ID
+  String getFormattedInvoiceNumber(String invoiceNumber) {
+    if (invoiceNumber.isEmpty) {
+      return AppLocalizations.of(context).newInvoice;
+    }
+
+    // Ensure proper userid-invoiceNumber format
+    return _userId != null && _userId!.isNotEmpty
+        ? '${_userId!}-$invoiceNumber'
+        : invoiceNumber;
+  }
+
+  // Helper method to format currency
+  String formatCurrency(double amount) {
+    return '${amount.toStringAsFixed(2)} $_currency';
+  }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      body: Column(
-        children: [
-          _buildGradientHeader(context, l10n),
-          Expanded(
-            child: SafeArea(
-              top: false,
-              child: _buildExpandableList(context, l10n),
+      body: BlocListener<SummaryBloc, SummaryState>(
+        listenWhen:
+            (previous, current) =>
+                current.successMessage != null || current.errorMessage != null,
+        listener: (context, state) {
+          if (state.successMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.successMessage!),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+
+          if (state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        },
+        child: Column(
+          children: [
+            _buildGradientHeader(context, l10n),
+            Expanded(
+              child: RefreshIndicator(
+                key: _refreshIndicatorKey,
+                onRefresh: () async {
+                  debugPrint('Pull-to-refresh triggered');
+                  loadData();
+                  // Need to return a Future that completes when the refresh is done
+                  return Future.delayed(const Duration(milliseconds: 1000));
+                },
+                child: SafeArea(
+                  top: false,
+                  child: BlocBuilder<SummaryBloc, SummaryState>(
+                    builder: (context, state) {
+                      debugPrint(
+                        'Building Summary UI with state: ${state.status}',
+                      );
+                      if (state.status == SummaryStatus.loading &&
+                          state.totalItems == 0) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (state.status == SummaryStatus.error) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                state.errorMessage ?? 'An error occurred',
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: loadData,
+                                child: Text(l10n.retrySync),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        // Update panel data
+                        _updatePanelData(state, l10n);
+                        return _buildExpandableList(context, l10n, state);
+                      }
+                    },
+                  ),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          debugPrint('Manual refresh button pressed');
+          loadData();
+        },
+        child: const Icon(Icons.refresh),
       ),
     );
   }
 
-  Widget _buildExpandableList(BuildContext context, AppLocalizations l10n) {
+  void _updatePanelData(SummaryState state, AppLocalizations l10n) {
+    _panels[0].title = '${l10n.invoice} (${state.invoices.length})';
+    _panels[0].items = state.invoices;
+
+    _panels[1].title = '${l10n.returnInvoice} (${state.returnInvoices.length})';
+    _panels[1].items = state.returnInvoices;
+
+    _panels[2].title = '${l10n.vouchers} (${state.receiptVouchers.length})';
+    _panels[2].items = state.receiptVouchers;
+  }
+
+  Widget _buildExpandableList(
+    BuildContext context,
+    AppLocalizations l10n,
+    SummaryState state,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
           // Sync status and action row
-          _buildCompactSyncStatusCard(context, l10n),
+          _buildCompactSyncStatusCard(context, l10n, state),
 
           const SizedBox(height: 16),
 
-          // Custom expandable panels using GradientFormCard
-          _buildCustomExpandableCard(
-            context: context,
-            l10n: l10n,
-            headerText: l10n.invoice + ' (${_mockInvoices.length})',
-            isExpanded: _isExpanded[0],
-            items: _mockInvoices,
-            icon: Icons.receipt_long,
-            index: 0,
-          ),
-
-          const SizedBox(height: 12),
-
-          _buildCustomExpandableCard(
-            context: context,
-            l10n: l10n,
-            headerText: l10n.returnInvoice + ' (${_mockReturnInvoices.length})',
-            isExpanded: _isExpanded[1],
-            items: _mockReturnInvoices,
-            icon: Icons.assignment_return,
-            index: 1,
-          ),
-
-          const SizedBox(height: 12),
-
-          _buildCustomExpandableCard(
-            context: context,
-            l10n: l10n,
-            headerText: 'Vouchers (${_mockVouchers.length})',
-            isExpanded: _isExpanded[2],
-            items: _mockVouchers,
-            icon: Icons.receipt,
-            index: 2,
-          ),
+          // ExpansionTile based panels
+          ..._panels.map((panel) => _buildExpansionTile(context, l10n, panel)),
         ],
       ),
     );
   }
 
-  Widget _buildCustomExpandableCard({
-    required BuildContext context,
-    required AppLocalizations l10n,
-    required String headerText,
-    required bool isExpanded,
-    required List<String> items,
-    required IconData icon,
-    required int index,
-  }) {
-    return GradientFormCard(
-      borderRadius: 12,
-      padding: const EdgeInsets.all(0),
-      child: Column(
-        children: [
-          // Header
-          InkWell(
-            onTap: () {
+  Widget _buildExpansionTile(
+    BuildContext context,
+    AppLocalizations l10n,
+    CustomExpansionPanel panel,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            dividerColor: Colors.transparent,
+            listTileTheme: const ListTileThemeData(
+              dense: true,
+              minLeadingWidth: 0,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          child: ExpansionTile(
+            initiallyExpanded: panel.isExpanded,
+            onExpansionChanged: (isExpanded) {
               setState(() {
-                _isExpanded[index] = !_isExpanded[index];
+                panel.isExpanded = isExpanded;
               });
             },
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+            expandedAlignment: Alignment.topLeft,
+            childrenPadding: EdgeInsets.zero,
+            // Custom header without gradient
+            title: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
               child: Row(
                 children: [
-                  Icon(icon, color: AppColors.primary),
+                  Icon(panel.icon, color: AppColors.primary),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      headerText,
+                      panel.title,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                   ),
-                  Icon(
-                    isExpanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: isExpanded ? AppColors.primary : Colors.grey,
-                  ),
                 ],
               ),
             ),
+            collapsedIconColor: Colors.grey,
+            iconColor: AppColors.primary,
+            backgroundColor: Colors.white,
+            // Children (list items)
+            children:
+                panel.items.isEmpty
+                    ? [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          l10n.noItemsFound,
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ]
+                    : panel.items
+                        .map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
+                            child: Column(
+                              children: [
+                                _buildItemTile(item, l10n, panel.itemType),
+                                if (panel.items.indexOf(item) <
+                                    panel.items.length - 1)
+                                  const Divider(
+                                    height: 1,
+                                    color: Color(0xFFEEEEEE),
+                                    thickness: 1,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemTile(
+    SummaryItemEntity item,
+    AppLocalizations l10n,
+    String itemType,
+  ) {
+    final bool isSynced = item.isSynced;
+    final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
+    final formattedDate = dateFormat.format(item.date);
+
+    // Format the invoice number with user ID
+    final formattedInvoiceNumber = getFormattedInvoiceNumber(item.title);
+
+    // Format the amount with proper currency
+    final formattedAmount = formatCurrency(item.amount);
+
+    // Get current state from BLoC to check if item is syncing
+    final state = context.watch<SummaryBloc>().state;
+    final bool isSyncing = state.isItemSyncing(item.id);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Left side - Customer info & details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Customer name (was subtitle)
+                Text(
+                  item.subtitle,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                // Invoice ID (was title)
+                Row(
+                  children: [
+                    Icon(
+                      itemType == 'invoice'
+                          ? Icons.receipt_outlined
+                          : itemType == 'returnInvoice'
+                          ? Icons.assignment_return_outlined
+                          : Icons.account_balance_wallet_outlined,
+                      size: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      formattedInvoiceNumber,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                // Date & time
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      formattedDate,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
 
-          // Content
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: isExpanded ? (items.length * 72.0) : 0,
-            curve: Curves.easeInOut,
-            child: AnimatedOpacity(
-              opacity: isExpanded ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              child: ListView.separated(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                itemCount: items.length,
-                separatorBuilder: (context, index) => const Divider(height: 1),
-                itemBuilder:
-                    (context, itemIndex) =>
-                        _buildItemTile(items[itemIndex], l10n),
+          // Right side - Amount & sync status
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Amount with currency
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  formattedAmount,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 8),
+              // Sync status with three possible states: synced, syncing, or not synced
+              if (isSynced)
+                Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      l10n.synced,
+                      style: const TextStyle(fontSize: 12, color: Colors.green),
+                    ),
+                  ],
+                )
+              else if (isSyncing)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        l10n.syncNow,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.sync, size: 14),
+                  label: Text(
+                    l10n.syncNow,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.orange,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    // Update sync status based on item type
+                    if (itemType == 'invoice') {
+                      context.read<SummaryBloc>().add(
+                        UpdateInvoiceSyncStatus(id: item.id),
+                      );
+                    } else if (itemType == 'returnInvoice') {
+                      context.read<SummaryBloc>().add(
+                        UpdateInvoiceSyncStatus(id: item.id),
+                      );
+                    } else {
+                      context.read<SummaryBloc>().add(
+                        UpdateReceiptVoucherSyncStatus(id: item.id),
+                      );
+                    }
+                  },
+                ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildItemTile(String item, AppLocalizations l10n) {
-    final bool isSynced = _syncStatus[item] ?? false;
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
-      title: Text(item),
-      subtitle: Text(
-        isSynced ? l10n.syncSuccess : l10n.syncFailed,
-        style: TextStyle(
-          color: isSynced ? Colors.green : Colors.orange,
-          fontSize: 12,
-        ),
-      ),
-      trailing:
-          isSynced
-              ? const Icon(Icons.check_circle, color: Colors.green)
-              : IconButton(
-                icon: const Icon(Icons.sync, color: Colors.orange),
-                onPressed: () {
-                  // This will be implemented later for individual sync
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Syncing ${item}...'),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
-                },
-              ),
-    );
-  }
-
   Widget _buildCompactSyncStatusCard(
     BuildContext context,
     AppLocalizations l10n,
+    SummaryState state,
   ) {
-    // Calculate sync statistics
-    int totalItems =
-        _mockInvoices.length +
-        _mockReturnInvoices.length +
-        _mockVouchers.length;
-    int syncedItems = _syncStatus.values.where((status) => status).length;
-    double syncPercentage =
-        totalItems > 0 ? (syncedItems / totalItems) * 100 : 0;
+    // Calculate sync statistics from the state
+    int totalItems = state.totalItems;
+    int syncedItems = state.syncedItems;
+    double syncPercentage = state.syncPercentage;
+
+    // Check if sync is in progress
+    bool isSyncing = state.status == SummaryStatus.loading;
 
     return GradientFormCard(
       borderRadius: 12,
@@ -271,20 +666,28 @@ class _SummaryPageState extends State<SummaryPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '$syncedItems of $totalItems items synced',
+                l10n.itemsSynced(syncedItems, totalItems),
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
               TextButton.icon(
-                onPressed: () {
-                  // Will be implemented later
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Sync all will be implemented soon'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.sync, size: 16),
+                onPressed:
+                    isSyncing
+                        ? null // Disable button while syncing
+                        : () {
+                          // Trigger sync all data event
+                          context.read<SummaryBloc>().add(const SyncAllData());
+                        },
+                icon:
+                    isSyncing
+                        ? SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primary,
+                          ),
+                        )
+                        : const Icon(Icons.sync, size: 16),
                 label: Text(
                   l10n.syncAllData,
                   style: const TextStyle(fontSize: 12),
@@ -324,7 +727,7 @@ class _SummaryPageState extends State<SummaryPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -349,10 +752,10 @@ class _SummaryPageState extends State<SummaryPage> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      "Sales Data",
+                      l10n.salesData,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -366,10 +769,10 @@ class _SummaryPageState extends State<SummaryPage> {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -383,7 +786,7 @@ class _SummaryPageState extends State<SummaryPage> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      "Today",
+                      l10n.today,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,

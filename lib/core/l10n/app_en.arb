@@ -439,5 +439,38 @@
     "logoUpdated": "Logo updated successfully",
     "errorUpdatingLogo": "Error updating logo",
     "language": "Language",
-    "languageChanged": "Language changed successfully"
+    "languageChanged": "Language changed successfully",
+    "synced": "Synced",
+    "syncNow": "Sync",
+    "vouchers": "Vouchers",
+    "salesData": "Sales Data",
+    "today": "Today",
+    "syncingItem": "Syncing {title}...",
+    "@syncingItem": {
+        "description": "Message shown when syncing a specific item",
+        "placeholders": {
+            "title": {
+                "type": "String",
+                "example": "Invoices"
+            }
+        }
+    },
+    "syncingData": "Syncing data...",
+    "@syncingData": {
+        "description": "Message shown when syncing all data"
+    },
+    "itemsSynced": "{synced} of {total} items synced",
+    "@itemsSynced": {
+        "description": "Status of synced items",
+        "placeholders": {
+            "synced": {
+                "type": "int",
+                "example": "5"
+            },
+            "total": {
+                "type": "int",
+                "example": "10"
+            }
+        }
+    }
 }

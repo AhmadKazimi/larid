@@ -48,6 +48,11 @@ import '../../features/receipt_voucher/domain/repositories/receipt_voucher_repos
 import '../../features/photo_capture/data/repositories/photo_capture_repository_impl.dart';
 import '../../features/photo_capture/domain/repositories/photo_capture_repository.dart';
 import '../../features/photo_capture/domain/usecases/save_photo_capture_usecase.dart';
+import '../../features/summary/data/repositories/summary_repository_impl.dart';
+import '../../features/summary/domain/repositories/summary_repository.dart';
+import '../../features/summary/domain/usecases/get_invoices_usecase.dart';
+import '../../features/summary/domain/usecases/get_receipt_vouchers_usecase.dart';
+import '../../features/summary/presentation/bloc/summary_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -222,6 +227,30 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerLazySingleton<SavePhotoCaptureUseCase>(
     () => SavePhotoCaptureUseCase(getIt<PhotoCaptureRepository>()),
+  );
+
+  // Summary Feature
+  getIt.registerLazySingleton<SummaryRepository>(
+    () => SummaryRepositoryImpl(
+      invoiceTable: getIt<InvoiceTable>(),
+      receiptVoucherTable: getIt<ReceiptVoucherTable>(),
+    ),
+  );
+
+  getIt.registerFactory<GetInvoicesUseCase>(
+    () => GetInvoicesUseCase(repository: getIt<SummaryRepository>()),
+  );
+
+  getIt.registerFactory<GetReceiptVouchersUseCase>(
+    () => GetReceiptVouchersUseCase(repository: getIt<SummaryRepository>()),
+  );
+
+  getIt.registerFactory<SummaryBloc>(
+    () => SummaryBloc(
+      getInvoicesUseCase: getIt<GetInvoicesUseCase>(),
+      getReceiptVouchersUseCase: getIt<GetReceiptVouchersUseCase>(),
+      repository: getIt<SummaryRepository>(),
+    ),
   );
 
   // Update warehouse in ApiService if available

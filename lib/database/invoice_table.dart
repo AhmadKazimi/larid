@@ -513,4 +513,36 @@ class InvoiceTable {
       print('Error ensuring schema: $e');
     }
   }
+
+  // Get all invoices with filter for regular invoices or return invoices
+  Future<List<Map<String, dynamic>>> getAllInvoices({
+    bool isReturn = false,
+  }) async {
+    try {
+      return await db.query(
+        tableName,
+        where: 'isReturn = ?',
+        whereArgs: [isReturn ? 1 : 0],
+        orderBy: 'invoiceDate DESC',
+      );
+    } catch (e) {
+      print('Error getting all invoices: $e');
+      return [];
+    }
+  }
+
+  // Update the sync status of an invoice
+  Future<int> updateSyncStatus(int id, int isSynced) async {
+    try {
+      return await db.update(
+        tableName,
+        {'isSynced': isSynced},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      print('Error updating invoice sync status: $e');
+      return 0;
+    }
+  }
 }

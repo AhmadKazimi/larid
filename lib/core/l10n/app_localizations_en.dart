@@ -717,4 +717,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageChanged => 'Language changed successfully';
+
+  @override
+  String get synced => 'Synced';
+
+  @override
+  String get syncNow => 'Sync';
+
+  @override
+  String get vouchers => 'Vouchers';
+
+  @override
+  String get salesData => 'Sales Data';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String syncingItem(String title) {
+    return 'Syncing $title...';
+  }
+
+  @override
+  String get syncingData => 'Syncing data...';
+
+  @override
+  String itemsSynced(int synced, int total) {
+    return '$synced of $total items synced';
+  }
 }

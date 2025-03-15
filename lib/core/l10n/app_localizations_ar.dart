@@ -717,4 +717,32 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get languageChanged => 'تم تغيير اللغة بنجاح';
+
+  @override
+  String get synced => 'تمت المزامنة';
+
+  @override
+  String get syncNow => 'مزامنة';
+
+  @override
+  String get vouchers => 'سندات القبض';
+
+  @override
+  String get salesData => 'بيانات المبيعات';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String syncingItem(String title) {
+    return 'جاري مزامنة $title...';
+  }
+
+  @override
+  String get syncingData => 'جاري مزامنة البيانات...';
+
+  @override
+  String itemsSynced(int synced, int total) {
+    return 'تمت مزامنة $synced من $total عنصر';
+  }
 }

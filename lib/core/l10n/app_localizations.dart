@@ -1414,6 +1414,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language changed successfully'**
   String get languageChanged;
+
+  /// No description provided for @synced.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get synced;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get syncNow;
+
+  /// No description provided for @vouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'Vouchers'**
+  String get vouchers;
+
+  /// No description provided for @salesData.
+  ///
+  /// In en, this message translates to:
+  /// **'Sales Data'**
+  String get salesData;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// Message shown when syncing a specific item
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing {title}...'**
+  String syncingItem(String title);
+
+  /// Message shown when syncing all data
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing data...'**
+  String get syncingData;
+
+  /// Status of synced items
+  ///
+  /// In en, this message translates to:
+  /// **'{synced} of {total} items synced'**
+  String itemsSynced(int synced, int total);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

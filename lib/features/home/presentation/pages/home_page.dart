@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:larid/core/l10n/app_localizations.dart';
 import 'package:larid/core/theme/app_theme.dart';
+import 'package:larid/core/di/service_locator.dart';
 import 'package:larid/features/map/presentation/pages/map_page.dart';
 import 'package:larid/features/summary/presentation/pages/summary_page.dart';
+import 'package:larid/features/summary/presentation/bloc/summary_bloc.dart';
+import 'package:larid/features/summary/presentation/bloc/summary_event.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -16,12 +20,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _selectedIndex = 0;
   AnimationController? _animationController;
   List<Animation<double>> _animations = [];
+  final SummaryBloc _summaryBloc = getIt<SummaryBloc>();
 
   // Pages to be shown in the bottom navigation - preload and keep them alive
   late final List<Widget> _pages = [
     // Wrap pages with widgets to maintain their state
     const KeepAlivePage(child: MapPage()),
-    const KeepAlivePage(child: SummaryPage()),
+    // Provide the SummaryBloc to the SummaryPage
+    BlocProvider.value(value: _summaryBloc, child: const SummaryPage()),
   ];
 
   @override
@@ -88,6 +94,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (_animationController != null) {
       _animationController!.reset();
       _animationController!.forward();
+    }
+
+    // Refresh data when Summary tab is selected
+    if (index == 1) {
+      // Summary page index
+      // Directly refresh using the bloc
+      debugPrint('Tab changed to Summary - refreshing data directly via bloc');
+      _summaryBloc.add(const LoadSummaryData());
     }
   }
 
