@@ -1059,9 +1059,12 @@ class _InvoicePageState extends State<InvoicePage> {
     final bool hasItems =
         _isReturn ? state.returnItems.isNotEmpty : state.items.isNotEmpty;
 
+    // Safely handle isDirty property (add null check)
+    final bool isDirty = state.isDirty ?? true;
+
     // Debug log to show the current number of items in the invoice
     debugPrint(
-      'Current invoice state: ${state.items.length} regular items, ${state.returnItems.length} return items',
+      'Current invoice state: ${state.items.length} regular items, ${state.returnItems.length} return items, isDirty: $isDirty',
     );
 
     return GradientFormCard(
@@ -1074,7 +1077,7 @@ class _InvoicePageState extends State<InvoicePage> {
           if (hasItems)
             ElevatedButton(
               onPressed:
-                  hasItems
+                  (hasItems && isDirty)
                       ? () {
                         // Debug log when submit button is clicked
                         debugPrint(
@@ -1084,12 +1087,13 @@ class _InvoicePageState extends State<InvoicePage> {
                           SubmitInvoice(isReturn: _isReturn),
                         );
                       }
-                      : null, // Disable button when no items
+                      : null, // Disable button when no items or not dirty
               style: ElevatedButton.styleFrom(
-                backgroundColor: hasItems ? AppColors.primary : Colors.grey,
+                backgroundColor:
+                    (hasItems && isDirty) ? AppColors.primary : Colors.grey,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                elevation: hasItems ? 5 : 0,
+                elevation: (hasItems && isDirty) ? 5 : 0,
               ),
               child:
                   state.isSubmitting

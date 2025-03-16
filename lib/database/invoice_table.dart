@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../features/sync/domain/entities/customer_entity.dart';
+import 'package:flutter/foundation.dart';
 
 class InvoiceTable {
   static const String tableName = 'invoices';
@@ -543,6 +544,39 @@ class InvoiceTable {
     } catch (e) {
       print('Error updating invoice sync status: $e');
       return 0;
+    }
+  }
+
+  // Get an invoice by its number
+  Future<Map<String, dynamic>> getInvoiceByNumber(String invoiceNumber) async {
+    try {
+      final results = await db.query(
+        tableName,
+        where: 'invoiceNumber = ?',
+        whereArgs: [invoiceNumber],
+      );
+
+      if (results.isNotEmpty) {
+        return results.first;
+      }
+      return {};
+    } catch (e) {
+      debugPrint('Error getting invoice by number: $e');
+      return {};
+    }
+  }
+
+  // Get all items for a specific invoice
+  Future<List<Map<String, dynamic>>> getInvoiceItems(int invoiceId) async {
+    try {
+      return await db.query(
+        invoiceItemsTableName,
+        where: 'invoiceId = ?',
+        whereArgs: [invoiceId],
+      );
+    } catch (e) {
+      debugPrint('Error getting invoice items: $e');
+      return [];
     }
   }
 }

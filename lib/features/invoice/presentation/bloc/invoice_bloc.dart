@@ -359,6 +359,16 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
         // Additional calculation to ensure UI is updated
         add(const CalculateInvoiceTotals());
 
+        // Check if the invoice is dirty
+        final isDirty = await checkIfInvoiceIsDirty(
+          invoiceNumber: invoiceNumber,
+          currentItems: items,
+          currentReturnItems: returnItems,
+          isReturn: event.isReturn,
+        );
+
+        emit(newState.copyWith(isDirty: isDirty));
+
         debugPrint('\n✅ INVOICE INITIALIZATION COMPLETE');
       } else {
         // Create new invoice
@@ -436,7 +446,10 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     _calculateTotals(emit);
   }
 
-  void _onAddInvoiceItems(AddInvoiceItems event, Emitter<InvoiceState> emit) {
+  Future<void> _onAddInvoiceItems(
+    AddInvoiceItems event,
+    Emitter<InvoiceState> emit,
+  ) async {
     try {
       // Ensure tax calculator is initialized
       if (_taxCalculator == null) {
@@ -524,6 +537,23 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
       // Log the updated state for debugging
       debugPrint('Updated invoice items count: ${updatedItems.length}');
+
+      // Check if the invoice is dirty
+      final isDirty = await checkIfInvoiceIsDirty(
+        invoiceNumber: state.invoiceNumber,
+        currentItems: updatedItems,
+        currentReturnItems: state.returnItems,
+        isReturn: false,
+      );
+
+      // Update state with isDirty
+      emit(
+        state.copyWith(
+          items: updatedItems,
+          itemCount: updatedItems.length,
+          isDirty: isDirty,
+        ),
+      );
     } catch (e, stackTrace) {
       debugPrint('Error adding invoice items: $e');
       debugPrint('Stack trace: $stackTrace');
@@ -531,7 +561,10 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     }
   }
 
-  void _onAddReturnItems(AddReturnItems event, Emitter<InvoiceState> emit) {
+  Future<void> _onAddReturnItems(
+    AddReturnItems event,
+    Emitter<InvoiceState> emit,
+  ) async {
     try {
       // Ensure tax calculator is initialized
       if (_taxCalculator == null) {
@@ -621,6 +654,23 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
       // Log the updated state for debugging
       debugPrint('Updated return items count: ${updatedReturnItems.length}');
+
+      // Check if the invoice is dirty
+      final isDirty = await checkIfInvoiceIsDirty(
+        invoiceNumber: state.invoiceNumber,
+        currentItems: state.items,
+        currentReturnItems: updatedReturnItems,
+        isReturn: true,
+      );
+
+      // Update state with isDirty
+      emit(
+        state.copyWith(
+          returnItems: updatedReturnItems,
+          returnCount: updatedReturnItems.length,
+          isDirty: isDirty,
+        ),
+      );
     } catch (e, stackTrace) {
       debugPrint('Error adding return items: $e');
       debugPrint('Stack trace: $stackTrace');
@@ -628,125 +678,134 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     }
   }
 
-  void _onRemoveItem(RemoveItem event, Emitter<InvoiceState> emit) {
+  Future<void> _onRemoveItem(
+    RemoveItem event,
+    Emitter<InvoiceState> emit,
+  ) async {
+    final List<InvoiceItemModel> updatedItems = List.from(state.items);
+    final List<InvoiceItemModel> updatedReturnItems = List.from(
+      state.returnItems,
+    );
+
     if (event.isReturn) {
-      final List<InvoiceItemModel> updatedReturnItems = List.from(
-        state.returnItems,
-      )..removeWhere((item) => item.item.itemCode == event.item.item.itemCode);
-
-      emit(state.copyWith(returnItems: updatedReturnItems));
+      // Remove from return items
+      updatedReturnItems.removeWhere(
+        (item) => item.item.itemCode == event.item.item.itemCode,
+      );
     } else {
-      final List<InvoiceItemModel> updatedItems = List.from(state.items)
-        ..removeWhere((item) => item.item.itemCode == event.item.item.itemCode);
-
-      emit(state.copyWith(items: updatedItems));
+      // Remove from regular items
+      updatedItems.removeWhere(
+        (item) => item.item.itemCode == event.item.item.itemCode,
+      );
     }
 
+    // After removing, check if the invoice is still dirty
+    final isDirty = await checkIfInvoiceIsDirty(
+      invoiceNumber: state.invoiceNumber,
+      currentItems: event.isReturn ? state.items : updatedItems,
+      currentReturnItems:
+          event.isReturn ? updatedReturnItems : state.returnItems,
+      isReturn: event.isReturn,
+    );
+
+    // Update state with isDirty
+    emit(
+      state.copyWith(
+        items: event.isReturn ? state.items : updatedItems,
+        returnItems: event.isReturn ? updatedReturnItems : state.returnItems,
+        itemCount: event.isReturn ? state.itemCount : updatedItems.length,
+        returnCount:
+            event.isReturn ? updatedReturnItems.length : state.returnCount,
+        isDirty: isDirty,
+      ),
+    );
+
+    // Calculate totals
     add(const CalculateInvoiceTotals());
   }
 
-  void _onUpdateItemQuantity(
+  Future<void> _onUpdateItemQuantity(
     UpdateItemQuantity event,
     Emitter<InvoiceState> emit,
-  ) {
-    if (event.quantity <= 0) {
-      // Remove the item if quantity is 0 or negative
-      add(RemoveItem(item: event.item, isReturn: event.isReturn));
-      return;
-    }
-
-    // Ensure tax calculator is initialized
-    if (_taxCalculator == null) {
-      _initTaxCalculator();
-    }
-
+  ) async {
+    // Process regular items or return items based on isReturn flag
     if (event.isReturn) {
-      final List<InvoiceItemModel> updatedReturnItems = List.from(
-        state.returnItems,
+      // Update return item
+      final List<InvoiceItemModel> updatedReturnItems =
+          state.returnItems.map((item) {
+            if (item.item.itemCode == event.item.item.itemCode) {
+              // Create a new item with the updated quantity and price
+              final double priceBeforeTax =
+                  event.quantity * item.item.sellUnitPrice;
+              final double taxAmount =
+                  _taxCalculator?.calculateTax(
+                    item.item.taxCode,
+                    priceBeforeTax,
+                  ) ??
+                  0.0;
+              final double priceAfterTax = priceBeforeTax + taxAmount;
+
+              return item.copyWith(
+                quantity: event.quantity,
+                totalPrice: priceAfterTax,
+                priceBeforeTax: priceBeforeTax,
+                taxAmount: taxAmount,
+                priceAfterTax: priceAfterTax,
+              );
+            }
+            return item;
+          }).toList();
+
+      // After updating quantity, check if the invoice is still dirty
+      final isDirty = await checkIfInvoiceIsDirty(
+        invoiceNumber: state.invoiceNumber,
+        currentItems: state.items,
+        currentReturnItems: updatedReturnItems,
+        isReturn: true,
       );
-      final itemIndex = updatedReturnItems.indexWhere(
-        (item) => item.item.itemCode == event.item.item.itemCode,
-      );
 
-      if (itemIndex != -1) {
-        // Update existing item
-        final existingItem = updatedReturnItems[itemIndex];
-        final item = existingItem.item;
-
-        // Calculate price and tax values
-        final priceBeforeTax = item.sellUnitPrice * event.quantity;
-        double taxAmount = 0.0;
-        double taxRate = existingItem.taxRate;
-
-        // Recalculate tax amount
-        if (_taxCalculator != null && item.taxCode.isNotEmpty) {
-          taxRate = _taxCalculator!.getTaxPercentage(item.taxCode);
-          taxAmount = _taxCalculator!.calculateTax(
-            item.taxCode,
-            priceBeforeTax,
-          );
-          debugPrint(
-            'Recalculated tax for return item ${item.itemCode}: $taxAmount',
-          );
-        }
-
-        final priceAfterTax = priceBeforeTax + taxAmount;
-
-        // Create updated item with new values
-        updatedReturnItems[itemIndex] = existingItem.copyWith(
-          quantity: event.quantity,
-          priceBeforeTax: priceBeforeTax,
-          taxAmount: taxAmount,
-          taxRate: taxRate,
-          priceAfterTax: priceAfterTax,
-          totalPrice: priceAfterTax,
-        );
-
-        emit(state.copyWith(returnItems: updatedReturnItems));
-      }
+      // Update state
+      emit(state.copyWith(returnItems: updatedReturnItems, isDirty: isDirty));
     } else {
-      final List<InvoiceItemModel> updatedItems = List.from(state.items);
-      final itemIndex = updatedItems.indexWhere(
-        (item) => item.item.itemCode == event.item.item.itemCode,
+      // Update regular item
+      final List<InvoiceItemModel> updatedItems =
+          state.items.map((item) {
+            if (item.item.itemCode == event.item.item.itemCode) {
+              // Create a new item with the updated quantity and price
+              final double priceBeforeTax =
+                  event.quantity * item.item.sellUnitPrice;
+              final double taxAmount =
+                  _taxCalculator?.calculateTax(
+                    item.item.taxCode,
+                    priceBeforeTax,
+                  ) ??
+                  0.0;
+              final double priceAfterTax = priceBeforeTax + taxAmount;
+
+              return item.copyWith(
+                quantity: event.quantity,
+                totalPrice: priceAfterTax,
+                priceBeforeTax: priceBeforeTax,
+                taxAmount: taxAmount,
+                priceAfterTax: priceAfterTax,
+              );
+            }
+            return item;
+          }).toList();
+
+      // After updating quantity, check if the invoice is still dirty
+      final isDirty = await checkIfInvoiceIsDirty(
+        invoiceNumber: state.invoiceNumber,
+        currentItems: updatedItems,
+        currentReturnItems: state.returnItems,
+        isReturn: false,
       );
 
-      if (itemIndex != -1) {
-        // Update existing item
-        final existingItem = updatedItems[itemIndex];
-        final item = existingItem.item;
-
-        // Calculate price and tax values
-        final priceBeforeTax = item.sellUnitPrice * event.quantity;
-        double taxAmount = 0.0;
-        double taxRate = existingItem.taxRate;
-
-        // Recalculate tax amount
-        if (_taxCalculator != null && item.taxCode.isNotEmpty) {
-          taxRate = _taxCalculator!.getTaxPercentage(item.taxCode);
-          taxAmount = _taxCalculator!.calculateTax(
-            item.taxCode,
-            priceBeforeTax,
-          );
-          debugPrint('Recalculated tax for item ${item.itemCode}: $taxAmount');
-        }
-
-        final priceAfterTax = priceBeforeTax + taxAmount;
-
-        // Create updated item with new values
-        updatedItems[itemIndex] = existingItem.copyWith(
-          quantity: event.quantity,
-          priceBeforeTax: priceBeforeTax,
-          taxAmount: taxAmount,
-          taxRate: taxRate,
-          priceAfterTax: priceAfterTax,
-          totalPrice: priceAfterTax,
-        );
-
-        emit(state.copyWith(items: updatedItems));
-      }
+      // Update state
+      emit(state.copyWith(items: updatedItems, isDirty: isDirty));
     }
 
-    // Calculate invoice totals
+    // Calculate totals
     add(const CalculateInvoiceTotals());
   }
 
@@ -757,7 +816,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   void _onCalculateInvoiceTotals(
     CalculateInvoiceTotals event,
     Emitter<InvoiceState> emit,
-  ) {
+  ) async {
     // Ensure tax calculator is initialized
     if (_taxCalculator == null) {
       debugPrint('Tax calculator not initialized, initializing now...');
@@ -853,6 +912,21 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     debugPrint('- returnSalesTax: $returnSalesTax');
     debugPrint('- returnGrandTotal: $returnGrandTotal');
 
+    // Check if invoice is dirty (has unsaved changes)
+    final bool isReturn = state.returnItems.isNotEmpty && state.items.isEmpty;
+
+    bool isDirty = state.isDirty ?? true; // Default to true if null
+
+    // If we have an invoice number, check if the current items match the saved ones
+    if (state.invoiceNumber != null && state.invoiceNumber!.isNotEmpty) {
+      isDirty = await checkIfInvoiceIsDirty(
+        invoiceNumber: state.invoiceNumber,
+        currentItems: state.items,
+        currentReturnItems: state.returnItems,
+        isReturn: isReturn,
+      );
+    }
+
     final newState = state.copyWith(
       itemCount: itemCount,
       subtotal: subtotal,
@@ -866,11 +940,12 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       returnTotal: returnTotal,
       returnSalesTax: returnSalesTax,
       returnGrandTotal: returnGrandTotal,
+      isDirty: isDirty,
     );
 
     emit(newState);
 
-    debugPrint('Emitted new state with updated totals');
+    debugPrint('Emitted new state with updated totals and isDirty: $isDirty');
   }
 
   void _onUpdatePaymentType(
@@ -943,7 +1018,10 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     }
   }
 
-  void _onSubmitInvoice(SubmitInvoice event, Emitter<InvoiceState> emit) async {
+  Future<void> _onSubmitInvoice(
+    SubmitInvoice event,
+    Emitter<InvoiceState> emit,
+  ) async {
     emit(state.copyWith(isSubmitting: true, errorMessage: null));
 
     try {
@@ -1015,15 +1093,22 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
         debugPrint('Saved new invoice with ID: $invoiceId');
       }
 
-      // Mark invoice as submitted
+      // Mark invoice as submitted and explicitly set isDirty to false
+      debugPrint('Setting invoice as submitted with isDirty=false');
       emit(
         state.copyWith(
           isSubmitting: false,
           isSubmitted: true,
           invoiceNumber: invoiceNumber,
+          isDirty: false, // Explicitly set to false after successful save
         ),
       );
+
+      debugPrint(
+        'Invoice successfully submitted, save button should now be disabled',
+      );
     } catch (e) {
+      debugPrint('Error submitting invoice: $e');
       emit(
         state.copyWith(
           isSubmitting: false,
@@ -1337,5 +1422,70 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
         returnGrandTotal: returnGrandTotal,
       ),
     );
+  }
+
+  // Method to compare current items with items saved in the database
+  Future<bool> checkIfInvoiceIsDirty({
+    required String? invoiceNumber,
+    required List<InvoiceItemModel> currentItems,
+    required List<InvoiceItemModel> currentReturnItems,
+    required bool isReturn,
+  }) async {
+    // If no invoice number, it's a new invoice and is considered dirty
+    if (invoiceNumber == null || invoiceNumber.isEmpty) {
+      return true;
+    }
+
+    try {
+      // Get saved invoice items from the database based on invoice number
+      final savedInvoice = await _invoiceTable.getInvoiceByNumber(
+        invoiceNumber,
+      );
+
+      if (savedInvoice.isEmpty) {
+        return true; // No saved invoice found, so it's dirty
+      }
+
+      final invoiceId = savedInvoice['id'] as int;
+      final savedItems = await _invoiceTable.getInvoiceItems(invoiceId);
+
+      // If item counts don't match, it's dirty
+      final itemsToCheck = isReturn ? currentReturnItems : currentItems;
+      if (savedItems.length != itemsToCheck.length) {
+        return true;
+      }
+
+      // Compare each item
+      final Map<String, dynamic> currentItemMap = {};
+
+      // Create a map of current items for easier comparison
+      for (final item in itemsToCheck) {
+        final key = item.item.itemCode;
+        currentItemMap[key] = {
+          'quantity': item.quantity,
+          'unitPrice': item.item.sellUnitPrice,
+        };
+      }
+
+      // Compare with saved items
+      for (final savedItem in savedItems) {
+        final itemCode = savedItem['itemCode'] as String;
+        final savedQuantity = savedItem['quantity'] as int;
+        final savedUnitPrice = savedItem['unitPrice'] as double;
+
+        // If current items don't contain this saved item or quantities differ
+        if (!currentItemMap.containsKey(itemCode) ||
+            currentItemMap[itemCode]['quantity'] != savedQuantity ||
+            currentItemMap[itemCode]['unitPrice'] != savedUnitPrice) {
+          return true;
+        }
+      }
+
+      // If we reach here, all items match
+      return false;
+    } catch (e) {
+      debugPrint('Error checking if invoice is dirty: $e');
+      return true; // On error, assume it's dirty to be safe
+    }
   }
 }

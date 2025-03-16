@@ -34,6 +34,7 @@ class InvoiceState with _$InvoiceState {
     String? invoiceNumber,
     String? errorMessage,
     @Default(false) bool isLoading,
+    @Default(true) bool isDirty,
   }) = _InvoiceState;
 
   factory InvoiceState.initial(
@@ -43,6 +44,7 @@ class InvoiceState with _$InvoiceState {
     customer: customer,
     items: isReturn ? [] : [],
     returnItems: isReturn ? [] : [],
+    isDirty: true,
   );
 }
 

@@ -42,6 +42,7 @@ mixin _$InvoiceState {
   String? get invoiceNumber => throw _privateConstructorUsedError;
   String? get errorMessage => throw _privateConstructorUsedError;
   bool get isLoading => throw _privateConstructorUsedError;
+  bool get isDirty => throw _privateConstructorUsedError;
 
   /// Create a copy of InvoiceState
   /// with the given fields replaced by the non-null parameter values.
@@ -83,6 +84,7 @@ abstract class $InvoiceStateCopyWith<$Res> {
     String? invoiceNumber,
     String? errorMessage,
     bool isLoading,
+    bool isDirty,
   });
 
   $CustomerEntityCopyWith<$Res> get customer;
@@ -128,6 +130,7 @@ class _$InvoiceStateCopyWithImpl<$Res, $Val extends InvoiceState>
     Object? invoiceNumber = freezed,
     Object? errorMessage = freezed,
     Object? isLoading = null,
+    Object? isDirty = null,
   }) {
     return _then(
       _value.copyWith(
@@ -256,6 +259,11 @@ class _$InvoiceStateCopyWithImpl<$Res, $Val extends InvoiceState>
                     ? _value.isLoading
                     : isLoading // ignore: cast_nullable_to_non_nullable
                         as bool,
+            isDirty:
+                null == isDirty
+                    ? _value.isDirty
+                    : isDirty // ignore: cast_nullable_to_non_nullable
+                        as bool,
           )
           as $Val,
     );
@@ -307,6 +315,7 @@ abstract class _$$InvoiceStateImplCopyWith<$Res>
     String? invoiceNumber,
     String? errorMessage,
     bool isLoading,
+    bool isDirty,
   });
 
   @override
@@ -352,6 +361,7 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
     Object? invoiceNumber = freezed,
     Object? errorMessage = freezed,
     Object? isLoading = null,
+    Object? isDirty = null,
   }) {
     return _then(
       _$InvoiceStateImpl(
@@ -480,6 +490,11 @@ class __$$InvoiceStateImplCopyWithImpl<$Res>
                 ? _value.isLoading
                 : isLoading // ignore: cast_nullable_to_non_nullable
                     as bool,
+        isDirty:
+            null == isDirty
+                ? _value.isDirty
+                : isDirty // ignore: cast_nullable_to_non_nullable
+                    as bool,
       ),
     );
   }
@@ -514,6 +529,7 @@ class _$InvoiceStateImpl implements _InvoiceState {
     this.invoiceNumber,
     this.errorMessage,
     this.isLoading = false,
+    this.isDirty = true,
   }) : _items = items,
        _returnItems = returnItems;
 
@@ -601,10 +617,13 @@ class _$InvoiceStateImpl implements _InvoiceState {
   @override
   @JsonKey()
   final bool isLoading;
+  @override
+  @JsonKey()
+  final bool isDirty;
 
   @override
   String toString() {
-    return 'InvoiceState(customer: $customer, items: $items, returnItems: $returnItems, itemCount: $itemCount, returnCount: $returnCount, subtotal: $subtotal, discount: $discount, total: $total, salesTax: $salesTax, grandTotal: $grandTotal, returnSubtotal: $returnSubtotal, returnDiscount: $returnDiscount, returnTotal: $returnTotal, returnSalesTax: $returnSalesTax, returnGrandTotal: $returnGrandTotal, comment: $comment, isSubmitting: $isSubmitting, isSyncing: $isSyncing, isPrinting: $isPrinting, isSubmitted: $isSubmitted, isDeleted: $isDeleted, paymentType: $paymentType, invoiceNumber: $invoiceNumber, errorMessage: $errorMessage, isLoading: $isLoading)';
+    return 'InvoiceState(customer: $customer, items: $items, returnItems: $returnItems, itemCount: $itemCount, returnCount: $returnCount, subtotal: $subtotal, discount: $discount, total: $total, salesTax: $salesTax, grandTotal: $grandTotal, returnSubtotal: $returnSubtotal, returnDiscount: $returnDiscount, returnTotal: $returnTotal, returnSalesTax: $returnSalesTax, returnGrandTotal: $returnGrandTotal, comment: $comment, isSubmitting: $isSubmitting, isSyncing: $isSyncing, isPrinting: $isPrinting, isSubmitted: $isSubmitted, isDeleted: $isDeleted, paymentType: $paymentType, invoiceNumber: $invoiceNumber, errorMessage: $errorMessage, isLoading: $isLoading, isDirty: $isDirty)';
   }
 
   @override
@@ -660,7 +679,8 @@ class _$InvoiceStateImpl implements _InvoiceState {
             (identical(other.errorMessage, errorMessage) ||
                 other.errorMessage == errorMessage) &&
             (identical(other.isLoading, isLoading) ||
-                other.isLoading == isLoading));
+                other.isLoading == isLoading) &&
+            (identical(other.isDirty, isDirty) || other.isDirty == isDirty));
   }
 
   @override
@@ -691,6 +711,7 @@ class _$InvoiceStateImpl implements _InvoiceState {
     invoiceNumber,
     errorMessage,
     isLoading,
+    isDirty,
   ]);
 
   /// Create a copy of InvoiceState
@@ -729,6 +750,7 @@ abstract class _InvoiceState implements InvoiceState {
     final String? invoiceNumber,
     final String? errorMessage,
     final bool isLoading,
+    final bool isDirty,
   }) = _$InvoiceStateImpl;
 
   @override
@@ -781,6 +803,8 @@ abstract class _InvoiceState implements InvoiceState {
   String? get errorMessage;
   @override
   bool get isLoading;
+  @override
+  bool get isDirty;
 
   /// Create a copy of InvoiceState
   /// with the given fields replaced by the non-null parameter values.
