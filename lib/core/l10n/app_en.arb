@@ -267,6 +267,7 @@
     "newInvoice": "New Invoice",
     "noInvoiceToDelete": "No invoice to delete",
     "uploadingInvoice": "Uploading invoice...",
+    "savingInvoice": "Saving invoice...",
     "userNotLoggedIn": "User not logged in",
     "noItemsToUpload": "No items to upload",
     "failedToGenerateInvoiceNumber": "Failed to generate invoice number for return. Please try submitting first.",

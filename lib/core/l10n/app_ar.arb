@@ -267,6 +267,7 @@
     "newInvoice": "فاتورة جديدة",
     "noInvoiceToDelete": "لا توجد فاتورة للحذف",
     "uploadingInvoice": "جاري ترحيل الفاتورة...",
+    "savingInvoice": "جاري حفظ الفاتورة...",
     "userNotLoggedIn": "المستخدم غير مسجل الدخول",
     "noItemsToUpload": "لا توجد مواد للرفع",
     "failedToGenerateInvoiceNumber": "فشل في إنشاء رقم الفاتورة للمرتجع. يرجى المحاولة مرة أخرى.",

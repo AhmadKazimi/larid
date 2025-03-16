@@ -557,6 +557,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get uploadingInvoice => 'جاري ترحيل الفاتورة...';
 
   @override
+  String get savingInvoice => 'جاري حفظ الفاتورة...';
+
+  @override
   String get userNotLoggedIn => 'المستخدم غير مسجل الدخول';
 
   @override

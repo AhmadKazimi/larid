@@ -1151,6 +1151,12 @@ abstract class AppLocalizations {
   /// **'Uploading invoice...'**
   String get uploadingInvoice;
 
+  /// No description provided for @savingInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving invoice...'**
+  String get savingInvoice;
+
   /// No description provided for @userNotLoggedIn.
   ///
   /// In en, this message translates to:

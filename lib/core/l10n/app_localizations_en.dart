@@ -557,6 +557,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uploadingInvoice => 'Uploading invoice...';
 
   @override
+  String get savingInvoice => 'Saving invoice...';
+
+  @override
   String get userNotLoggedIn => 'User not logged in';
 
   @override

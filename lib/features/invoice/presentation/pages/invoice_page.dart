@@ -790,16 +790,70 @@ class _InvoicePageState extends State<InvoicePage> {
             _buildActionButton(
               onPressed:
                   hasItems
-                      ? () {
+                      ? () async {
+                        // Check if the invoice is already submitted/saved
+                        if (!state.isSubmitted && state.invoiceNumber == null) {
+                          // Show loading dialog
+                          Dialogs.showLoadingDialog(
+                            context,
+                            localizations.savingInvoice,
+                          );
+
+                          // Save the invoice first
+                          context.read<InvoiceBloc>().add(
+                            SubmitInvoice(isReturn: _isReturn),
+                          );
+
+                          // Wait for the invoice to be saved
+                          // Use a stream subscription to listen for state changes
+                          await for (final newState
+                              in context.read<InvoiceBloc>().stream) {
+                            // Check if invoice is now submitted
+                            if (newState.isSubmitted &&
+                                newState.invoiceNumber != null) {
+                              // Close dialog when saved
+                              if (context.mounted) {
+                                Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                ).pop();
+                              }
+                              break;
+                            }
+
+                            // Check for errors
+                            if (newState.errorMessage != null) {
+                              // Close dialog
+                              if (context.mounted) {
+                                Navigator.of(
+                                  context,
+                                  rootNavigator: true,
+                                ).pop();
+
+                                // Show error message
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(newState.errorMessage!),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                              return; // Stop execution if error
+                            }
+                          }
+                        }
+
                         // Navigate to the print page with invoice data
-                        context.push(
-                          RouteConstants.printInvoice,
-                          extra: {
-                            'invoice': state,
-                            'isReturn': _isReturn,
-                            'customer': state.customer,
-                          },
-                        );
+                        if (context.mounted) {
+                          context.push(
+                            RouteConstants.printInvoice,
+                            extra: {
+                              'invoice': state,
+                              'isReturn': _isReturn,
+                              'customer': state.customer,
+                            },
+                          );
+                        }
                       }
                       : null,
               icon: Icons.print,
