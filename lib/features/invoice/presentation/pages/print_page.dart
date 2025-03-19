@@ -22,6 +22,7 @@ import 'package:get_it/get_it.dart';
 import 'package:larid/core/di/service_locator.dart';
 import 'package:larid/features/taxes/domain/services/tax_calculator_service.dart';
 import 'package:provider/provider.dart';
+import 'package:larid/screens/printing_page.dart';
 
 class PrintPage extends StatefulWidget {
   final InvoiceState invoice;
@@ -940,6 +941,70 @@ class _PrintPageState extends State<PrintPage> {
     debugPrint('======================================\n');
   }
 
+  // Navigate to thermal printing page
+  void _navigateToThermalPrinting() {
+    // Create invoice items for thermal printing from current invoice
+    final items =
+        widget.isReturn ? widget.invoice.returnItems : widget.invoice.items;
+    List<Map<String, dynamic>> thermalItems =
+        items.map((item) {
+          return {
+            'name': item.item.description,
+            'quantity': item.quantity,
+            'price': l10n.currency(
+              (item.item.sellUnitPrice * item.quantity).toStringAsFixed(2),
+              _currency ?? "",
+            ),
+          };
+        }).toList();
+
+    // Calculate total and tax for thermal printing
+    final subtotal =
+        widget.isReturn
+            ? widget.invoice.returnSubtotal
+            : widget.invoice.subtotal;
+    final salesTax =
+        widget.isReturn
+            ? widget.invoice.returnSalesTax
+            : widget.invoice.salesTax;
+    final grandTotal =
+        widget.isReturn
+            ? widget.invoice.returnGrandTotal
+            : widget.invoice.grandTotal;
+
+    // Format totals for thermal printing
+    Map<String, dynamic> totals = {
+      'subtotal': l10n.currency(subtotal.toStringAsFixed(2), _currency ?? ""),
+      'tax': l10n.currency(salesTax.toStringAsFixed(2), _currency ?? ""),
+      'total': l10n.currency(grandTotal.toStringAsFixed(2), _currency ?? ""),
+    };
+
+    // Generate receipt data
+    final receiptTitle = _companyInfo?.companyName ?? "YOUR BUSINESS";
+    final footer =
+        "Thank you for your business!\nInvoice #$formattedInvoiceNumber";
+    final qrData =
+        "INV-$formattedInvoiceNumber-${DateTime.now().millisecondsSinceEpoch}";
+
+    // Navigate to the thermal printing page with invoice data
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => PrintingPage(
+              preloadedInvoiceData: {
+                'items': thermalItems,
+                'totals': totals,
+                'title': receiptTitle,
+                'footer': footer,
+                'qrData': qrData,
+                'customerName': widget.customer.customerName,
+              },
+            ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1015,7 +1080,7 @@ class _PrintPageState extends State<PrintPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.print),
@@ -1050,6 +1115,22 @@ class _PrintPageState extends State<PrintPage> {
                                   },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.receipt),
+                          label: Text(
+                            'Thermal',
+                          ), // Use localization in production
+                          onPressed:
+                              _isGenerating ? null : _navigateToThermalPrinting,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[700],
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
