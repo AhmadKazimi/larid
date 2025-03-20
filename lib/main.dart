@@ -21,6 +21,7 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../../core/l10n/app_localizations.dart';
 import 'database/user_table.dart';
 import 'features/sync/domain/usecases/sync_company_info_usecase.dart';
+import 'package:larid/core/utils/network_connectivity.dart';
 
 // This is a singleton that handles app restart
 class AppRestartController {
@@ -44,6 +45,9 @@ void main() async {
 
   // Initialize permission handler
   await Permission.camera.status;
+  
+  // Initialize network connectivity monitoring
+  NetworkConnectivity().initialize();
 
   runApp(RestartWidget(child: const AppRoot()));
 }

@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:get_it/get_it.dart';
 import 'package:larid/features/auth/domain/repositories/auth_repository.dart';
 import 'package:larid/database/user_table.dart';
+import 'package:larid/core/utils/network_connectivity.dart';
 
 class CustomExpansionPanel {
   String title;
@@ -221,6 +222,14 @@ class _SummaryPageState extends State<SummaryPage>
         child: Column(
           children: [
             _buildGradientHeader(context, l10n),
+            // Network status indicator
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16.0, top: 8.0),
+                child: NetworkConnectivity().getNetworkStatusIndicator(),
+              ),
+            ),
             Expanded(
               child: RefreshIndicator(
                 key: _refreshIndicatorKey,

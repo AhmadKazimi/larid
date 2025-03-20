@@ -40,6 +40,7 @@ dependencies:
   # ESC/POS Printing (updated packages)
   print_bluetooth_thermal: ^1.1.6
   esc_pos_utils_plus: ^2.0.1+6
+  connectivity_plus: ^6.1.3
 
 dev_dependencies:
   flutter_test:
