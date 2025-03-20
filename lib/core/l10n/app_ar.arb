@@ -469,5 +469,27 @@
                 "example": "10"
             }
         }
+    },
+    "dateFormat": "تنسيق التاريخ: يوم/شهر/سنة ساعة:دقيقة",
+    "formattedDate": "{day}/{month}/{year} {hour}:{minute}",
+    "@formattedDate": {
+        "description": "نص التاريخ المنسق",
+        "placeholders": {
+            "day": {
+                "type": "String"
+            },
+            "month": {
+                "type": "String"
+            },
+            "year": {
+                "type": "String"
+            },
+            "hour": {
+                "type": "String"
+            },
+            "minute": {
+                "type": "String"
+            }
+        }
     }
 }

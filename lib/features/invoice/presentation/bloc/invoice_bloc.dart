@@ -34,7 +34,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
        _taxRepository = taxRepository,
        super(
          InvoiceState.initial(
-           CustomerEntity(customerCode: "", customerName: ""),
+           const CustomerEntity(customerCode: '', customerName: ''),
          ),
        ) {
     on<InitializeInvoice>(_onInitializeInvoice);
@@ -138,257 +138,194 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
           final isSynced = invoice['isSynced'] == 1;
           final invoiceNumber =
               invoice['invoiceNumber'] as String? ?? localizations.noNumber;
+          final invoiceDateStr = invoice['invoiceDate'] as String? ?? '';
           debugPrint(
-            '- Invoice #$invoiceNumber: Return=$isReturnInvoice, Synced=$isSynced',
+            '- Invoice #$invoiceNumber: Return=$isReturnInvoice, Synced=$isSynced, Date=$invoiceDateStr',
           );
         }
         debugPrint('----------------------------------------------------\n');
       }
 
-      // Filter invoices based on the isReturn flag and sync status
-      final filteredInvoices =
-          allInvoices.where((invoice) {
-            final isReturnInvoice = invoice['isReturn'] == 1;
-            final isSynced = invoice['isSynced'] == 1;
+      // First, check for unsynced invoices that match the requested type
+      final unsyncedInvoices = allInvoices.where((invoice) {
+        final isReturnInvoice = invoice['isReturn'] == 1;
+        final isSynced = invoice['isSynced'] == 1;
+        return (isReturnInvoice == event.isReturn) && !isSynced;
+      }).toList();
 
-            // Log each invoice evaluation
-            final invoiceNumber =
-                invoice['invoiceNumber'] as String? ?? localizations.noNumber;
-            final matches = (isReturnInvoice == event.isReturn) && !isSynced;
-            debugPrint(
-              'Evaluating invoice #$invoiceNumber: isReturn=$isReturnInvoice (requested=${event.isReturn}), '
-              'isSynced=$isSynced, matches=$matches',
-            );
+      // If we have an unsynced invoice, use it without further checks
+      if (unsyncedInvoices.isNotEmpty && !event.forceNew) {
+        debugPrint('Found unsynced invoice - loading for editing');
+        return _loadExistingInvoice(unsyncedInvoices.first, customer, emit);
+      }
 
-            // Only show unsynchronized invoices that match the requested type (return or normal)
-            return matches;
-          }).toList();
+      // Check for synced invoices within the last 24 hours
+      final recentSyncedInvoices = allInvoices.where((invoice) {
+        final isReturnInvoice = invoice['isReturn'] == 1;
+        final isSynced = invoice['isSynced'] == 1;
+        
+        // Only check invoices that match the type and are synced
+        if (!(isReturnInvoice == event.isReturn) || !isSynced) {
+          return false;
+        }
+        
+        // Check the date against the 24-hour rule
+        final invoiceDateStr = invoice['invoiceDate'] as String? ?? '';
+        if (invoiceDateStr.isEmpty) {
+          return false;
+        }
+        
+        try {
+          final invoiceDate = DateTime.parse(invoiceDateStr);
+          final now = DateTime.now();
+          final difference = now.difference(invoiceDate);
+          
+          // If less than 24 hours have passed, consider it a recent invoice
+          final isWithin24Hours = difference.inHours < 24;
+          
+          debugPrint(
+            'Invoice ${invoice['invoiceNumber']} date: $invoiceDate, '
+            'hours passed: ${difference.inHours}, within 24h: $isWithin24Hours'
+          );
+          
+          return isWithin24Hours;
+        } catch (e) {
+          debugPrint('Error parsing invoice date: $e');
+          return false;
+        }
+      }).toList();
 
-      debugPrint(
-        localizations.unsynchronizedInvoices(
-          event.isReturn ? localizations.returnType : localizations.regular,
-          filteredInvoices.length,
-        ),
+      // If we have a recent synced invoice (less than 24h old), load it as view-only
+      if (recentSyncedInvoices.isNotEmpty && !event.forceNew) {
+        debugPrint('Found recent synced invoice (< 24h) - loading as view-only');
+        return _loadExistingInvoice(recentSyncedInvoices.first, customer, emit, viewOnly: true);
+      }
+
+      // If we reach here, either:
+      // 1. There are no invoices for this customer
+      // 2. There are only synced invoices older than 24 hours
+      // 3. Force new was requested
+      // In all cases, create a new invoice
+      debugPrint('Creating new invoice (no recent invoices found or force new requested)');
+      
+      // Initialize a new invoice state
+      InvoiceState newState = InvoiceState.initial(customer, isReturn: event.isReturn);
+
+      // Get tax settings for this invoice - replace with defaults since _userPrefs doesn't exist
+      newState = newState.copyWith(
+        paymentType: localizations.cash, // Default payment type
       );
 
-      // Always use the first (most recent) matching invoice for this customer, unless forceNew is true
-      if (filteredInvoices.isNotEmpty && !event.forceNew) {
-        debugPrint(
-          localizations.usingMostRecentInvoice(
-            event.isReturn ? localizations.returnType : localizations.regular,
-          ),
-        );
+      emit(newState.copyWith(isLoading: false));
+    } catch (e, stackTrace) {
+      debugPrint('Error initializing invoice: $e');
+      debugPrint('Stack trace: $stackTrace');
+      emit(
+        state.copyWith(
+          errorMessage: 'Failed to initialize invoice: ${e.toString()}',
+          isLoading: false,
+        ),
+      );
+    }
+  }
 
-        // Use the existing invoice
-        final invoice = filteredInvoices.first;
+  // Helper method to load an existing invoice
+  void _loadExistingInvoice(
+    Map<String, dynamic> invoice, 
+    CustomerEntity customer, 
+    Emitter<InvoiceState> emit, 
+    {bool viewOnly = false}
+  ) async {
+    try {
+      final isReturnInvoice = invoice['isReturn'] == 1;
+      final invoiceNumber = invoice['invoiceNumber'] as String? ?? '';
+      final comment = invoice['comment'] as String? ?? '';
+      
+      // Get invoice items - convert the string invoice number to int if needed
+      final int? invoiceId = invoice['id'] as int?;
+      final items = await _invoiceTable.getInvoiceItems(invoiceId ?? 0);
+      
+      debugPrint(
+        'Loading existing ${isReturnInvoice ? "return" : "regular"} invoice: $invoiceNumber '
+        'with ${items.length} items${viewOnly ? " (view-only mode)" : ""}'
+      );
 
-        // Check if the invoice has a valid items array
-        final hasItems =
-            invoice.containsKey('items') && invoice['items'] != null;
-        final invoiceItems =
-            hasItems
-                ? invoice['items'] as List<Map<String, dynamic>>
-                : <Map<String, dynamic>>[];
+      // Parse the items into the correct format based on whether it's a return invoice
+      List<InvoiceItemModel> invoiceItems = [];
+      List<InvoiceItemModel> returnItems = [];
 
-        debugPrint(
-          '\n🧾 LOADING INVOICE ID: ${invoice['id']}, NUMBER: ${invoice['invoiceNumber']} with ${invoiceItems.length} items',
-        );
-
-        // Detailed invoice information debugging
-        debugPrint('\n==== INVOICE DATABASE DETAILS ====');
-        invoice.forEach((key, value) {
-          if (key != 'items') {
-            // Skip items array as we'll log that separately
-            debugPrint('$key: $value');
-          }
-        });
-        debugPrint('================================\n');
-
-        // Convert items to InvoiceItemModel list
-        final items = <InvoiceItemModel>[];
-        final returnItems = <InvoiceItemModel>[];
-
-        // Debug all invoice items
-        debugPrint('\n🔍 PROCESSING ${invoiceItems.length} INVOICE ITEMS:');
-
-        for (final itemData in invoiceItems) {
-          try {
-            // Check if the required fields exist in the item data
-            if (!itemData.containsKey('itemCode') ||
-                !itemData.containsKey('quantity') ||
-                !itemData.containsKey('unitPrice')) {
-              debugPrint(localizations.itemMissingFields);
-              continue;
-            }
-
-            final isReturn = itemData['isReturn'] == 1;
-            final itemCode = itemData['itemCode'] as String;
-            final quantity = itemData['quantity'] as int;
-
-            debugPrint(
-              '\n📦 Processing item: $itemCode (isReturn: $isReturn, Qty: $quantity)',
-            );
-
-            // Get the current inventory item
-            final currentInventoryItem = await _inventoryItemsTable
-                .getItemByCode(itemCode);
-
-            if (currentInventoryItem == null) {
-              debugPrint(localizations.itemNotFound(itemCode));
-              continue;
-            }
-
-            debugPrint(
-              localizations.itemFound(currentInventoryItem.description),
-            );
-
-            // Use the saved unit price from the invoice, not the current inventory price
-            final dynamic rawUnitPrice = itemData['unitPrice'];
-            final double unitPrice = _parseDouble(rawUnitPrice);
-
-            debugPrint(
-              localizations.unitPriceFromDatabase(
-                rawUnitPrice.toString(),
-                unitPrice.toString(),
-              ),
-            );
-
-            final totalPrice = unitPrice * quantity;
-            debugPrint(
-              localizations.calculatedTotalPrice(totalPrice.toString()),
-            );
-
-            final item = InvoiceItemModel(
-              item: InventoryItemEntity(
-                itemCode: currentInventoryItem.itemCode,
-                description: currentInventoryItem.description,
-                taxableFlag: currentInventoryItem.taxableFlag,
-                taxCode: currentInventoryItem.taxCode,
-                sellUnitCode: currentInventoryItem.sellUnitCode,
-                sellUnitPrice: unitPrice, // Use the saved price
-                qty: currentInventoryItem.qty,
-              ),
+      if (items.isNotEmpty) {
+        for (final itemData in items) {
+          final itemCode = itemData['itemCode'] as String;
+          final item = await _inventoryItemsTable.getItemByCode(itemCode);
+          
+          if (item != null) {
+            // Get the quantity as an integer
+            final quantity = (itemData['quantity'] as num).toInt();
+            final taxRate = (itemData['taxRate'] as num?)?.toDouble() ?? 0.0;
+            final taxAmount = (itemData['taxAmount'] as num?)?.toDouble() ?? 0.0;
+            
+            // Calculate total price
+            final totalPrice = (item.sellUnitPrice * quantity) + taxAmount;
+            
+            final invoiceItem = InvoiceItemModel(
+              item: item,
               quantity: quantity,
               totalPrice: totalPrice,
-              discount: 0, // Add actual discount if available in the future
-              tax: 0, // Add actual tax if available in the future
+              taxRate: taxRate,
+              taxAmount: taxAmount,
             );
-
-            if (isReturn) {
-              returnItems.add(item);
-              debugPrint(localizations.addedToReturnItems(itemCode, quantity));
+            
+            if (isReturnInvoice) {
+              returnItems.add(invoiceItem);
             } else {
-              items.add(item);
-              debugPrint(localizations.addedToRegularItems(itemCode, quantity));
+              invoiceItems.add(invoiceItem);
             }
-          } catch (e) {
-            debugPrint(localizations.errorProcessingItem(e.toString()));
           }
         }
+      }
 
-        debugPrint(
-          localizations.createdItemsSummary(items.length, returnItems.length),
-        );
+      // Calculate the totals
+      final subtotal = isReturnInvoice ? 
+        returnItems.fold(0.0, (sum, item) => sum + (item.item.sellUnitPrice * item.quantity)) :
+        invoiceItems.fold(0.0, (sum, item) => sum + (item.item.sellUnitPrice * item.quantity));
+      
+      final taxTotal = isReturnInvoice ?
+        returnItems.fold(0.0, (sum, item) => sum + item.taxAmount) :
+        invoiceItems.fold(0.0, (sum, item) => sum + item.taxAmount);
+      
+      final grandTotal = subtotal + taxTotal;
 
-        // Get numeric values directly from the invoice to ensure we use the exact values from DB
-        final subtotal = _parseDouble(invoice['subtotal']);
-        final discount = _parseDouble(invoice['discount']);
-        final salesTax = _parseDouble(invoice['salesTax']);
-        final grandTotal = _parseDouble(invoice['grandTotal']);
-        final returnSubtotal = _parseDouble(invoice['returnSubtotal']);
-        final returnDiscount = _parseDouble(invoice['returnDiscount']);
-        final returnSalesTax = _parseDouble(invoice['returnSalesTax']);
-        final returnGrandTotal = _parseDouble(invoice['returnGrandTotal']);
+      // Get the payment type from the invoice
+      final paymentType = invoice['paymentType'] as String? ?? localizations.cash;
 
-        debugPrint('\n💰 INVOICE TOTALS FROM DATABASE:');
-        debugPrint('- subtotal: $subtotal');
-        debugPrint('- discount: $discount');
-        debugPrint('- salesTax: $salesTax');
-        debugPrint('- grandTotal: $grandTotal');
-        debugPrint('- return subtotal: $returnSubtotal');
-        debugPrint('- return discount: $returnDiscount');
-        debugPrint('- return salesTax: $returnSalesTax');
-        debugPrint('- return grandTotal: $returnGrandTotal');
-
-        // Calculate derived values
-        final total = subtotal - discount;
-        final returnTotal = returnSubtotal - returnDiscount;
-
-        // Calculate item counts
-        final itemCount = _calculateTotalQuantity(items);
-        final returnCount = _calculateTotalQuantity(returnItems);
-
-        // Get comment from invoice
-        final comment = invoice['comment'] as String? ?? '';
-        final paymentType = invoice['paymentType'] as String? ?? 'Cash';
-        final invoiceNumber = invoice['invoiceNumber'] as String;
-
-        debugPrint('\n📝 OTHER INVOICE DETAILS:');
-        debugPrint('- comment: ${comment.isNotEmpty ? comment : "empty"}');
-        debugPrint('- paymentType: $paymentType');
-        debugPrint('- invoiceNumber: $invoiceNumber');
-        debugPrint('- itemCount: $itemCount');
-        debugPrint('- returnCount: $returnCount');
-
-        // Create state with existing invoice data
-        final newState = InvoiceState(
-          customer: customer,
-          items: items,
-          returnItems: returnItems,
+      // Create and emit the new state
+      final newState = InvoiceState.initial(customer, isReturn: isReturnInvoice)
+        .copyWith(
           invoiceNumber: invoiceNumber,
-          subtotal: subtotal,
-          discount: discount,
-          salesTax: salesTax,
-          grandTotal: grandTotal,
-          returnSubtotal: returnSubtotal,
-          returnDiscount: returnDiscount,
-          returnSalesTax: returnSalesTax,
-          returnGrandTotal: returnGrandTotal,
-          itemCount: itemCount,
-          returnCount: returnCount,
-          total: total,
-          returnTotal: returnTotal,
+          items: invoiceItems,
+          returnItems: returnItems,
           comment: comment,
+          subtotal: subtotal,
+          salesTax: taxTotal,
+          grandTotal: grandTotal,
+          returnSubtotal: isReturnInvoice ? subtotal : 0.0,
+          returnSalesTax: isReturnInvoice ? taxTotal : 0.0,
+          returnGrandTotal: isReturnInvoice ? grandTotal : 0.0,
           paymentType: paymentType,
+          isSubmitted: viewOnly, // Mark as submitted if view-only
           isLoading: false,
         );
 
-        debugPrint('\n🔄 EMITTING NEW STATE WITH INVOICE DATA');
-        emit(newState);
-
-        // Additional calculation to ensure UI is updated
-        add(const CalculateInvoiceTotals());
-
-        // Check if the invoice is dirty
-        final isDirty = await checkIfInvoiceIsDirty(
-          invoiceNumber: invoiceNumber,
-          currentItems: items,
-          currentReturnItems: returnItems,
-          isReturn: event.isReturn,
-        );
-
-        emit(newState.copyWith(isDirty: isDirty));
-
-        debugPrint('\n✅ INVOICE INITIALIZATION COMPLETE');
-      } else {
-        // Create new invoice
-        debugPrint(
-          '\n🆕 Creating new ${event.isReturn ? "return" : "regular"} invoice for customer: ${customer.customerName}',
-        );
-        emit(
-          InvoiceState.initial(
-            customer,
-            isReturn: event.isReturn,
-          ).copyWith(isLoading: false),
-        );
-        debugPrint(
-          '✅ New ${event.isReturn ? "return" : "regular"} invoice initialized',
-        );
-      }
-    } catch (e, stackTrace) {
-      debugPrint('\n❌ ERROR INITIALIZING INVOICE: $e');
-      debugPrint('Stack trace: $stackTrace');
-      emit(state.copyWith(errorMessage: e.toString(), isLoading: false));
+      emit(newState);
+    } catch (e) {
+      debugPrint('Error loading existing invoice: $e');
+      emit(
+        state.copyWith(
+          errorMessage: 'Failed to load invoice: ${e.toString()}',
+          isLoading: false,
+        ),
+      );
     }
   }
 

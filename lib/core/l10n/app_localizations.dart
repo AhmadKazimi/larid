@@ -1474,6 +1474,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{synced} of {total} items synced'**
   String itemsSynced(int synced, int total);
+
+  /// No description provided for @dateFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Date Format: dd/MM/yyyy HH:mm'**
+  String get dateFormat;
+
+  /// Formatted date string
+  ///
+  /// In en, this message translates to:
+  /// **'{day}/{month}/{year} {hour}:{minute}'**
+  String formattedDate(String day, String month, String year, String hour, String minute);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

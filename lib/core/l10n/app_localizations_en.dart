@@ -751,4 +751,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String itemsSynced(int synced, int total) {
     return '$synced of $total items synced';
   }
+
+  @override
+  String get dateFormat => 'Date Format: dd/MM/yyyy HH:mm';
+
+  @override
+  String formattedDate(String day, String month, String year, String hour, String minute) {
+    return '$day/$month/$year $hour:$minute';
+  }
 }

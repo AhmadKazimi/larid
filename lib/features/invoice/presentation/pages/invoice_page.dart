@@ -136,31 +136,33 @@ class _InvoicePageState extends State<InvoicePage> {
             '- Subtotal: ${state.subtotal}, Grand Total: ${state.grandTotal}',
           );
 
-          return Scaffold(
-            // Added Scaffold to provide Material context
-            body: Column(
-              children: [
-                _buildGradientHeader(context, state, localizations),
-                Expanded(
-                  child: SafeArea(
-                    top: false,
-                    child: Column(
-                      children: [
-                        _buildActionButtons(context, state),
-                        Expanded(
-                          child: _buildBody(
-                            context,
-                            state,
-                            theme,
-                            localizations,
+          return WillPopScope(
+            onWillPop: _onWillPop,
+            child: Scaffold(
+              body: Column(
+                children: [
+                  _buildGradientHeader(context, state, localizations),
+                  Expanded(
+                    child: SafeArea(
+                      top: false,
+                      child: Column(
+                        children: [
+                          _buildActionButtons(context, state),
+                          Expanded(
+                            child: _buildBody(
+                              context,
+                              state,
+                              theme,
+                              localizations,
+                            ),
                           ),
-                        ),
-                        _buildBottomBar(context, state, theme, localizations),
-                      ],
+                          _buildBottomBar(context, state, theme, localizations),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -224,6 +226,15 @@ class _InvoicePageState extends State<InvoicePage> {
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withOpacity(0.9),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      "${localizations.date}: ${_formatDate(DateTime.now())}",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white.withOpacity(0.8),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1428,5 +1439,33 @@ class _InvoicePageState extends State<InvoicePage> {
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    // Format the date using localized format
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    
+    // Use a simple format string for now
+    return "$day/$month/$year $hour:$minute";
+  }
+
+  Future<bool> _onWillPop() async {
+    // Implement the logic to handle the back button press
+    // This is a placeholder and should be replaced with the actual implementation
+    return true; // Allow the pop
+  }
+
+  void _showAddItemDialog(BuildContext context, InvoiceState state) {
+    // Implement the logic to show the add item dialog
+    // This is a placeholder and should be replaced with the actual implementation
+  }
+
+  void _onPrintInvoice() {
+    // Implement the logic to print the invoice
+    // This is a placeholder and should be replaced with the actual implementation
   }
 }

@@ -474,5 +474,27 @@
                 "example": "10"
             }
         }
+    },
+    "dateFormat": "Date Format: dd/MM/yyyy HH:mm",
+    "formattedDate": "{day}/{month}/{year} {hour}:{minute}",
+    "@formattedDate": {
+        "description": "Formatted date string",
+        "placeholders": {
+            "day": {
+                "type": "String"
+            },
+            "month": {
+                "type": "String"
+            },
+            "year": {
+                "type": "String"
+            },
+            "hour": {
+                "type": "String"
+            },
+            "minute": {
+                "type": "String"
+            }
+        }
     }
 }

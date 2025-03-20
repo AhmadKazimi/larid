@@ -751,4 +751,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String itemsSynced(int synced, int total) {
     return 'تمت مزامنة $synced من $total عنصر';
   }
+
+  @override
+  String get dateFormat => 'تنسيق التاريخ: يوم/شهر/سنة ساعة:دقيقة';
+
+  @override
+  String formattedDate(String day, String month, String year, String hour, String minute) {
+    return '$day/$month/$year $hour:$minute';
+  }
 }
