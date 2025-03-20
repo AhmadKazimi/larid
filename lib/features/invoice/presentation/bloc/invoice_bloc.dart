@@ -995,14 +995,15 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
 
       // Update the UI state
       if (currentInvoiceSynced) {
-        // If the current invoice was synced, clear the screen to show no invoice
-        debugPrint('Current invoice synced, updating UI to show no invoice');
+        // Update the current invoice state to reflect it has been synced
         emit(
-          InvoiceState.initial(
-            state.customer,
-            isReturn: state.returnItems.isNotEmpty && state.items.isEmpty,
-          ).copyWith(isSyncing: false),
+          state.copyWith(
+            isSyncing: false,
+            isSubmitted: true,
+            isDirty: false
+          )
         );
+        debugPrint('Current invoice marked as synced in UI state');
       } else {
         // Otherwise just update the syncing status
         emit(state.copyWith(isSyncing: false));
