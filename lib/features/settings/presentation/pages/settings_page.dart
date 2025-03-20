@@ -8,6 +8,11 @@ import 'package:larid/core/storage/shared_prefs.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../features/auth/domain/repositories/auth_repository.dart';
+import '../../../../database/user_table.dart';
+import '../../../../core/di/service_locator.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -129,45 +134,77 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _logout() async {
     final localizations = AppLocalizations.of(context)!;
-
-    showDialog(
+    
+    // Show confirmation dialog
+    final shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(localizations.logout),
-          content: Text(localizations.logoutConfirmation),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                localizations.cancel,
-                style: TextStyle(color: Colors.grey[700]),
-              ),
+      builder: (context) => AlertDialog(
+        title: Text(localizations.logout),
+        content: Text(localizations.logoutConfirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(localizations.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              localizations.logout,
+              style: TextStyle(color: Colors.red[700]),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
+          ),
+        ],
+      ),
+    ) ?? false;
 
-                // Clear user data
-                await SharedPrefs.clearUserData();
+    if (!shouldLogout) return;
 
-                // Navigate to login
-                if (mounted) {
-                  NavigationService.pushReplacementNamed(
-                    context,
-                    RouteConstants.login,
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-              ),
-              child: Text(localizations.yes),
-            ),
-          ],
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Reset sync status to ensure user goes through sync flow on next login
+      try {
+        await SharedPrefs.setSynced(false);
+      } catch (e) {
+        debugPrint('Error resetting sync status: $e');
+      }
+      
+      // Mark the user as logged out in SharedPreferences
+      try {
+        final authRepository = getIt<AuthRepository>();
+        await authRepository.logout();
+      } catch (e) {
+        debugPrint('Error in auth logout: $e');
+      }
+      
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
+      // Navigate to API config page
+      if (mounted) {
+        context.go(RouteConstants.apiConfig);
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
+      // Show error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to logout. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
         );
-      },
-    );
+      }
+    }
   }
 
   Widget _buildGradientHeader(BuildContext context) {

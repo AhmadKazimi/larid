@@ -722,6 +722,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageChanged => 'Language changed successfully';
 
   @override
+  String get logoutError => 'Failed to logout. Please try again.';
+
+  @override
   String get synced => 'Synced';
 
   @override

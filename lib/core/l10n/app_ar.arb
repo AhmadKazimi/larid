@@ -438,6 +438,7 @@
     "errorUpdatingLogo": "خطأ في تحديث الشعار",
     "language": "اللغة",
     "languageChanged": "تم تغيير اللغة بنجاح",
+    "logoutError": "فشل تسجيل الخروج. يرجى المحاولة مرة أخرى.",
     "synced": "تمت المزامنة",
     "syncNow": "مزامنة",
     "vouchers": "سندات القبض",

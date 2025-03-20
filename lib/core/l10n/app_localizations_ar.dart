@@ -722,6 +722,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get languageChanged => 'تم تغيير اللغة بنجاح';
 
   @override
+  String get logoutError => 'فشل تسجيل الخروج. يرجى المحاولة مرة أخرى.';
+
+  @override
   String get synced => 'تمت المزامنة';
 
   @override

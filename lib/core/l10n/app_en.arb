@@ -441,6 +441,7 @@
     "errorUpdatingLogo": "Error updating logo",
     "language": "Language",
     "languageChanged": "Language changed successfully",
+    "logoutError": "Failed to logout. Please try again.",
     "synced": "Synced",
     "syncNow": "Sync",
     "vouchers": "Vouchers",

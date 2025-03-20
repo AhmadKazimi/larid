@@ -1421,6 +1421,12 @@ abstract class AppLocalizations {
   /// **'Language changed successfully'**
   String get languageChanged;
 
+  /// No description provided for @logoutError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to logout. Please try again.'**
+  String get logoutError;
+
   /// No description provided for @synced.
   ///
   /// In en, this message translates to:
