@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:larid/core/router/route_constants.dart';
+import 'package:larid/main.dart';
 
 class NavigationService {
   static void push(BuildContext context, String location, {Object? extra}) {
@@ -52,7 +54,7 @@ class NavigationService {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Restart Required'),
           content: const Text(
@@ -61,9 +63,13 @@ class NavigationService {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                // Close the dialog first
+                Navigator.of(dialogContext).pop();
+                
+                // Restart the app using the widget-based approach
+                RestartWidget.restartApp(context);
               },
-              child: const Text('OK'),
+              child: const Text('Restart Now'),
             ),
           ],
         );

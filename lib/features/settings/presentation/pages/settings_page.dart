@@ -113,22 +113,55 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _changeLanguage(String languageCode) async {
     if (_selectedLanguage == languageCode) return;
 
+    // Set loading state
     setState(() {
-      _selectedLanguage = languageCode;
+      _isLoading = true;
     });
 
-    await SharedPrefs.setLanguage(languageCode);
+    try {
+      // Update selected language
+      setState(() {
+        _selectedLanguage = languageCode;
+      });
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.languageChanged),
-          backgroundColor: AppColors.primary,
-        ),
-      );
+      // Save to shared preferences
+      await SharedPrefs.setLanguage(languageCode);
 
-      // Rebuild app to apply new language
-      NavigationService.showRestartDialog(context);
+      if (mounted) {
+        // Show success message with the appropriate language name
+        final String languageName = languageCode == 'ar' ? 'العربية' : 'English';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppLocalizations.of(context)!.languageChanged} ($languageName)'),
+            backgroundColor: AppColors.primary,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+
+        // Wait a moment for the snackbar to show before showing the restart dialog
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            // Show restart dialog
+            NavigationService.showRestartDialog(context);
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error changing language: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error changing language. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
