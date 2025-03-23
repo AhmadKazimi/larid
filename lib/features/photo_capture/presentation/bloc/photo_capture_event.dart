@@ -29,4 +29,13 @@ class UploadImage extends PhotoCaptureEvent {
   List<Object?> get props => [imagePath];
 }
 
+class LoadSavedPhotos extends PhotoCaptureEvent {
+  final String customerCode;
+
+  const LoadSavedPhotos(this.customerCode);
+
+  @override
+  List<Object?> get props => [customerCode];
+}
+
 class ClearError extends PhotoCaptureEvent {}

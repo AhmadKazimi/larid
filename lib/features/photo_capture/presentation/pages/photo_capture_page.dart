@@ -30,11 +30,17 @@ class PhotoCapturePage extends StatelessWidget {
     final theme = Theme.of(context);
 
     return BlocProvider(
-      create:
-          (context) => PhotoCaptureBloc(
-            savePhotoCaptureUseCase: GetIt.I<SavePhotoCaptureUseCase>(),
-            uploadImageUseCase: GetIt.I<UploadImageUseCase>(),
-          ),
+      create: (context) {
+        final bloc = PhotoCaptureBloc(
+          savePhotoCaptureUseCase: GetIt.I<SavePhotoCaptureUseCase>(),
+          uploadImageUseCase: GetIt.I<UploadImageUseCase>(),
+        );
+
+        // Load saved photos for this customer
+        bloc.add(LoadSavedPhotos(customerCode));
+
+        return bloc;
+      },
       child: BlocConsumer<PhotoCaptureBloc, PhotoCaptureState>(
         listener: (context, state) {
           if (state.error != null) {
@@ -61,11 +67,6 @@ class PhotoCapturePage extends StatelessWidget {
                   backgroundColor: Colors.green,
                 ),
               );
-
-              // After a short delay, navigate back
-              Future.delayed(const Duration(seconds: 2), () {
-                Navigator.of(context).pop();
-              });
             }
           }
         },
