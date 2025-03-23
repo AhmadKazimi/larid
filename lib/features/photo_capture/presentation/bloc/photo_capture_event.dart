@@ -20,4 +20,13 @@ class SavePhotoCapture extends PhotoCaptureEvent {
   List<Object?> get props => [customerCode];
 }
 
+class UploadImage extends PhotoCaptureEvent {
+  final String imagePath;
+
+  const UploadImage(this.imagePath);
+
+  @override
+  List<Object?> get props => [imagePath];
+}
+
 class ClearError extends PhotoCaptureEvent {}

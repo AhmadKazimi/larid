@@ -12,6 +12,8 @@ class ApiEndpoints {
   static const String getCompanyInfo = '/GetCompanyInfo';
   static const String uploadInvoice = '/UploadInvoice';
   static const String uploadCM = '/UploadCM';
+  static const String uploadSalesrepPic =
+      'https://cloud.larid.net/UploadSalesrepPic.ashx';
 
   // Helper method to build full endpoint URL
   static String buildUrl(String endpoint) {

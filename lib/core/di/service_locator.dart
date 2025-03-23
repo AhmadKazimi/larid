@@ -53,6 +53,7 @@ import '../../features/summary/domain/repositories/summary_repository.dart';
 import '../../features/summary/domain/usecases/get_invoices_usecase.dart';
 import '../../features/summary/domain/usecases/get_receipt_vouchers_usecase.dart';
 import '../../features/summary/presentation/bloc/summary_bloc.dart';
+import '../../features/photo_capture/domain/usecases/upload_image_usecase.dart';
 
 final getIt = GetIt.instance;
 
@@ -222,11 +223,18 @@ Future<void> setupServiceLocator() async {
 
   // Photo Capture
   getIt.registerLazySingleton<PhotoCaptureRepository>(
-    () => PhotoCaptureRepositoryImpl(),
+    () => PhotoCaptureRepositoryImpl(
+      apiService: getIt<ApiService>(),
+      authRepository: getIt<AuthRepository>(),
+    ),
   );
 
   getIt.registerLazySingleton<SavePhotoCaptureUseCase>(
     () => SavePhotoCaptureUseCase(getIt<PhotoCaptureRepository>()),
+  );
+
+  getIt.registerLazySingleton<UploadImageUseCase>(
+    () => UploadImageUseCase(getIt<PhotoCaptureRepository>()),
   );
 
   // Summary Feature

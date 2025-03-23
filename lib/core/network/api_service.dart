@@ -491,4 +491,51 @@ class ApiService {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> uploadSalesrepPic({
+    required String userid,
+    required String workspace,
+    required String password,
+    required String imagePath,
+  }) async {
+    try {
+      // Create multipart form data
+      final formData = FormData.fromMap({
+        'postedFile': await MultipartFile.fromFile(
+          imagePath,
+          filename: imagePath.split('/').last,
+        ),
+      });
+
+      // Create custom options with headers
+      final options = Options(
+        headers: {
+          'workspace': workspace,
+          'userid': userid,
+          'password': password,
+          'Content-Type': 'multipart/form-data',
+        },
+      );
+
+      // Use Dio directly since this is an external URL
+      final dio = Dio();
+      final response = await dio.post(
+        ApiEndpoints.uploadSalesrepPic,
+        data: formData,
+        options: options,
+      );
+
+      if (response.statusCode == 200) {
+        if (response.data is Map && response.data.containsKey('filename')) {
+          return {'success': true, 'filename': response.data['filename']};
+        } else if (response.data is Map && response.data.containsKey('ERROR')) {
+          return {'success': false, 'error': response.data['ERROR']};
+        }
+      }
+
+      return {'success': false, 'error': 'Unknown error'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 }
