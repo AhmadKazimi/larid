@@ -9,10 +9,10 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get welcomeBack => 'مرحباً بعودتك';
+  String get welcomeBack => 'مرحباً بك';
 
   @override
-  String get signInToContinue => 'سجل دخول للمتابعة';
+  String get signInToContinue => 'ادخل بيانات الدخول الخاصة بك';
 
   @override
   String get email => 'البريد الإلكتروني';
@@ -36,19 +36,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get passwordMustBe6Chars => 'يجب أن تكون كلمة المرور 6 أحرف على الأقل';
 
   @override
-  String get apiConfiguration => 'إعدادات API';
+  String get apiConfiguration => 'رابط الدومين الخاص بالعمل';
 
   @override
-  String get enterApiBaseUrl => 'أدخل عنوان API الأساسي';
+  String get enterApiBaseUrl => 'ادخل الرابط';
 
   @override
-  String get baseUrl => 'العنوان الأساسي';
+  String get baseUrl => 'الرابط';
 
   @override
-  String get baseUrlHint => 'https://api.example.com';
+  String get baseUrlHint => 'https://cloud.larid.net';
 
   @override
-  String get pleaseEnterUrl => 'الرجاء إدخال عنوان URL';
+  String get pleaseEnterUrl => 'يرجى ادخال رابط دومين العمل';
 
   @override
   String get pleaseEnterValidUrl => 'الرجاء إدخال عنوان URL صحيح يبدأ بـ http:// أو https://';
@@ -60,7 +60,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get home => 'الرئيسية';
 
   @override
-  String get welcomeToLarid => 'مرحباً بك في لاريد';
+  String get welcomeToLarid => 'مرحباً بك في نظام ليرد';
 
   @override
   String get goToLogin => 'الذهاب لتسجيل الدخول';
@@ -72,10 +72,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pleaseEnterWorkspace => 'الرجاء إدخال مساحة العمل';
 
   @override
-  String get userId => 'معرف المستخدم';
+  String get userId => 'اسم المستخدم';
 
   @override
-  String get pleaseEnterUserId => 'الرجاء إدخال معرف المستخدم';
+  String get pleaseEnterUserId => 'الرجاء إدخال اسم المستخدم';
 
   @override
   String get sync => 'مزامنة';
@@ -84,19 +84,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get syncStatus => 'حالة المزامنة';
 
   @override
-  String get customers => 'العملاء';
+  String get customers => 'قائمة عملاء المندوب';
 
   @override
-  String get salesRepCustomers => 'عملاء مندوب المبيعات';
+  String get salesRepCustomers => 'قائمة عملاء زيارات اليوم';
 
   @override
-  String get prices => 'الأسعار';
+  String get prices => 'قائمة الاسعار';
 
   @override
-  String get inventoryItems => 'عناصر المخزون';
+  String get inventoryItems => 'قائمة اصناف المخزون';
 
   @override
-  String get inventoryUnits => 'وحدات المخزون';
+  String get inventoryUnits => 'قائمة وحدات المخزون';
 
   @override
   String get salesTaxes => 'ضرائب المبيعات';
@@ -105,7 +105,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get warehouse => 'المستودع';
 
   @override
-  String get companyInfo => 'معلومات الشركة';
+  String get companyInfo => 'بيانات الشركة';
 
   @override
   String get syncAllData => 'مزامنة جميع البيانات';
@@ -151,13 +151,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get searchForClient => 'البحث عن عميل';
 
   @override
-  String get sessionEnded => 'تم إنهاء الجلسة';
+  String get sessionEnded => 'تم إنهاء الزيارة';
 
   @override
-  String get endSession => 'إنهاء الجلسة';
+  String get endSession => 'إنهاء الزيارة';
 
   @override
-  String get endSessionConfirmation => 'هل أنت متأكد من أنك تريد إنهاء الجلسة الحالية؟';
+  String get endSessionConfirmation => 'هل أنت متأكد من أنك تريد إنهاء الزيارة الحالية؟';
 
   @override
   String get end => 'إنهاء';
@@ -216,16 +216,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cannotOpenGoogleMaps => 'لا يمكن فتح خرائط جوجل';
 
   @override
-  String get startSession => 'بدء جلسة عمل';
+  String get startSession => 'بدء زيارة جديدة ';
 
   @override
-  String get noActiveSessionMessage => 'لا توجد جلسة عمل نشطة. هل تريد بدء جلسة جديدة؟';
+  String get noActiveSessionMessage => 'لا توجد زيارة  نشطة. هل تريد بدء زيارة جديدة؟';
 
   @override
   String get cancel => 'إلغاء';
 
   @override
-  String get sessionDuration => 'مدة الجلسة';
+  String get sessionDuration => 'مدة الزيارة';
 
   @override
   String get minutes => 'دقيقة';
@@ -273,7 +273,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get customerDetails => 'تفاصيل العميل';
 
   @override
-  String get activities => 'الأنشطة';
+  String get activities => 'الانشطة المتاحة';
 
   @override
   String get createInvoice => 'إنشاء فاتورة';
@@ -344,16 +344,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get visitSessionInfo => 'يمكنك تنفيذ أنشطة متعددة خلال جلسة الزيارة هذه. ستنتهي الجلسة فقط عند النقر على زر \"إنهاء جلسة الزيارة\".';
+  String get visitSessionInfo => 'يمكنك تنفيذ أنشطة متعددة خلال  الزيارة الحالية. ستنتهي الزيارة فقط عند النقر على زر \"إنهاء زيارة\".';
 
   @override
-  String get endVisitSession => 'إنهاء جلسة الزيارة';
+  String get endVisitSession => 'إنهاء  الزيارة';
 
   @override
-  String get visitSessionEnded => 'تم إنهاء جلسة الزيارة';
+  String get visitSessionEnded => 'تم إنهاء الزيارة';
 
   @override
-  String get visitSessionStarted => 'تم بدء جلسة الزيارة بنجاح';
+  String get visitSessionStarted => 'تم بدء الزيارة بنجاح';
 
   @override
   String activeVisitWith(String customerName) {
@@ -441,7 +441,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get price => 'السعر';
 
   @override
-  String get saveItems => 'حفظ المواد';
+  String get saveItems => 'اضافة المواد';
 
   @override
   String get cancelItems => 'إلغاء';
@@ -573,7 +573,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String invoiceUploadedSuccessfully(String number) {
-    return 'تم رفع الفاتورة بنجاح. رقم الفاتورة #$number';
+    return 'تم ترحيل الفاتورة بنجاح. رقم الفاتورة #$number';
   }
 
   @override
@@ -722,7 +722,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get languageChanged => 'تم تغيير اللغة بنجاح';
 
   @override
-  String get logoutError => 'فشل تسجيل الخروج. يرجى المحاولة مرة أخرى.';
+  String get logoutError => 'Failed to logout. Please try again.';
 
   @override
   String get synced => 'تمت المزامنة';
@@ -753,7 +753,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get dateFormat => 'تنسيق التاريخ: يوم/شهر/سنة ساعة:دقيقة';
+  String get dateFormat => 'Date Format: dd/MM/yyyy HH:mm';
 
   @override
   String formattedDate(String day, String month, String year, String hour, String minute) {

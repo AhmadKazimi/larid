@@ -1,7 +1,7 @@
 {
     "@@locale": "ar",
-    "welcomeBack": "مرحباً بعودتك",
-    "signInToContinue": "سجل دخول للمتابعة",
+    "welcomeBack": "مرحباً بك",
+    "signInToContinue": "ادخل بيانات الدخول الخاصة بك",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "login": "تسجيل الدخول",
@@ -10,33 +10,33 @@
     "pleaseEnterPassword": "الرجاء إدخال كلمة المرور",
     "passwordMustBe6Chars": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
 
-    "apiConfiguration": "إعدادات API",
-    "enterApiBaseUrl": "أدخل عنوان API الأساسي",
-    "baseUrl": "العنوان الأساسي",
-    "baseUrlHint": "https://api.example.com",
-    "pleaseEnterUrl": "الرجاء إدخال عنوان URL",
+    "apiConfiguration": "رابط الدومين الخاص بالعمل",
+    "enterApiBaseUrl": "ادخل الرابط",
+    "baseUrl": "الرابط",
+    "baseUrlHint": "https://cloud.larid.net",
+    "pleaseEnterUrl": "يرجى ادخال رابط دومين العمل",
     "pleaseEnterValidUrl": "الرجاء إدخال عنوان URL صحيح يبدأ بـ http:// أو https://",
     "saveAndContinue": "حفظ ومتابعة",
 
     "home": "الرئيسية",
-    "welcomeToLarid": "مرحباً بك في لاريد",
+    "welcomeToLarid": "مرحباً بك في نظام ليرد",
     "goToLogin": "الذهاب لتسجيل الدخول",
 
     "workspace": "مساحة العمل",
     "pleaseEnterWorkspace": "الرجاء إدخال مساحة العمل",
-    "userId": "معرف المستخدم",
-    "pleaseEnterUserId": "الرجاء إدخال معرف المستخدم",
-
+    "userId": "اسم المستخدم",
+    "pleaseEnterUserId": "الرجاء إدخال اسم المستخدم",
+    "postinvoice":"ترحيل",
     "sync": "مزامنة",
     "syncStatus": "حالة المزامنة",
-    "customers": "العملاء",
-    "salesRepCustomers": "عملاء مندوب المبيعات",
-    "prices": "الأسعار",
-    "inventoryItems": "عناصر المخزون",
-    "inventoryUnits": "وحدات المخزون",
+    "customers": "قائمة عملاء المندوب",
+    "salesRepCustomers": "قائمة عملاء زيارات اليوم",
+    "prices": "قائمة الاسعار",
+    "inventoryItems": "قائمة اصناف المخزون",
+    "inventoryUnits": "قائمة وحدات المخزون",
     "salesTaxes": "ضرائب المبيعات",
     "warehouse": "المستودع",
-    "companyInfo": "معلومات الشركة",
+    "companyInfo": "بيانات الشركة",
     "syncAllData": "مزامنة جميع البيانات",
     "recordsSynced": "تمت مزامنة {count} سجل",
     "@recordsSynced": {
@@ -65,9 +65,9 @@
     "makeSureInternetConnected": "تأكد من اتصالك بالإنترنت",
     "dontClosePage": "لا تغلق هذه الصفحة حتى تكتمل المزامنة",
     "searchForClient": "البحث عن عميل",
-    "sessionEnded": "تم إنهاء الجلسة",
-    "endSession": "إنهاء الجلسة",
-    "endSessionConfirmation": "هل أنت متأكد من أنك تريد إنهاء الجلسة الحالية؟",
+    "sessionEnded": "تم إنهاء الزيارة",
+    "endSession": "إنهاء الزيارة",
+    "endSessionConfirmation": "هل أنت متأكد من أنك تريد إنهاء الزيارة الحالية؟",
     "end": "إنهاء",
 
     "map": "الخريطة",
@@ -117,19 +117,19 @@
     "startVisit": "بدء زيارة",
     "cannotOpenGoogleMaps": "لا يمكن فتح خرائط جوجل",
 
-    "startSession": "بدء جلسة عمل",
-    "noActiveSessionMessage": "لا توجد جلسة عمل نشطة. هل تريد بدء جلسة جديدة؟",
+    "startSession": "بدء زيارة جديدة ",
+    "noActiveSessionMessage": "لا توجد زيارة  نشطة. هل تريد بدء زيارة جديدة؟",
     "start": "بدء",
     "cancel": "إلغاء",
-    "sessionDuration": "مدة الجلسة",
+    "sessionDuration": "مدة الزيارة",
     "minutes": "دقيقة",
     "hours": "ساعة",
     "days": "يوم",
     "months": "شهر",
     "years": "سنة",
-    "endSession": "إنهاء الجلسة",
+    "endSession": "إنهاء الزيارة",
     "end": "إنهاء",
-    "sessionEnded": "تم إنهاء الجلسة",
+    "sessionEnded": "تم إنهاء الزيارة",
     "noLocationAvailable": "لا يوجد موقع متاح لهذا العميل",
     "invalidCoordinates": "تنسيق إحداثيات غير صالح",
     "todayCustomers": "عملاء اليوم",
@@ -141,7 +141,7 @@
     "customersTab": "العملاء",
 
     "customerDetails": "تفاصيل العميل",
-    "activities": "الأنشطة",
+    "activities": "الانشطة المتاحة",
     "createInvoice": "إنشاء فاتورة",
     "createNewInvoiceOrReturn": "إنشاء فاتورة جديدة أو مرتجع",
     "takePhoto": "التقاط صورة",
@@ -173,10 +173,10 @@
             }
         }
     },
-    "visitSessionInfo": "يمكنك تنفيذ أنشطة متعددة خلال جلسة الزيارة هذه. ستنتهي الجلسة فقط عند النقر على زر \"إنهاء جلسة الزيارة\".",
-    "endVisitSession": "إنهاء جلسة الزيارة",
-    "visitSessionEnded": "تم إنهاء جلسة الزيارة",
-    "visitSessionStarted": "تم بدء جلسة الزيارة بنجاح",
+    "visitSessionInfo": "يمكنك تنفيذ أنشطة متعددة خلال  الزيارة الحالية. ستنتهي الزيارة فقط عند النقر على زر \"إنهاء زيارة\".",
+    "endVisitSession": "إنهاء  الزيارة",
+    "visitSessionEnded": "تم إنهاء الزيارة",
+    "visitSessionStarted": "تم بدء الزيارة بنجاح",
     "activeVisitWith": "زيارة نشطة مع {customerName}",
     "@activeVisitWith": {
         "placeholders": {
@@ -221,7 +221,7 @@
     "searchHint": "البحث بالرمز أو الوصف",
     "quantity": "الكمية",
     "price": "السعر",
-    "saveItems": "حفظ المواد",
+    "saveItems": "اضافة المواد",
     "cancelItems": "إلغاء",
     "noItemsFound": "لم يتم العثور على مواد",
     "loadingItems": "جاري تحميل المواد...",
@@ -272,7 +272,7 @@
     "noItemsToUpload": "لا توجد مواد للرفع",
     "failedToGenerateInvoiceNumber": "فشل في إنشاء رقم الفاتورة للمرتجع. يرجى المحاولة مرة أخرى.",
     "success": "نجاح",
-    "invoiceUploadedSuccessfully": "تم رفع الفاتورة بنجاح. رقم الفاتورة #{number}",
+    "invoiceUploadedSuccessfully": "تم ترحيل الفاتورة بنجاح. رقم الفاتورة #{number}",
     "@invoiceUploadedSuccessfully": {
         "placeholders": {
             "number": {
@@ -438,7 +438,6 @@
     "errorUpdatingLogo": "خطأ في تحديث الشعار",
     "language": "اللغة",
     "languageChanged": "تم تغيير اللغة بنجاح",
-    "logoutError": "فشل تسجيل الخروج. يرجى المحاولة مرة أخرى.",
     "synced": "تمت المزامنة",
     "syncNow": "مزامنة",
     "vouchers": "سندات القبض",
@@ -467,28 +466,6 @@
             "total": {
                 "type": "int",
                 "example": "10"
-            }
-        }
-    },
-    "dateFormat": "تنسيق التاريخ: يوم/شهر/سنة ساعة:دقيقة",
-    "formattedDate": "{day}/{month}/{year} {hour}:{minute}",
-    "@formattedDate": {
-        "description": "نص التاريخ المنسق",
-        "placeholders": {
-            "day": {
-                "type": "String"
-            },
-            "month": {
-                "type": "String"
-            },
-            "year": {
-                "type": "String"
-            },
-            "hour": {
-                "type": "String"
-            },
-            "minute": {
-                "type": "String"
             }
         }
     }
