@@ -1,30 +1,117 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
+import 'package:larid/core/utils/network_connectivity.dart';
+import 'package:larid/features/photo_capture/data/services/photo_sync_service.dart';
 import 'package:larid/features/photo_capture/domain/entities/photo_capture.dart';
 import 'package:larid/features/photo_capture/domain/usecases/save_photo_capture_usecase.dart';
 import 'package:larid/features/photo_capture/domain/usecases/upload_image_usecase.dart';
 import 'package:larid/features/photo_capture/presentation/bloc/photo_capture_event.dart';
 import 'package:larid/features/photo_capture/presentation/bloc/photo_capture_state.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:larid/core/storage/shared_prefs.dart';
-import 'dart:io';
 
 class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
-  final SavePhotoCaptureUseCase savePhotoCaptureUseCase;
-  final UploadImageUseCase uploadImageUseCase;
+  final SavePhotoCaptureUseCase _savePhotoCaptureUseCase;
+  final UploadImageUseCase _uploadImageUseCase;
+  final NetworkConnectivity _networkConnectivity = NetworkConnectivity();
+  late final PhotoSyncService _photoSyncService;
+
+  // Subscription for sync status updates
+  StreamSubscription<SyncStatus>? _syncSubscription;
+
   final ImagePicker _picker = ImagePicker();
-  String? _currentCustomerCode;
 
   PhotoCaptureBloc({
-    required this.savePhotoCaptureUseCase,
-    required this.uploadImageUseCase,
-  }) : super(const PhotoCaptureState()) {
+    required SavePhotoCaptureUseCase savePhotoCaptureUseCase,
+    required UploadImageUseCase uploadImageUseCase,
+  }) : _savePhotoCaptureUseCase = savePhotoCaptureUseCase,
+       _uploadImageUseCase = uploadImageUseCase,
+       super(const PhotoCaptureState()) {
     on<TakeBeforePicture>(_onTakeBeforePicture);
     on<TakeAfterPicture>(_onTakeAfterPicture);
     on<SavePhotoCapture>(_onSavePhotoCapture);
     on<UploadImage>(_onUploadImage);
     on<LoadSavedPhotos>(_onLoadSavedPhotos);
     on<ClearError>(_onClearError);
+    on<UpdateFromSyncStatus>(_onUpdateFromSyncStatus);
+
+    // Initialize photo sync service
+    _photoSyncService = PhotoSyncService(
+      uploadImageUseCase: _uploadImageUseCase,
+    );
+    _photoSyncService.initialize();
+
+    // Listen for sync status updates
+    _syncSubscription = _photoSyncService.syncStatusStream.listen((status) {
+      print("📲 Received sync status update: ${status.message}");
+      add(UpdateFromSyncStatus(status));
+    });
+  }
+
+  // Handle sync status updates
+  void _onUpdateFromSyncStatus(
+    UpdateFromSyncStatus event,
+    Emitter<PhotoCaptureState> emit,
+  ) {
+    final status = event.status;
+
+    // If we have a successful sync with customer code, update the UI
+    if (status.customerCode != null &&
+        status.isBefore != null &&
+        status.filename != null) {
+      print(
+        "🔄 Updating UI from sync: ${status.customerCode}, ${status.isBefore}, ${status.filename}",
+      );
+
+      // Update SharedPrefs first
+      if (status.isBefore!) {
+        SharedPrefs.setBeforeImageSynced(status.customerCode!, true);
+        SharedPrefs.setBeforeImageFilename(
+          status.customerCode!,
+          status.filename!,
+        );
+      } else {
+        SharedPrefs.setAfterImageSynced(status.customerCode!, true);
+        SharedPrefs.setAfterImageFilename(
+          status.customerCode!,
+          status.filename!,
+        );
+      }
+
+      // Only update UI if it's for the current customer being viewed
+      if (state.beforeImagePath != null && state.afterImagePath != null) {
+        final beforePath = File(state.beforeImagePath!).uri.pathSegments.last;
+        final afterPath = File(state.afterImagePath!).uri.pathSegments.last;
+        final syncPath = File(status.lastSyncedFile!).uri.pathSegments.last;
+
+        print(
+          "💡 Checking paths - Before: $beforePath, After: $afterPath, Synced: $syncPath",
+        );
+
+        if (status.isBefore! && beforePath == syncPath) {
+          emit(
+            state.copyWith(
+              beforeImageUploaded: true,
+              beforeImageFilename: status.filename,
+            ),
+          );
+          print("✅ Updated before image as uploaded");
+        } else if (!status.isBefore! && afterPath == syncPath) {
+          emit(
+            state.copyWith(
+              afterImageUploaded: true,
+              afterImageFilename: status.filename,
+            ),
+          );
+          print("✅ Updated after image as uploaded");
+        }
+      }
+    }
   }
 
   Future<void> _onTakeBeforePicture(
@@ -32,36 +119,41 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
     Emitter<PhotoCaptureState> emit,
   ) async {
     try {
-      final result = await Permission.camera.request();
-      if (result.isDenied) {
-        emit(state.copyWith(error: 'Camera permission is required'));
-        return;
-      }
-
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 80,
-      );
-
-      if (image != null) {
-        emit(
-          state.copyWith(
-            beforeImagePath: image.path,
-            beforeImageUploaded: false, // Reset upload status
-          ),
+      final status = await Permission.camera.request();
+      if (status.isGranted) {
+        final pickedFile = await _picker.pickImage(
+          source: ImageSource.camera,
+          imageQuality: 80,
         );
 
-        // Save the image path to SharedPreferences if we have a customer code
-        if (_currentCustomerCode != null) {
-          await SharedPrefs.setBeforeImagePath(
-            _currentCustomerCode!,
-            image.path,
+        if (pickedFile != null) {
+          emit(
+            state.copyWith(
+              beforeImagePath: pickedFile.path,
+              beforeImageUploaded: false,
+            ),
           );
-          await SharedPrefs.setBeforeImageSynced(_currentCustomerCode!, false);
+
+          // Save the latest image path for this customer if available
+          final currentEvent = event as TakeBeforePicture;
+          if (currentEvent.customerCode != null) {
+            await SharedPrefs.setBeforeImagePath(
+              currentEvent.customerCode!,
+              pickedFile.path,
+            );
+            await SharedPrefs.setBeforeImageSynced(
+              currentEvent.customerCode!,
+              false,
+            );
+          }
         }
+      } else {
+        emit(state.copyWith(error: 'Camera permission denied'));
       }
     } catch (e) {
-      emit(state.copyWith(error: 'Error accessing camera. Please try again.'));
+      emit(
+        state.copyWith(error: 'Error taking before picture: ${e.toString()}'),
+      );
     }
   }
 
@@ -70,36 +162,41 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
     Emitter<PhotoCaptureState> emit,
   ) async {
     try {
-      final result = await Permission.camera.request();
-      if (result.isDenied) {
-        emit(state.copyWith(error: 'Camera permission is required'));
-        return;
-      }
-
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 80,
-      );
-
-      if (image != null) {
-        emit(
-          state.copyWith(
-            afterImagePath: image.path,
-            afterImageUploaded: false, // Reset upload status
-          ),
+      final status = await Permission.camera.request();
+      if (status.isGranted) {
+        final pickedFile = await _picker.pickImage(
+          source: ImageSource.camera,
+          imageQuality: 80,
         );
 
-        // Save the image path to SharedPreferences if we have a customer code
-        if (_currentCustomerCode != null) {
-          await SharedPrefs.setAfterImagePath(
-            _currentCustomerCode!,
-            image.path,
+        if (pickedFile != null) {
+          emit(
+            state.copyWith(
+              afterImagePath: pickedFile.path,
+              afterImageUploaded: false,
+            ),
           );
-          await SharedPrefs.setAfterImageSynced(_currentCustomerCode!, false);
+
+          // Save the latest image path for this customer if available
+          final currentEvent = event as TakeAfterPicture;
+          if (currentEvent.customerCode != null) {
+            await SharedPrefs.setAfterImagePath(
+              currentEvent.customerCode!,
+              pickedFile.path,
+            );
+            await SharedPrefs.setAfterImageSynced(
+              currentEvent.customerCode!,
+              false,
+            );
+          }
         }
+      } else {
+        emit(state.copyWith(error: 'Camera permission denied'));
       }
     } catch (e) {
-      emit(state.copyWith(error: 'Error accessing camera. Please try again.'));
+      emit(
+        state.copyWith(error: 'Error taking after picture: ${e.toString()}'),
+      );
     }
   }
 
@@ -107,111 +204,96 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
     SavePhotoCapture event,
     Emitter<PhotoCaptureState> emit,
   ) async {
-    if (!state.isComplete) {
-      emit(
-        state.copyWith(error: 'Both before and after pictures are required'),
-      );
-      return;
-    }
-
-    // Save the customer code for later use
-    _currentCustomerCode = event.customerCode;
-
-    emit(state.copyWith(isLoading: true, error: null));
-
     try {
-      // First, ensure both images are uploaded
-      if (!state.beforeImageUploaded && state.beforeImagePath != null) {
-        final beforeResult = await uploadImageUseCase(state.beforeImagePath!);
-        if (beforeResult['success'] != true) {
-          print('❌ Before image upload ERROR: ${beforeResult['error']}');
-          emit(
-            state.copyWith(
-              isLoading: false,
-              error: 'Failed to upload before image: ${beforeResult['error']}',
-            ),
-          );
-          return;
-        } else {
-          print('📸 Before image upload SUCCESS: ${beforeResult['filename']}');
-
-          // Update shared preferences with the upload status and filename
-          await SharedPrefs.setBeforeImageSynced(event.customerCode, true);
-          if (beforeResult['filename'] != null) {
-            await SharedPrefs.setBeforeImageFilename(
-              event.customerCode,
-              beforeResult['filename'],
-            );
-          }
-
-          emit(
-            state.copyWith(
-              beforeImageUploaded: true,
-              beforeImageFilename: beforeResult['filename'],
-            ),
-          );
-        }
+      if (state.beforeImagePath == null || state.afterImagePath == null) {
+        emit(
+          state.copyWith(error: 'Please take both before and after pictures'),
+        );
+        return;
       }
 
-      if (!state.afterImageUploaded && state.afterImagePath != null) {
-        final afterResult = await uploadImageUseCase(state.afterImagePath!);
-        if (afterResult['success'] != true) {
-          print('❌ After image upload ERROR: ${afterResult['error']}');
-          emit(
-            state.copyWith(
-              isLoading: false,
-              error: 'Failed to upload after image: ${afterResult['error']}',
-            ),
-          );
-          return;
-        } else {
-          print('📸 After image upload SUCCESS: ${afterResult['filename']}');
+      emit(state.copyWith(isLoading: true));
 
-          // Update shared preferences with the upload status and filename
-          await SharedPrefs.setAfterImageSynced(event.customerCode, true);
-          if (afterResult['filename'] != null) {
-            await SharedPrefs.setAfterImageFilename(
-              event.customerCode,
-              afterResult['filename'],
-            );
-          }
-
-          emit(
-            state.copyWith(
-              afterImageUploaded: true,
-              afterImageFilename: afterResult['filename'],
-            ),
-          );
-        }
-      }
-
-      // Then save photos locally
+      // Save images locally regardless of connectivity
       final photoCapture = PhotoCapture(
+        beforeImagePath: state.beforeImagePath!,
+        afterImagePath: state.afterImagePath!,
         customerCode: event.customerCode,
-        beforeImagePath: state.beforeImagePath,
-        afterImagePath: state.afterImagePath,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
       );
 
-      await savePhotoCaptureUseCase(photoCapture);
-      print('✅ Photos saved locally for customer: ${event.customerCode}');
+      await _savePhotoCaptureUseCase.call(photoCapture);
 
-      // Save paths to SharedPreferences if they're not already saved
-      if (state.beforeImagePath != null) {
-        await SharedPrefs.setBeforeImagePath(
-          event.customerCode,
+      // Save paths to SharedPrefs
+      await SharedPrefs.setBeforeImagePath(
+        event.customerCode,
+        state.beforeImagePath!,
+      );
+      await SharedPrefs.setAfterImagePath(
+        event.customerCode,
+        state.afterImagePath!,
+      );
+
+      print("💾 Photos saved locally for customer: ${event.customerCode}");
+
+      // Attempt to upload if connected, otherwise queue for later
+      if (_networkConnectivity.isConnected()) {
+        print("📱 Network connected, uploading images");
+
+        // Update SharedPrefs to indicate upload is in progress
+        await SharedPrefs.setBeforeImageSynced(event.customerCode, false);
+        await SharedPrefs.setAfterImageSynced(event.customerCode, false);
+
+        // Upload before image
+        add(
+          UploadImage(
+            imagePath: state.beforeImagePath!,
+            customerCode: event.customerCode,
+            isBefore: true,
+          ),
+        );
+
+        // Upload after image
+        add(
+          UploadImage(
+            imagePath: state.afterImagePath!,
+            customerCode: event.customerCode,
+            isBefore: false,
+          ),
+        );
+      } else {
+        print("📱 Network disconnected, saving images for later upload");
+
+        // Update SharedPrefs to indicate images are not synced
+        await SharedPrefs.setBeforeImageSynced(event.customerCode, false);
+        await SharedPrefs.setAfterImageSynced(event.customerCode, false);
+
+        // Add to sync service for later upload
+        await _photoSyncService.addPendingUpload(
           state.beforeImagePath!,
-        );
-      }
-      if (state.afterImagePath != null) {
-        await SharedPrefs.setAfterImagePath(
           event.customerCode,
+          isBefore: true,
+        );
+
+        await _photoSyncService.addPendingUpload(
           state.afterImagePath!,
+          event.customerCode,
+          isBefore: false,
+        );
+
+        // Update state to show images are saved but not uploaded
+        emit(
+          state.copyWith(
+            isLoading: false,
+            beforeImageFilename:
+                File(state.beforeImagePath!).uri.pathSegments.last,
+            afterImageFilename:
+                File(state.afterImagePath!).uri.pathSegments.last,
+          ),
         );
       }
-
-      emit(state.copyWith(isLoading: false, error: null));
     } catch (e) {
-      print('❌ Save photos EXCEPTION: ${e.toString()}');
+      print("❌ Error saving photos: ${e.toString()}");
       emit(
         state.copyWith(
           isLoading: false,
@@ -225,77 +307,132 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
     UploadImage event,
     Emitter<PhotoCaptureState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, error: null));
-
     try {
-      final result = await uploadImageUseCase(event.imagePath);
+      if (!_networkConnectivity.isConnected()) {
+        // Queue for later upload if not connected
+        print(
+          "📡 No network connection, adding to pending uploads: ${event.imagePath}",
+        );
 
-      if (result['success'] == true) {
-        // Debug print for successful upload
-        print('📸 Image upload SUCCESS: ${result['filename']}');
+        await _photoSyncService.addPendingUpload(
+          event.imagePath,
+          event.customerCode,
+          isBefore: event.isBefore,
+        );
 
-        // Update the upload status based on which image was uploaded
-        if (state.beforeImagePath == event.imagePath) {
-          // Update shared preferences if we have a customer code
-          if (_currentCustomerCode != null) {
-            await SharedPrefs.setBeforeImageSynced(_currentCustomerCode!, true);
-            if (result['filename'] != null) {
-              await SharedPrefs.setBeforeImageFilename(
-                _currentCustomerCode!,
-                result['filename'],
-              );
-            }
-          }
+        // Update SharedPrefs to indicate not synced
+        if (event.isBefore) {
+          await SharedPrefs.setBeforeImageSynced(event.customerCode, false);
+        } else {
+          await SharedPrefs.setAfterImageSynced(event.customerCode, false);
+        }
 
+        // Update UI accordingly
+        if (event.isBefore) {
           emit(
             state.copyWith(
-              isLoading: false,
-              beforeImageUploaded: true,
-              beforeImageFilename: result['filename'],
-            ),
-          );
-        } else if (state.afterImagePath == event.imagePath) {
-          // Update shared preferences if we have a customer code
-          if (_currentCustomerCode != null) {
-            await SharedPrefs.setAfterImageSynced(_currentCustomerCode!, true);
-            if (result['filename'] != null) {
-              await SharedPrefs.setAfterImageFilename(
-                _currentCustomerCode!,
-                result['filename'],
-              );
-            }
-          }
-
-          emit(
-            state.copyWith(
-              isLoading: false,
-              afterImageUploaded: true,
-              afterImageFilename: result['filename'],
+              beforeImageFilename: File(event.imagePath).uri.pathSegments.last,
+              beforeImageUploaded: false,
             ),
           );
         } else {
-          emit(state.copyWith(isLoading: false));
+          emit(
+            state.copyWith(
+              afterImageFilename: File(event.imagePath).uri.pathSegments.last,
+              afterImageUploaded: false,
+            ),
+          );
+        }
+        return;
+      }
+
+      print("📤 Uploading image: ${event.imagePath}");
+      final result = await _uploadImageUseCase.call(
+        imagePath: event.imagePath,
+        customerCode: event.customerCode,
+        isBefore: event.isBefore,
+      );
+
+      if (result != null && result['success'] == true) {
+        print("✅ Upload successful: ${result['filename']}");
+
+        if (event.isBefore) {
+          // Update SharedPrefs
+          await SharedPrefs.setBeforeImageSynced(event.customerCode, true);
+          await SharedPrefs.setBeforeImageFilename(
+            event.customerCode,
+            result['filename'] as String,
+          );
+
+          emit(
+            state.copyWith(
+              beforeImageUploaded: true,
+              beforeImageFilename: result['filename'] as String?,
+              isLoading: false,
+            ),
+          );
+        } else {
+          // Update SharedPrefs
+          await SharedPrefs.setAfterImageSynced(event.customerCode, true);
+          await SharedPrefs.setAfterImageFilename(
+            event.customerCode,
+            result['filename'] as String,
+          );
+
+          emit(
+            state.copyWith(
+              afterImageUploaded: true,
+              afterImageFilename: result['filename'] as String?,
+              isLoading: false,
+            ),
+          );
         }
       } else {
-        // Debug print for failed upload
-        print('❌ Image upload ERROR: ${result['error']}');
+        print("❌ Upload failed, adding to pending uploads: ${event.imagePath}");
 
-        // Upload failed
+        // Update SharedPrefs to indicate not synced
+        if (event.isBefore) {
+          await SharedPrefs.setBeforeImageSynced(event.customerCode, false);
+        } else {
+          await SharedPrefs.setAfterImageSynced(event.customerCode, false);
+        }
+
+        // If upload fails, add to pending uploads
+        await _photoSyncService.addPendingUpload(
+          event.imagePath,
+          event.customerCode,
+          isBefore: event.isBefore,
+        );
+
         emit(
           state.copyWith(
+            error:
+                'Failed to upload image. Will try again when connection is available.',
             isLoading: false,
-            error: 'Failed to upload image: ${result['error']}',
           ),
         );
       }
     } catch (e) {
-      // Debug print for exception
-      print('❌ Image upload EXCEPTION: ${e.toString()}');
+      print("❌ Upload error: ${e.toString()}");
+
+      // Update SharedPrefs to indicate not synced
+      if (event.isBefore) {
+        await SharedPrefs.setBeforeImageSynced(event.customerCode, false);
+      } else {
+        await SharedPrefs.setAfterImageSynced(event.customerCode, false);
+      }
+
+      // In case of error, add to pending uploads
+      await _photoSyncService.addPendingUpload(
+        event.imagePath,
+        event.customerCode,
+        isBefore: event.isBefore,
+      );
 
       emit(
         state.copyWith(
-          isLoading: false,
           error: 'Error uploading image: ${e.toString()}',
+          isLoading: false,
         ),
       );
     }
@@ -305,13 +442,12 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
     LoadSavedPhotos event,
     Emitter<PhotoCaptureState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, error: null));
-
     try {
-      // Save the customer code for later use
-      _currentCustomerCode = event.customerCode;
+      emit(state.copyWith(isLoading: true));
 
-      // Load saved image paths from SharedPreferences
+      print("📂 Loading saved photos for customer: ${event.customerCode}");
+
+      // Load saved image paths from SharedPrefs
       final beforeImagePath = SharedPrefs.getBeforeImagePath(
         event.customerCode,
       );
@@ -339,6 +475,27 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
         event.customerCode,
       );
 
+      print(
+        "📊 Status - Before: ${beforeImageExists ? 'Exists' : 'Missing'}, Synced: $beforeImageSynced, Filename: $beforeImageFilename",
+      );
+      print(
+        "📊 Status - After: ${afterImageExists ? 'Exists' : 'Missing'}, Synced: $afterImageSynced, Filename: $afterImageFilename",
+      );
+
+      // Force check pending uploads to ensure we have the latest status
+      await _loadPendingUploadsStatus(event.customerCode);
+
+      // Check if there are pending uploads for this customer
+      final pendingImages = await _photoSyncService.getPendingImagesForCustomer(
+        event.customerCode,
+      );
+
+      // Try to sync if we have connectivity
+      if (pendingImages.isNotEmpty && _networkConnectivity.isConnected()) {
+        print("🔄 Found pending uploads, triggering sync");
+        _photoSyncService.syncPendingUploads();
+      }
+
       // Emit new state with loaded data
       emit(
         state.copyWith(
@@ -351,18 +508,8 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
           afterImageFilename: afterImageFilename,
         ),
       );
-
-      print('📸 Loaded saved photos for customer: ${event.customerCode}');
-      print(
-        '   Before image: ${beforeImageExists ? beforeImagePath : "Not found"}',
-      );
-      print(
-        '   After image: ${afterImageExists ? afterImagePath : "Not found"}',
-      );
-      print('   Before image synced: $beforeImageSynced');
-      print('   After image synced: $afterImageSynced');
     } catch (e) {
-      print('❌ Load saved photos EXCEPTION: ${e.toString()}');
+      print("❌ Error loading saved photos: ${e.toString()}");
       emit(
         state.copyWith(
           isLoading: false,
@@ -372,7 +519,67 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
     }
   }
 
+  // Helper method to check and update pending uploads status
+  Future<void> _loadPendingUploadsStatus(String customerCode) async {
+    final beforeImagePath = SharedPrefs.getBeforeImagePath(customerCode);
+    final afterImagePath = SharedPrefs.getAfterImagePath(customerCode);
+
+    // If paths don't exist, nothing to check
+    if (beforeImagePath == null && afterImagePath == null) return;
+
+    // Get all pending uploads for this customer
+    final pendingUploads = await _photoSyncService.getPendingImagesForCustomer(
+      customerCode,
+    );
+    print(
+      "📑 Found ${pendingUploads.length} pending uploads for customer $customerCode",
+    );
+
+    // Update SharedPrefs status based on pending uploads
+    if (beforeImagePath != null) {
+      final isPending = pendingUploads.contains(beforeImagePath);
+      final currentStatus = SharedPrefs.getBeforeImageSynced(customerCode);
+
+      // If it's not pending but status says not synced, update to synced
+      if (!isPending && !currentStatus) {
+        print("🔄 Updating before image status to synced for $customerCode");
+        await SharedPrefs.setBeforeImageSynced(customerCode, true);
+      }
+
+      // If it is pending but status says synced, update to not synced
+      if (isPending && currentStatus) {
+        print(
+          "🔄 Updating before image status to not synced for $customerCode",
+        );
+        await SharedPrefs.setBeforeImageSynced(customerCode, false);
+      }
+    }
+
+    if (afterImagePath != null) {
+      final isPending = pendingUploads.contains(afterImagePath);
+      final currentStatus = SharedPrefs.getAfterImageSynced(customerCode);
+
+      // If it's not pending but status says not synced, update to synced
+      if (!isPending && !currentStatus) {
+        print("🔄 Updating after image status to synced for $customerCode");
+        await SharedPrefs.setAfterImageSynced(customerCode, true);
+      }
+
+      // If it is pending but status says synced, update to not synced
+      if (isPending && currentStatus) {
+        print("🔄 Updating after image status to not synced for $customerCode");
+        await SharedPrefs.setAfterImageSynced(customerCode, false);
+      }
+    }
+  }
+
   void _onClearError(ClearError event, Emitter<PhotoCaptureState> emit) {
     emit(state.copyWith(error: null));
+  }
+
+  @override
+  Future<void> close() {
+    _syncSubscription?.cancel();
+    return super.close();
   }
 }

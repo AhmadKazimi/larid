@@ -41,7 +41,11 @@ class PhotoCaptureRepositoryImpl implements PhotoCaptureRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> uploadImage(String imagePath) async {
+  Future<Map<String, dynamic>> uploadImage(
+    String imagePath, {
+    required String customerCode,
+    required bool isBefore,
+  }) async {
     // Get authentication details from auth repository
     final user = await _authRepository.getCurrentUser();
 

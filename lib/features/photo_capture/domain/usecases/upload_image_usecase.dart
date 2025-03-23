@@ -5,7 +5,15 @@ class UploadImageUseCase {
 
   UploadImageUseCase(this.repository);
 
-  Future<Map<String, dynamic>> call(String imagePath) async {
-    return await repository.uploadImage(imagePath);
+  Future<Map<String, dynamic>> call({
+    required String imagePath,
+    required String customerCode,
+    required bool isBefore,
+  }) async {
+    return await repository.uploadImage(
+      imagePath,
+      customerCode: customerCode,
+      isBefore: isBefore,
+    );
   }
 }

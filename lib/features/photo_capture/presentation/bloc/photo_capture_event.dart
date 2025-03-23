@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:larid/features/photo_capture/data/services/photo_sync_service.dart';
 
 abstract class PhotoCaptureEvent extends Equatable {
   const PhotoCaptureEvent();
@@ -7,9 +8,23 @@ abstract class PhotoCaptureEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class TakeBeforePicture extends PhotoCaptureEvent {}
+class TakeBeforePicture extends PhotoCaptureEvent {
+  final String? customerCode;
 
-class TakeAfterPicture extends PhotoCaptureEvent {}
+  const TakeBeforePicture({this.customerCode});
+
+  @override
+  List<Object?> get props => [customerCode];
+}
+
+class TakeAfterPicture extends PhotoCaptureEvent {
+  final String? customerCode;
+
+  const TakeAfterPicture({this.customerCode});
+
+  @override
+  List<Object?> get props => [customerCode];
+}
 
 class SavePhotoCapture extends PhotoCaptureEvent {
   final String customerCode;
@@ -22,11 +37,17 @@ class SavePhotoCapture extends PhotoCaptureEvent {
 
 class UploadImage extends PhotoCaptureEvent {
   final String imagePath;
+  final String customerCode;
+  final bool isBefore;
 
-  const UploadImage(this.imagePath);
+  const UploadImage({
+    required this.imagePath,
+    required this.customerCode,
+    required this.isBefore,
+  });
 
   @override
-  List<Object?> get props => [imagePath];
+  List<Object?> get props => [imagePath, customerCode, isBefore];
 }
 
 class LoadSavedPhotos extends PhotoCaptureEvent {
@@ -36,6 +57,15 @@ class LoadSavedPhotos extends PhotoCaptureEvent {
 
   @override
   List<Object?> get props => [customerCode];
+}
+
+class UpdateFromSyncStatus extends PhotoCaptureEvent {
+  final SyncStatus status;
+
+  const UpdateFromSyncStatus(this.status);
+
+  @override
+  List<Object?> get props => [status];
 }
 
 class ClearError extends PhotoCaptureEvent {}

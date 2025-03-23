@@ -11,6 +11,7 @@ import 'package:larid/features/photo_capture/presentation/bloc/photo_capture_sta
 import 'package:get_it/get_it.dart';
 import 'package:larid/features/photo_capture/domain/usecases/save_photo_capture_usecase.dart';
 import 'package:larid/features/photo_capture/domain/usecases/upload_image_usecase.dart';
+import 'package:larid/core/utils/network_connectivity.dart';
 
 class PhotoCapturePage extends StatelessWidget {
   final String customerName;
@@ -28,6 +29,7 @@ class PhotoCapturePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final networkConnectivity = NetworkConnectivity();
 
     return BlocProvider(
       create: (context) {
@@ -92,49 +94,59 @@ class PhotoCapturePage extends StatelessWidget {
                             horizontal: 16.0,
                             vertical: 12.0,
                           ),
-                          child: Row(
+                          child: Column(
                             children: [
-                              GestureDetector(
-                                onTap: () => Navigator.pop(context),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.arrow_back,
-                                    color: Colors.white,
-                                    size: 22,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      customerName,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+                              Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => Navigator.pop(context),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.2),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.arrow_back,
                                         color: Colors.white,
+                                        size: 22,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    Text(
-                                      localizations.takingPicture,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.white.withOpacity(0.9),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          customerName,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          localizations.takingPicture,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.white.withOpacity(
+                                              0.9,
+                                            ),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  // Network status indicator
+                                  networkConnectivity
+                                      .getNetworkStatusIndicator(),
+                                ],
                               ),
                             ],
                           ),
@@ -156,7 +168,9 @@ class PhotoCapturePage extends StatelessWidget {
                               isUploaded: state.beforeImageUploaded,
                               onTap:
                                   () => context.read<PhotoCaptureBloc>().add(
-                                    TakeBeforePicture(),
+                                    TakeBeforePicture(
+                                      customerCode: customerCode,
+                                    ),
                                   ),
                             ),
                             const SizedBox(height: 24),
@@ -168,13 +182,40 @@ class PhotoCapturePage extends StatelessWidget {
                               isUploaded: state.afterImageUploaded,
                               onTap:
                                   () => context.read<PhotoCaptureBloc>().add(
-                                    TakeAfterPicture(),
+                                    TakeAfterPicture(
+                                      customerCode: customerCode,
+                                    ),
                                   ),
                             ),
                           ],
                         ),
                       ),
                     ),
+                    // Connectivity banner when offline
+                    if (!networkConnectivity.isConnected() && state.isComplete)
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        color: Colors.orange.withOpacity(0.2),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.wifi_off,
+                              color: Colors.orange[700],
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'You are offline. Photos will be uploaded automatically when internet connection is restored.',
+                                style: TextStyle(
+                                  color: Colors.orange[700],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     // Save Button
                     if (state.isComplete)
                       Container(
@@ -196,7 +237,9 @@ class PhotoCapturePage extends StatelessWidget {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Text(
-                                  'Photos will be uploaded when you click save',
+                                  networkConnectivity.isConnected()
+                                      ? 'Photos will be uploaded when you click save'
+                                      : 'Photos will be saved locally and uploaded later',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Colors.grey[600],
@@ -269,7 +312,9 @@ class PhotoCapturePage extends StatelessWidget {
                               const CircularProgressIndicator(),
                               const SizedBox(height: 16),
                               Text(
-                                'Uploading images...',
+                                networkConnectivity.isConnected()
+                                    ? 'Uploading images...'
+                                    : 'Saving images locally...',
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                             ],
