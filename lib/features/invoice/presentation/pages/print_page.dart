@@ -10,6 +10,7 @@ import 'package:larid/features/invoice/presentation/bloc/invoice_state.dart';
 import 'package:larid/features/sync/domain/entities/customer_entity.dart';
 import 'package:larid/database/user_table.dart';
 import 'package:larid/database/company_info_table.dart';
+import 'package:larid/database/invoice_table.dart';
 import 'package:larid/features/auth/domain/entities/user_entity.dart';
 import 'package:larid/features/sync/domain/entities/company_info_entity.dart';
 import 'package:path_provider/path_provider.dart';
@@ -52,6 +53,8 @@ class _PrintPageState extends State<PrintPage> {
   bool _initialized = false;
   CompanyInfoEntity? _companyInfo;
   String? _currency;
+  List<Map<String, dynamic>>? _returnInvoices;
+  bool _returnInvoicesLoaded = false;
 
   @override
   void initState() {
@@ -233,6 +236,11 @@ class _PrintPageState extends State<PrintPage> {
       // Initialize tax calculator if not already initialized
       if (_taxCalculator == null) {
         futures.add(_initTaxCalculator());
+      }
+
+      // If this is a normal invoice, fetch return invoices for the same customer
+      if (!widget.isReturn && !_returnInvoicesLoaded) {
+        futures.add(_loadReturnInvoices());
       }
 
       // Wait for all initializations to complete
@@ -579,122 +587,285 @@ class _PrintPageState extends State<PrintPage> {
       debugPrint('Tax calculator is available for PDF generation');
     }
 
-    return pw.Table(
-      border: pw.TableBorder(
-        left: pw.BorderSide(color: PdfColors.black, width: 1),
-        right: pw.BorderSide(color: PdfColors.black, width: 1),
-        top: pw.BorderSide(color: PdfColors.black, width: 1),
-        bottom: pw.BorderSide(color: PdfColors.black, width: 1),
-        horizontalInside: pw.BorderSide(color: PdfColors.black, width: 0.7),
-        verticalInside: pw.BorderSide(color: PdfColors.black, width: 0.7),
-      ),
-      columnWidths: {
-        0: const pw.FlexColumnWidth(1.5), // Price after tax
-        1: const pw.FlexColumnWidth(1), // Tax
-        2: const pw.FlexColumnWidth(1.5), // Price before tax
-        3: const pw.FlexColumnWidth(1), // Quantity
-        4: const pw.FlexColumnWidth(3), // Description
-        5: const pw.FlexColumnWidth(1), // Item Code
-      },
+    return pw.Column(
       children: [
-        // Header row
-        pw.TableRow(
-          decoration: const pw.BoxDecoration(
-            color: PdfColors.grey300,
-            borderRadius: pw.BorderRadius.vertical(top: pw.Radius.circular(2)),
+        pw.Table(
+          border: pw.TableBorder(
+            left: pw.BorderSide(color: PdfColors.black, width: 1),
+            right: pw.BorderSide(color: PdfColors.black, width: 1),
+            top: pw.BorderSide(color: PdfColors.black, width: 1),
+            bottom: pw.BorderSide(color: PdfColors.black, width: 1),
+            horizontalInside: pw.BorderSide(color: PdfColors.black, width: 0.7),
+            verticalInside: pw.BorderSide(color: PdfColors.black, width: 0.7),
           ),
+          columnWidths: {
+            0: const pw.FlexColumnWidth(1.5), // Price after tax
+            1: const pw.FlexColumnWidth(1), // Tax
+            2: const pw.FlexColumnWidth(1.5), // Price before tax
+            3: const pw.FlexColumnWidth(1), // Quantity
+            4: const pw.FlexColumnWidth(3), // Description
+            5: const pw.FlexColumnWidth(1), // Item Code
+          },
           children: [
-            _buildTableCell(l10n.grandTotal, isHeader: true), // Price after tax
-            _buildTableCell('الضريبة', isHeader: true), // Tax
-            _buildTableCell('السعر', isHeader: true), // Price before tax
-            _buildTableCell(l10n.quantity, isHeader: true), // Quantity
-            _buildTableCell(l10n.description, isHeader: true), // Description
-            _buildTableCell(l10n.itemCode, isHeader: true), // Item Code
+            // Header row
+            pw.TableRow(
+              decoration: const pw.BoxDecoration(
+                color: PdfColors.grey300,
+                borderRadius: pw.BorderRadius.vertical(
+                  top: pw.Radius.circular(2),
+                ),
+              ),
+              children: [
+                _buildTableCell(
+                  l10n.grandTotal,
+                  isHeader: true,
+                ), // Price after tax
+                _buildTableCell('الضريبة', isHeader: true), // Tax
+                _buildTableCell('السعر', isHeader: true), // Price before tax
+                _buildTableCell(l10n.quantity, isHeader: true), // Quantity
+                _buildTableCell(
+                  l10n.description,
+                  isHeader: true,
+                ), // Description
+                _buildTableCell(l10n.itemCode, isHeader: true), // Item Code
+              ],
+            ),
+            // Item rows
+            ...items.map((item) {
+              // Get base values
+              final itemCode = item.item.itemCode;
+              final taxCode = item.item.taxCode;
+              final quantity = item.quantity;
+              final unitPrice = item.item.sellUnitPrice;
+
+              // Calculate core values
+              final priceBeforeTax =
+                  item.priceBeforeTax > 0
+                      ? item.priceBeforeTax
+                      : unitPrice * quantity;
+
+              // 1. Default to stored values if available
+              double taxRate = item.taxRate;
+              double taxAmount = item.taxAmount;
+
+              // 2. If we have a taxCode but no rate, try to get it from calculator
+              if (taxRate <= 0 &&
+                  taxCode.isNotEmpty &&
+                  _taxCalculator != null) {
+                taxRate = _taxCalculator!.getTaxPercentage(taxCode);
+                debugPrint(
+                  'Using tax calculator: code=$taxCode, rate=$taxRate%',
+                );
+              }
+
+              // 3. If still no rate but we have a taxCode, use gentle fallback
+              if (taxRate <= 0 && taxCode.isNotEmpty) {
+                // Attempt one more time with tax calculator
+                if (_taxCalculator != null) {
+                  taxRate = _taxCalculator!.getTaxPercentage(taxCode);
+                  debugPrint(
+                    'Second attempt to get tax rate: code=$taxCode, rate=$taxRate%',
+                  );
+                }
+
+                // If still no rate, log warning but use 0% instead of arbitrary default
+                if (taxRate <= 0) {
+                  debugPrint(
+                    'WARNING: Could not determine tax rate for code $taxCode, using 0%',
+                  );
+                  taxRate =
+                      0.0; // Don't use arbitrary default rate, use 0% if truly unknown
+                }
+              }
+
+              // 4. Calculate tax amount if needed
+              if (taxAmount <= 0 && taxRate > 0) {
+                taxAmount = priceBeforeTax * (taxRate / 100);
+                debugPrint(
+                  'Calculated tax amount: $taxAmount for rate $taxRate%',
+                );
+              }
+
+              // 5. Calculate final price
+              final priceAfterTax = priceBeforeTax + taxAmount;
+
+              // Show EXACTLY what will be displayed
+              final taxDisplay =
+                  '${taxAmount.toStringAsFixed(2)} ${_currency ?? ""}\n(${taxRate.toStringAsFixed(1)}%)';
+              debugPrint('Tax display in PDF: $taxDisplay');
+
+              return pw.TableRow(
+                children: [
+                  _buildTableCell(
+                    priceAfterTax.toStringAsFixed(2),
+                  ), // Price after tax
+                  _buildTableCell(
+                    taxAmount > 0 || taxRate > 0
+                        ? '${taxAmount.toStringAsFixed(2)}\n(${taxRate.toStringAsFixed(1)}%)'
+                        : 'معفى من الضريبة', // "Tax exempt" in Arabic
+                  ), // Tax + percentage or exempt
+                  _buildTableCell(
+                    priceBeforeTax.toStringAsFixed(2),
+                  ), // Price before tax
+                  _buildTableCell(quantity.toString()), // Quantity
+                  _buildTableCell(item.item.description), // Description
+                  _buildTableCell(itemCode), // Item Code
+                ],
+              );
+            }),
           ],
         ),
-        // Item rows
-        ...items.map((item) {
-          // Get base values
-          final itemCode = item.item.itemCode;
-          final taxCode = item.item.taxCode;
-          final quantity = item.quantity;
-          final unitPrice = item.item.sellUnitPrice;
 
-          // Calculate core values
-          final priceBeforeTax =
-              item.priceBeforeTax > 0
-                  ? item.priceBeforeTax
-                  : unitPrice * quantity;
+        // If this is a normal invoice and there are return invoices, add a table for return items
+        if (!widget.isReturn &&
+            _returnInvoices != null &&
+            _returnInvoices!.isNotEmpty)
+          _buildReturnItemsTable(context),
+      ],
+    );
+  }
 
-          // 1. Default to stored values if available
-          double taxRate = item.taxRate;
-          double taxAmount = item.taxAmount;
+  pw.Widget _buildReturnItemsTable(pw.Context context) {
+    // Collect all return items from all return invoices
+    final List<Map<String, dynamic>> allReturnItems = [];
 
-          // 2. If we have a taxCode but no rate, try to get it from calculator
-          if (taxRate <= 0 && taxCode.isNotEmpty && _taxCalculator != null) {
-            taxRate = _taxCalculator!.getTaxPercentage(taxCode);
-            debugPrint('Using tax calculator: code=$taxCode, rate=$taxRate%');
-          }
+    if (_returnInvoices != null) {
+      for (final returnInvoice in _returnInvoices!) {
+        final items = returnInvoice['items'] as List<Map<String, dynamic>>;
+        allReturnItems.addAll(items);
+      }
+    }
 
-          // 3. If still no rate but we have a taxCode, use gentle fallback
-          if (taxRate <= 0 && taxCode.isNotEmpty) {
-            // Attempt one more time with tax calculator
-            if (_taxCalculator != null) {
-              taxRate = _taxCalculator!.getTaxPercentage(taxCode);
-              debugPrint(
-                'Second attempt to get tax rate: code=$taxCode, rate=$taxRate%',
+    if (allReturnItems.isEmpty) {
+      return pw.SizedBox.shrink();
+    }
+
+    debugPrint('Adding return items table with ${allReturnItems.length} items');
+
+    return pw.Column(
+      children: [
+        pw.SizedBox(height: 15),
+        pw.Container(
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.symmetric(vertical: 8),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.red100,
+            borderRadius: pw.BorderRadius.circular(4),
+          ),
+          child: pw.Text(
+            'المرتجعات',
+            style: pw.TextStyle(
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 14,
+              color: PdfColors.red800,
+            ),
+          ),
+        ),
+        pw.SizedBox(height: 8),
+        pw.Table(
+          border: pw.TableBorder(
+            left: pw.BorderSide(color: PdfColors.black, width: 1),
+            right: pw.BorderSide(color: PdfColors.black, width: 1),
+            top: pw.BorderSide(color: PdfColors.black, width: 1),
+            bottom: pw.BorderSide(color: PdfColors.black, width: 1),
+            horizontalInside: pw.BorderSide(color: PdfColors.black, width: 0.7),
+            verticalInside: pw.BorderSide(color: PdfColors.black, width: 0.7),
+          ),
+          columnWidths: {
+            0: const pw.FlexColumnWidth(1.5), // Price after tax
+            1: const pw.FlexColumnWidth(1), // Tax
+            2: const pw.FlexColumnWidth(1.5), // Price before tax
+            3: const pw.FlexColumnWidth(1), // Quantity
+            4: const pw.FlexColumnWidth(3), // Description
+            5: const pw.FlexColumnWidth(1), // Item Code
+          },
+          children: [
+            // Header row
+            pw.TableRow(
+              decoration: const pw.BoxDecoration(
+                color: PdfColors.red200,
+                borderRadius: pw.BorderRadius.vertical(
+                  top: pw.Radius.circular(2),
+                ),
+              ),
+              children: [
+                _buildTableCell(
+                  l10n.grandTotal,
+                  isHeader: true,
+                ), // Price after tax
+                _buildTableCell('الضريبة', isHeader: true), // Tax
+                _buildTableCell('السعر', isHeader: true), // Price before tax
+                _buildTableCell(l10n.quantity, isHeader: true), // Quantity
+                _buildTableCell(
+                  l10n.description,
+                  isHeader: true,
+                ), // Description
+                _buildTableCell(l10n.itemCode, isHeader: true), // Item Code
+              ],
+            ),
+
+            // Return item rows
+            ...allReturnItems.map((item) {
+              // Get base values from the item
+              final itemCode = item['itemCode'] as String;
+              final description = item['description'] as String;
+              final taxCode = item['taxCode'] as String? ?? '';
+              // Show negative quantity for returns
+              final quantity = -(item['quantity'] as int);
+              final unitPrice = item['unitPrice'] as double;
+
+              final priceBeforeTax = unitPrice * quantity.abs();
+
+              // Tax calculation
+              double taxRate = 0.0;
+              double taxAmount = 0.0;
+
+              if (item['tax_pc'] != null) {
+                taxRate = item['tax_pc'] as double;
+              } else if (taxCode.isNotEmpty && _taxCalculator != null) {
+                taxRate = _taxCalculator!.getTaxPercentage(taxCode);
+              }
+
+              if (item['tax_amt'] != null && item['tax_amt'] > 0) {
+                taxAmount = item['tax_amt'] as double;
+              } else if (taxRate > 0) {
+                taxAmount = priceBeforeTax * (taxRate / 100);
+              }
+
+              final priceAfterTax = priceBeforeTax + taxAmount;
+
+              return pw.TableRow(
+                decoration: const pw.BoxDecoration(),
+                children: [
+                  _buildTableCell(
+                    priceAfterTax.toStringAsFixed(2),
+                  ), // Price after tax
+                  _buildTableCell(
+                    taxAmount > 0 || taxRate > 0
+                        ? '${taxAmount.toStringAsFixed(2)}\n(${taxRate.toStringAsFixed(1)}%)'
+                        : 'معفى من الضريبة', // "Tax exempt" in Arabic
+                  ), // Tax + percentage or exempt
+                  _buildTableCell(
+                    priceBeforeTax.toStringAsFixed(2),
+                  ), // Price before tax
+                  _buildTableCell(quantity.toString()), // Quantity (negative)
+                  _buildTableCell(description), // Description
+                  _buildTableCell(itemCode), // Item Code
+                ],
               );
-            }
-
-            // If still no rate, log warning but use 0% instead of arbitrary default
-            if (taxRate <= 0) {
-              debugPrint(
-                'WARNING: Could not determine tax rate for code $taxCode, using 0%',
-              );
-              taxRate =
-                  0.0; // Don't use arbitrary default rate, use 0% if truly unknown
-            }
-          }
-
-          // 4. Calculate tax amount if needed
-          if (taxAmount <= 0 && taxRate > 0) {
-            taxAmount = priceBeforeTax * (taxRate / 100);
-            debugPrint('Calculated tax amount: $taxAmount for rate $taxRate%');
-          }
-
-          // 5. Calculate final price
-          final priceAfterTax = priceBeforeTax + taxAmount;
-
-          // Show EXACTLY what will be displayed
-          final taxDisplay =
-              '${taxAmount.toStringAsFixed(2)} ${_currency ?? ""}\n(${taxRate.toStringAsFixed(1)}%)';
-          debugPrint('Tax display in PDF: $taxDisplay');
-
-          return pw.TableRow(
-            children: [
-              _buildTableCell(
-                priceAfterTax.toStringAsFixed(2),
-              ), // Price after tax
-              _buildTableCell(
-                taxAmount > 0 || taxRate > 0
-                    ? '${taxAmount.toStringAsFixed(2)}\n(${taxRate.toStringAsFixed(1)}%)'
-                    : 'معفى من الضريبة', // "Tax exempt" in Arabic
-              ), // Tax + percentage or exempt
-              _buildTableCell(
-                priceBeforeTax.toStringAsFixed(2),
-              ), // Price before tax
-              _buildTableCell(quantity.toString()), // Quantity
-              _buildTableCell(item.item.description), // Description
-              _buildTableCell(itemCode), // Item Code
-            ],
-          );
-        }),
+            }),
+          ],
+        ),
       ],
     );
   }
 
   // Enhanced table cell for better Arabic text rendering
-  pw.Widget _buildTableCell(String text, {bool isHeader = false}) {
+  pw.Widget _buildTableCell(
+    String text, {
+    bool isHeader = false,
+    PdfColor? textColor,
+  }) {
     // Check if the text contains Arabic characters (which need special handling)
     bool containsArabic = text.contains(RegExp(r'[\u0600-\u06FF]'));
 
@@ -707,6 +878,7 @@ class _PrintPageState extends State<PrintPage> {
           // Explicitly use Arabic font if the text contains Arabic characters
           font: containsArabic ? _arabicFont : null,
           fontSize: isHeader ? 10 : 9, // Slightly smaller for better fitting
+          color: textColor, // Use the specified color if provided
         ),
         textAlign:
             containsArabic || isHeader
@@ -791,11 +963,30 @@ class _PrintPageState extends State<PrintPage> {
       calculatedTax += itemTaxAmount;
     }
 
-    // Use original value if it's reasonable, otherwise use calculated
-    final finalTaxAmount = (salesTax > 0) ? salesTax : calculatedTax;
-    final finalGrandTotal = total + finalTaxAmount;
+    // Use calculated tax if salesTax is 0 or unreasonable
+    double finalTaxAmount = calculatedTax;
+    if (salesTax > 0 && salesTax.isFinite) {
+      finalTaxAmount = salesTax;
+    }
+
+    // Make sure total is correct (should be subtotal - discount)
+    double finalTotal = total;
+    if (total <= 0 || !total.isFinite) {
+      finalTotal = subtotal - (discount > 0 ? discount : 0);
+    }
+
+    // Calculate grand total properly
+    double finalGrandTotal = finalTotal + finalTaxAmount;
+
+    // If the grand total from state is reasonable, use it instead
+    if (grandTotal > 0 &&
+        grandTotal.isFinite &&
+        (grandTotal - finalGrandTotal).abs() < 0.1) {
+      finalGrandTotal = grandTotal;
+    }
 
     debugPrint('PDF Recalculated values:');
+    debugPrint('- finalTotal: $finalTotal');
     debugPrint('- finalTaxAmount: $finalTaxAmount');
     debugPrint('- finalGrandTotal: $finalGrandTotal');
 
@@ -1003,6 +1194,48 @@ class _PrintPageState extends State<PrintPage> {
             ),
       ),
     );
+  }
+
+  // Load return invoices for the current customer
+  Future<void> _loadReturnInvoices() async {
+    if (widget.isReturn) {
+      // Skip loading return invoices if this is already a return invoice
+      _returnInvoicesLoaded = true;
+      return;
+    }
+
+    try {
+      debugPrint(
+        'Loading return invoices for customer: ${widget.customer.customerCode}',
+      );
+      final invoiceTable = GetIt.I<InvoiceTable>();
+
+      // Get all invoices for this customer
+      final allCustomerInvoices = await invoiceTable.getInvoicesForCustomer(
+        widget.customer.customerCode,
+      );
+
+      // Filter to only return invoices
+      final returnInvoices =
+          allCustomerInvoices
+              .where((invoice) => invoice['isReturn'] == 1)
+              .toList();
+
+      debugPrint(
+        'Found ${returnInvoices.length} return invoices for customer ${widget.customer.customerCode}',
+      );
+
+      setState(() {
+        _returnInvoices = returnInvoices;
+        _returnInvoicesLoaded = true;
+      });
+    } catch (e) {
+      debugPrint('Error loading return invoices: $e');
+      setState(() {
+        _returnInvoices = [];
+        _returnInvoicesLoaded = true;
+      });
+    }
   }
 
   @override
