@@ -579,4 +579,52 @@ class InvoiceTable {
       return [];
     }
   }
+
+  // Get related return invoices for a regular invoice
+  Future<List<Map<String, dynamic>>> getRelatedReturnInvoices(
+    String invoiceNumber,
+  ) async {
+    try {
+      // First get the invoice to find its customer ID
+      final invoice = await getInvoiceByNumber(invoiceNumber);
+      if (invoice.isEmpty) {
+        debugPrint('Invoice not found: $invoiceNumber');
+        return [];
+      }
+
+      final customerId = invoice['customerId'];
+      debugPrint('Looking for return invoices for customer: $customerId');
+
+      // Get all return invoices for this customer
+      final List<Map<String, dynamic>> returnInvoices = await db.query(
+        tableName,
+        where: 'isReturn = ? AND customerId = ?',
+        whereArgs: [1, customerId],
+        orderBy: 'invoiceDate DESC',
+      );
+
+      debugPrint(
+        'Found ${returnInvoices.length} return invoices for customer $customerId',
+      );
+
+      // For each return invoice, get its items
+      for (var i = 0; i < returnInvoices.length; i++) {
+        final invoiceId = returnInvoices[i]['id'];
+        final List<Map<String, dynamic>> items = await db.query(
+          invoiceItemsTableName,
+          where: 'invoiceId = ?',
+          whereArgs: [invoiceId],
+        );
+        returnInvoices[i]['items'] = items;
+        debugPrint(
+          'Return invoice ${returnInvoices[i]['invoiceNumber']} has ${items.length} items',
+        );
+      }
+
+      return returnInvoices;
+    } catch (e) {
+      debugPrint('Error getting related return invoices: $e');
+      return [];
+    }
+  }
 }

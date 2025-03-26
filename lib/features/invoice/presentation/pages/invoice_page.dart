@@ -15,6 +15,12 @@ import 'package:larid/features/auth/domain/repositories/auth_repository.dart';
 import 'package:larid/database/invoice_table.dart';
 import 'package:larid/database/user_table.dart';
 import 'package:get_it/get_it.dart';
+import 'package:larid/core/utils/network_connectivity.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:larid/database/customer_table.dart';
 
 class InvoicePage extends StatefulWidget {
   final CustomerEntity customer;
@@ -34,6 +40,8 @@ class _InvoicePageState extends State<InvoicePage> {
   late final bool _isReturn;
   String? _userId;
   late final AppLocalizations localizations;
+  final NetworkConnectivity _networkConnectivity = NetworkConnectivity();
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   @override
   void initState() {
@@ -44,7 +52,7 @@ class _InvoicePageState extends State<InvoicePage> {
     // Get the user ID for invoice number formatting
     _getUserId();
 
-    // Listen for state changes to update the comment controller
+    // Listen for state changes to update the comment controller and handle UI for saved invoices
     _invoiceBloc.stream.listen((state) {
       if (state.comment.isNotEmpty &&
           _commentController.text != state.comment) {
@@ -61,6 +69,10 @@ class _InvoicePageState extends State<InvoicePage> {
         debugPrint('- Items Count: ${state.items.length}');
         debugPrint('- Return Items Count: ${state.returnItems.length}');
         debugPrint('- Grand Total: ${state.grandTotal}');
+        debugPrint('- Is Return: $_isReturn');
+        debugPrint(
+          '- Is Synced: ${state.isSubmitted && state.invoiceNumber != null}',
+        );
       }
     });
 
@@ -76,6 +88,16 @@ class _InvoicePageState extends State<InvoicePage> {
     );
 
     _getCurrency();
+
+    // Listen for connectivity changes
+    _connectivitySubscription = _networkConnectivity.connectivityStream.listen((
+      status,
+    ) {
+      // When connectivity is restored, check for unsynced invoices
+      if (_networkConnectivity.isConnected()) {
+        _checkForUnsyncedInvoices();
+      }
+    });
   }
 
   @override
@@ -90,6 +112,7 @@ class _InvoicePageState extends State<InvoicePage> {
   void dispose() {
     _commentController.dispose();
     _invoiceBloc.close();
+    _connectivitySubscription?.cancel();
     super.dispose();
   }
 
@@ -488,9 +511,10 @@ class _InvoicePageState extends State<InvoicePage> {
     final textTheme = Theme.of(context).textTheme;
     final bloc = context.read<InvoiceBloc>();
     final localizations = AppLocalizations.of(context);
-    
+
     // Check if the invoice has been synced
-    final bool isSynced = bloc.state.isSubmitted && bloc.state.invoiceNumber != null;
+    final bool isSynced =
+        bloc.state.isSubmitted && bloc.state.invoiceNumber != null;
 
     // Get tax calculator to display tax information
     final taxCalculator = bloc.getTaxCalculator();
@@ -627,33 +651,36 @@ class _InvoicePageState extends State<InvoicePage> {
                       Container(
                         margin: const EdgeInsets.only(right: 8),
                         child: InkWell(
-                          onTap: isSynced 
-                              ? null 
-                              : () {
-                                  if (invoiceItem.quantity > 1) {
-                                    bloc.add(
-                                      UpdateItemQuantity(
-                                        item: invoiceItem,
-                                        quantity: invoiceItem.quantity - 1,
-                                        isReturn: isReturn,
-                                      ),
-                                    );
-                                  } else {
-                                    bloc.add(
-                                      RemoveItem(
-                                        item: invoiceItem,
-                                        isReturn: isReturn,
-                                      ),
-                                    );
-                                  }
-                                },
+                          onTap:
+                              isSynced
+                                  ? null
+                                  : () {
+                                    if (invoiceItem.quantity > 1) {
+                                      bloc.add(
+                                        UpdateItemQuantity(
+                                          item: invoiceItem,
+                                          quantity: invoiceItem.quantity - 1,
+                                          isReturn: isReturn,
+                                        ),
+                                      );
+                                    } else {
+                                      bloc.add(
+                                        RemoveItem(
+                                          item: invoiceItem,
+                                          isReturn: isReturn,
+                                        ),
+                                      );
+                                    }
+                                  },
                           borderRadius: BorderRadius.circular(18),
                           child: Container(
                             width: 36,
                             height: 36,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(isSynced ? 0.05 : 0.1),
+                              color: AppColors.primary.withOpacity(
+                                isSynced ? 0.05 : 0.1,
+                              ),
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: Colors.grey.shade300,
@@ -663,7 +690,9 @@ class _InvoicePageState extends State<InvoicePage> {
                             child: Icon(
                               Icons.remove,
                               size: 16,
-                              color: AppColors.primary.withOpacity(isSynced ? 0.3 : 1.0),
+                              color: AppColors.primary.withOpacity(
+                                isSynced ? 0.3 : 1.0,
+                              ),
                             ),
                           ),
                         ),
@@ -685,24 +714,27 @@ class _InvoicePageState extends State<InvoicePage> {
                       Container(
                         margin: const EdgeInsets.only(left: 8),
                         child: InkWell(
-                          onTap: isSynced 
-                              ? null 
-                              : () {
-                                  bloc.add(
-                                    UpdateItemQuantity(
-                                      item: invoiceItem,
-                                      quantity: invoiceItem.quantity + 1,
-                                      isReturn: isReturn,
-                                    ),
-                                  );
-                                },
+                          onTap:
+                              isSynced
+                                  ? null
+                                  : () {
+                                    bloc.add(
+                                      UpdateItemQuantity(
+                                        item: invoiceItem,
+                                        quantity: invoiceItem.quantity + 1,
+                                        isReturn: isReturn,
+                                      ),
+                                    );
+                                  },
                           borderRadius: BorderRadius.circular(18),
                           child: Container(
                             width: 36,
                             height: 36,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(isSynced ? 0.05 : 0.1),
+                              color: AppColors.primary.withOpacity(
+                                isSynced ? 0.05 : 0.1,
+                              ),
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: Colors.grey.shade300,
@@ -712,7 +744,9 @@ class _InvoicePageState extends State<InvoicePage> {
                             child: Icon(
                               Icons.add,
                               size: 16,
-                              color: AppColors.primary.withOpacity(isSynced ? 0.3 : 1.0),
+                              color: AppColors.primary.withOpacity(
+                                isSynced ? 0.3 : 1.0,
+                              ),
                             ),
                           ),
                         ),
@@ -730,15 +764,12 @@ class _InvoicePageState extends State<InvoicePage> {
     );
   }
 
-  Widget _buildActionButtons(
-    BuildContext context,
-    InvoiceState state,
-  ) {
+  Widget _buildActionButtons(BuildContext context, InvoiceState state) {
     // Check if there are any items in the invoice
     final bool hasItems =
         _isReturn ? state.returnItems.isNotEmpty : state.items.isNotEmpty;
-    
-    // Check if the invoice has been synced
+
+    // Check if the invoice has been synced - use same logic for both normal and return
     final bool isSynced = state.isSubmitted && state.invoiceNumber != null;
 
     return Container(
@@ -750,57 +781,62 @@ class _InvoicePageState extends State<InvoicePage> {
           children: [
             // Add item button - disabled if synced
             _buildActionButton(
-              onPressed: isSynced
-                  ? null
-                  : () async {
-                      // Create a map of previously selected items to send to the items page
-                      final Map<String, int> preselectedItems = {};
+              onPressed:
+                  isSynced
+                      ? null
+                      : () async {
+                        // Create a map of previously selected items to send to the items page
+                        final Map<String, int> preselectedItems = {};
 
-                      // Add current items to the preselected map
-                      if (_isReturn) {
-                        for (final item in state.returnItems) {
-                          preselectedItems[item.item.itemCode] = item.quantity;
-                        }
-                      } else {
-                        for (final item in state.items) {
-                          preselectedItems[item.item.itemCode] = item.quantity;
-                        }
-                      }
-
-                      // Navigate to items page using GoRouter and capture the result
-                      final result = await context.push<Map<String, dynamic>>(
-                        RouteConstants.items,
-                        extra: {
-                          'isReturn': _isReturn,
-                          'preselectedItems': preselectedItems,
-                        },
-                      );
-
-                      // Process the returned items
-                      if (result != null && result.isNotEmpty) {
-                        // Debug log to verify we're receiving data
-                        debugPrint('Received selected items: ${result.toString()}');
-
-                        // Extract the 'items' map from the result
-                        final items = result['items'] as Map<String, dynamic>;
-
-                        // Add items to invoice
+                        // Add current items to the preselected map
                         if (_isReturn) {
-                          context.read<InvoiceBloc>().add(
-                            AddReturnItems(items: items),
-                          );
+                          for (final item in state.returnItems) {
+                            preselectedItems[item.item.itemCode] =
+                                item.quantity;
+                          }
                         } else {
-                          context.read<InvoiceBloc>().add(
-                            AddInvoiceItems(items: items),
-                          );
+                          for (final item in state.items) {
+                            preselectedItems[item.item.itemCode] =
+                                item.quantity;
+                          }
                         }
 
-                        // Force refresh UI by triggering invoice totals calculation
-                        context.read<InvoiceBloc>().add(
-                          const CalculateInvoiceTotals(),
+                        // Navigate to items page using GoRouter and capture the result
+                        final result = await context.push<Map<String, dynamic>>(
+                          RouteConstants.items,
+                          extra: {
+                            'isReturn': _isReturn,
+                            'preselectedItems': preselectedItems,
+                          },
                         );
-                      }
-                    },
+
+                        // Process the returned items
+                        if (result != null && result.isNotEmpty) {
+                          // Debug log to verify we're receiving data
+                          debugPrint(
+                            'Received selected items: ${result.toString()}',
+                          );
+
+                          // Extract the 'items' map from the result
+                          final items = result['items'] as Map<String, dynamic>;
+
+                          // Add items to invoice
+                          if (_isReturn) {
+                            context.read<InvoiceBloc>().add(
+                              AddReturnItems(items: items),
+                            );
+                          } else {
+                            context.read<InvoiceBloc>().add(
+                              AddInvoiceItems(items: items),
+                            );
+                          }
+
+                          // Force refresh UI by triggering invoice totals calculation
+                          context.read<InvoiceBloc>().add(
+                            const CalculateInvoiceTotals(),
+                          );
+                        }
+                      },
               icon: Icons.add_shopping_cart,
               label:
                   _isReturn ? localizations.returnItems : localizations.addItem,
@@ -809,30 +845,31 @@ class _InvoicePageState extends State<InvoicePage> {
               disabled: isSynced,
             ),
 
-            // Print button - enabled even after syncing, but with different behavior
+            // Print button - enabled even after syncing
             _buildActionButton(
-              onPressed: hasItems
-                  ? () async {
-                      // If already synced, just navigate to print page
-                      if (isSynced) {
-                        context.push(
-                          RouteConstants.printInvoice,
-                          extra: {
-                            'invoice': state,
-                            'isReturn': _isReturn,
-                            'customer': state.customer,
-                          },
-                        );
-                      } else {
-                        // Not synced yet, so save, sync, then print
-                        await _saveAndSyncInvoice(
-                          context, 
-                          state,
-                          continueToPrint: true,
-                        );
+              onPressed:
+                  hasItems
+                      ? () async {
+                        // If already synced, just navigate to print page
+                        if (isSynced) {
+                          context.push(
+                            RouteConstants.printInvoice,
+                            extra: {
+                              'invoice': state,
+                              'isReturn': _isReturn,
+                              'customer': state.customer,
+                            },
+                          );
+                        } else {
+                          // Not synced yet, so save, sync, then print
+                          await _saveAndSyncInvoice(
+                            context,
+                            state,
+                            continueToPrint: true,
+                          );
+                        }
                       }
-                    }
-                  : null,
+                      : null,
               icon: Icons.print,
               label: localizations.print,
               isLoading: state.isPrinting,
@@ -842,12 +879,13 @@ class _InvoicePageState extends State<InvoicePage> {
 
             // Sync button - disabled if already synced
             _buildActionButton(
-              onPressed: (hasItems && !isSynced)
-                  ? () async {
-                      // Unified behavior: Save locally, sync online
-                      await _saveAndSyncInvoice(context, state);
-                    }
-                  : null,
+              onPressed:
+                  (hasItems && !isSynced)
+                      ? () async {
+                        // Unified behavior: Save locally, sync online
+                        await _saveAndSyncInvoice(context, state);
+                      }
+                      : null,
               icon: Icons.cloud_upload,
               label: localizations.sync,
               isLoading: state.isSyncing,
@@ -1033,58 +1071,63 @@ class _InvoicePageState extends State<InvoicePage> {
 
   // Add this method to handle the unified save and sync behavior
   Future<void> _saveAndSyncInvoice(
-    BuildContext context, 
+    BuildContext context,
     InvoiceState state, {
     bool continueToPrint = false,
   }) async {
     final localizations = AppLocalizations.of(context)!;
     final bloc = context.read<InvoiceBloc>();
-    
+
     // Skip the confirmation if the invoice is already submitted
     if (!state.isSubmitted && state.invoiceNumber == null) {
       // Show confirmation dialog
-      final shouldSave = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(_isReturn 
-            ? localizations.returnItem 
-            : localizations.invoice),
-          content: Text(_isReturn 
-            ? "Are you sure you want to submit this return item?" 
-            : "Are you sure you want to submit this invoice?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(localizations.cancel),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-              ),
-              child: Text(localizations.yes),
-            ),
-          ],
-        ),
-      ) ?? false;
-      
+      final shouldSave =
+          await showDialog<bool>(
+            context: context,
+            builder:
+                (context) => AlertDialog(
+                  title: Text(
+                    _isReturn
+                        ? localizations.returnItem
+                        : localizations.invoice,
+                  ),
+                  content: Text(
+                    _isReturn
+                        ? "Are you sure you want to submit this return item?"
+                        : "Are you sure you want to submit this invoice?",
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: Text(localizations.cancel),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                      ),
+                      child: Text(localizations.yes),
+                    ),
+                  ],
+                ),
+          ) ??
+          false;
+
       if (!shouldSave) return;
     }
-    
+
     try {
       // Show unified loading dialog
       Dialogs.showLoadingDialog(
-        context, 
-        _isReturn 
-          ? "Saving return item..." 
-          : localizations.savingInvoice,
+        context,
+        _isReturn ? "Saving return item..." : localizations.savingInvoice,
       );
-      
+
       // Step 1: Save locally if not already saved
       if (!state.isSubmitted || state.invoiceNumber == null) {
         // Dispatch save event
         bloc.add(SubmitInvoice(isReturn: _isReturn));
-        
+
         // Wait for save to complete
         bool saved = false;
         await for (final newState in bloc.stream) {
@@ -1092,12 +1135,15 @@ class _InvoicePageState extends State<InvoicePage> {
             saved = true;
             break;
           }
-          
+
           // Check for errors
           if (newState.errorMessage != null) {
             if (context.mounted) {
-              Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
-              
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).pop(); // Close loading dialog
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(newState.errorMessage!),
@@ -1108,12 +1154,15 @@ class _InvoicePageState extends State<InvoicePage> {
             return;
           }
         }
-        
+
         if (!saved) {
           // If we got here and the invoice wasn't saved, something went wrong
           if (context.mounted) {
-            Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
-            
+            Navigator.of(
+              context,
+              rootNavigator: true,
+            ).pop(); // Close loading dialog
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text("Error saving invoice"),
@@ -1124,86 +1173,180 @@ class _InvoicePageState extends State<InvoicePage> {
           return;
         }
       }
-      
-      // Step 2: Sync with server
+
+      // For already saved invoices, skip to print page if needed
+      if (state.isSubmitted && state.invoiceNumber != null && continueToPrint) {
+        if (context.mounted) {
+          Navigator.of(
+            context,
+            rootNavigator: true,
+          ).pop(); // Close loading dialog
+          context.push(
+            RouteConstants.printInvoice,
+            extra: {
+              'invoice': bloc.state,
+              'isReturn': _isReturn,
+              'customer': bloc.state.customer,
+            },
+          );
+        }
+        return;
+      }
+
+      // Step 2: Check network connectivity before attempting to sync
+      if (!_networkConnectivity.isConnected()) {
+        // Close loading dialog
+        if (context.mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+
+          // Show saved locally notification
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _isReturn
+                    ? "Return invoice saved locally (offline mode)"
+                    : "Invoice saved locally (offline mode)",
+              ),
+              backgroundColor: Colors.orange,
+              action: SnackBarAction(label: 'OK', onPressed: () {}),
+            ),
+          );
+
+          // If continuing to print, navigate to print page even when offline
+          if (continueToPrint) {
+            context.push(
+              RouteConstants.printInvoice,
+              extra: {
+                'invoice': bloc.state,
+                'isReturn': _isReturn,
+                'customer': bloc.state.customer,
+              },
+            );
+          } else {
+            // Pop back to refresh the list
+            context.pop();
+          }
+        }
+        return;
+      }
+
+      // Step 3: Continue with sync if we have connectivity
       try {
         // Get the updated state with invoice number
         final currentState = bloc.state;
         final invoiceTable = GetIt.I<InvoiceTable>();
         final apiService = GetIt.I<ApiService>();
-        
+
         // Check if there are items to upload
-        final hasItemsToUpload = _isReturn 
-            ? currentState.returnItems.isNotEmpty 
-            : currentState.items.isNotEmpty;
-            
+        final hasItemsToUpload =
+            _isReturn
+                ? currentState.returnItems.isNotEmpty
+                : currentState.items.isNotEmpty;
+
         if (!hasItemsToUpload) {
           if (context.mounted) {
-            Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog
-            
+            Navigator.of(
+              context,
+              rootNavigator: true,
+            ).pop(); // Close loading dialog
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(localizations.noItemsToUpload)),
             );
           }
           return;
         }
-        
+
         // Get user credentials
         final authRepository = GetIt.I<AuthRepository>();
         final user = await authRepository.getCurrentUser();
-        
+
         if (user == null) {
           throw Exception(localizations.userNotLoggedIn);
         }
-        
+
         // Get the current invoice number
         String? currentInvoiceNumber = currentState.invoiceNumber;
-        
+
         // Ensure we have an invoice number for return invoices
-        if (_isReturn && (currentInvoiceNumber == null || currentInvoiceNumber.isEmpty)) {
+        if (_isReturn &&
+            (currentInvoiceNumber == null || currentInvoiceNumber.isEmpty)) {
           throw Exception(localizations.failedToGenerateInvoiceNumber);
         }
-        
+
         // Convert invoice items to the format needed for the API
-        final List<Map<String, dynamic>> formattedItems = _isReturn
-            ? currentState.returnItems.map((item) {
-                final taxPercentage = item.taxRate;
-                final taxAmount = item.taxAmount;
-                final quantity = item.quantity.toDouble();
-                final price = item.item.sellUnitPrice.toDouble();
-                
-                return {
-                  'sItem_cd': item.item.itemCode,
-                  'sDescription': item.item.description,
-                  'sSellUnit_cd': item.item.sellUnitCode,
-                  'qty': quantity,
-                  'mSellUnitPrice_amt': price,
-                  'sTax_cd': item.item.taxCode,
-                  'taxAmount': taxAmount,
-                  'taxPercentage': taxPercentage,
-                };
-              }).toList()
-            : currentState.items.map((item) {
-                final taxPercentage = item.taxRate;
-                final taxAmount = item.taxAmount;
-                final quantity = item.quantity.toDouble();
-                final price = item.item.sellUnitPrice.toDouble();
-                
-                return {
-                  'sItem_cd': item.item.itemCode,
-                  'sDescription': item.item.description,
-                  'sSellUnit_cd': item.item.sellUnitCode,
-                  'qty': quantity,
-                  'mSellUnitPrice_amt': price,
-                  'sTax_cd': item.item.taxCode,
-                  'taxAmount': taxAmount,
-                  'taxPercentage': taxPercentage,
-                };
-              }).toList();
-        
+        final List<Map<String, dynamic>> formattedItems =
+            _isReturn
+                ? currentState.returnItems.map((item) {
+                  final taxPercentage = item.taxRate;
+                  final taxAmount = item.taxAmount;
+                  final quantity = item.quantity.toDouble();
+                  final price = item.item.sellUnitPrice.toDouble();
+
+                  try {
+                    return {
+                      'sItem_cd': item.item.itemCode,
+                      'sDescription': item.item.description,
+                      'sSellUnit_cd': item.item.sellUnitCode,
+                      'qty': quantity,
+                      'mSellUnitPrice_amt': price,
+                      'sTax_cd': item.item.taxCode ?? '',
+                      'taxAmount': taxAmount,
+                      'taxPercentage': taxPercentage,
+                    };
+                  } catch (e) {
+                    debugPrint('Error formatting return item: ${e.toString()}');
+                    return {
+                      'sItem_cd': item.item.itemCode,
+                      'sDescription': item.item.description,
+                      'sSellUnit_cd': item.item.sellUnitCode ?? '',
+                      'qty': quantity,
+                      'mSellUnitPrice_amt': price,
+                      'sTax_cd': item.item.taxCode ?? '',
+                      'taxAmount': 0.0,
+                      'taxPercentage': 0.0,
+                    };
+                  }
+                }).toList()
+                : currentState.items.map((item) {
+                  final taxPercentage = item.taxRate;
+                  final taxAmount = item.taxAmount;
+                  final quantity = item.quantity.toDouble();
+                  final price = item.item.sellUnitPrice.toDouble();
+
+                  try {
+                    return {
+                      'sItem_cd': item.item.itemCode,
+                      'sDescription': item.item.description,
+                      'sSellUnit_cd': item.item.sellUnitCode ?? '',
+                      'qty': quantity,
+                      'mSellUnitPrice_amt': price,
+                      'sTax_cd': item.item.taxCode ?? '',
+                      'taxAmount': taxAmount,
+                      'taxPercentage': taxPercentage,
+                    };
+                  } catch (e) {
+                    debugPrint(
+                      'Error formatting invoice item: ${e.toString()}',
+                    );
+                    return {
+                      'sItem_cd': item.item.itemCode,
+                      'sDescription': item.item.description,
+                      'sSellUnit_cd': item.item.sellUnitCode ?? '',
+                      'qty': quantity,
+                      'mSellUnitPrice_amt': price,
+                      'sTax_cd': item.item.taxCode ?? '',
+                      'taxAmount': 0.0,
+                      'taxPercentage': 0.0,
+                    };
+                  }
+                }).toList();
+
         // Get formatted invoice reference
-        final formattedInvoiceReference = getFormattedInvoiceNumber(currentInvoiceNumber);
-        
+        final formattedInvoiceReference = getFormattedInvoiceNumber(
+          currentInvoiceNumber,
+        );
+
         // Upload the invoice
         String invoiceNumber;
         if (_isReturn) {
@@ -1233,7 +1376,7 @@ class _InvoicePageState extends State<InvoicePage> {
             items: formattedItems,
           );
         }
-        
+
         // Update the database to mark the invoice as synced
         if (currentInvoiceNumber != null && currentInvoiceNumber.isNotEmpty) {
           try {
@@ -1245,38 +1388,42 @@ class _InvoicePageState extends State<InvoicePage> {
               (invoice) => invoice['invoiceNumber'] == currentInvoiceNumber,
               orElse: () => {},
             );
-            
+
             if (currentInvoice.isNotEmpty && currentInvoice.containsKey('id')) {
               final invoiceId = currentInvoice['id'] as int;
-              
+
               // Mark the invoice as synced in the database
               await invoiceTable.markInvoicesAsSynced([invoiceId]);
-              
-              debugPrint('Invoice ID: $invoiceId marked as synced and updated with API invoice number: $invoiceNumber');
+
+              debugPrint(
+                'Invoice ID: $invoiceId marked as synced and updated with API invoice number: $invoiceNumber',
+              );
             }
           } catch (dbError) {
             debugPrint('Error updating sync status in database: $dbError');
             // Continue with success flow - not a critical error
           }
         }
-        
+
         // Update UI to reflect successful sync
         bloc.add(const SyncInvoice());
-        
+
         // Close loading dialog
         if (context.mounted) {
           Navigator.of(context, rootNavigator: true).pop();
-          
+
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(_isReturn 
-                ? "Return item uploaded successfully" 
-                : localizations.invoiceUploadedSuccessfully(invoiceNumber)),
+              content: Text(
+                _isReturn
+                    ? "Return item uploaded successfully"
+                    : localizations.invoiceUploadedSuccessfully(invoiceNumber),
+              ),
               backgroundColor: Colors.green,
             ),
           );
-          
+
           // If continuing to print, navigate to print page
           if (continueToPrint) {
             context.push(
@@ -1296,11 +1443,13 @@ class _InvoicePageState extends State<InvoicePage> {
         // Close loading dialog
         if (context.mounted) {
           Navigator.of(context, rootNavigator: true).pop();
-          
+
           // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(localizations.errorUploadingInvoice(syncError.toString())),
+              content: Text(
+                localizations.errorUploadingInvoice(syncError.toString()),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -1309,13 +1458,13 @@ class _InvoicePageState extends State<InvoicePage> {
     } catch (e) {
       // Handle any unexpected errors
       if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop(); // Close loading dialog if open
-        
+        Navigator.of(
+          context,
+          rootNavigator: true,
+        ).pop(); // Close loading dialog if open
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       }
     }
@@ -1380,7 +1529,7 @@ class _InvoicePageState extends State<InvoicePage> {
 
     // Safely handle isDirty property (add null check)
     final bool isDirty = state.isDirty ?? true;
-    
+
     // Check if the invoice has been synced
     final bool isSynced = state.isSubmitted && state.invoiceNumber != null;
 
@@ -1401,13 +1550,15 @@ class _InvoicePageState extends State<InvoicePage> {
               onPressed:
                   (hasItems && isDirty && !isSynced)
                       ? () async {
-                          // Unified behavior: Save locally, sync online
-                          await _saveAndSyncInvoice(context, state);
-                        }
+                        // Unified behavior: Save locally, sync online
+                        await _saveAndSyncInvoice(context, state);
+                      }
                       : null, // Disable button when no items, not dirty, or already synced
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    (hasItems && isDirty && !isSynced) ? AppColors.primary : Colors.grey,
+                    (hasItems && isDirty && !isSynced)
+                        ? AppColors.primary
+                        : Colors.grey,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 elevation: (hasItems && isDirty && !isSynced) ? 5 : 0,
@@ -1448,7 +1599,7 @@ class _InvoicePageState extends State<InvoicePage> {
     final year = date.year.toString();
     final hour = date.hour.toString().padLeft(2, '0');
     final minute = date.minute.toString().padLeft(2, '0');
-    
+
     // Use a simple format string for now
     return "$day/$month/$year $hour:$minute";
   }
@@ -1467,5 +1618,182 @@ class _InvoicePageState extends State<InvoicePage> {
   void _onPrintInvoice() {
     // Implement the logic to print the invoice
     // This is a placeholder and should be replaced with the actual implementation
+  }
+
+  // Add a method to check for unsynced invoices
+  Future<void> _checkForUnsyncedInvoices() async {
+    try {
+      final invoiceTable = GetIt.I<InvoiceTable>();
+
+      // Get unsynced invoices (both regular and return)
+      final unsyncedInvoices = await invoiceTable.getUnsyncedInvoices();
+
+      debugPrint('Found ${unsyncedInvoices.length} unsynced invoices to sync');
+
+      if (unsyncedInvoices.isEmpty) return;
+
+      // Show notification that syncing is available
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${unsyncedInvoices.length} unsynced invoice(s) found. Network connection restored.',
+            ),
+            backgroundColor: Colors.blue,
+            action: SnackBarAction(
+              label: 'Sync Now',
+              onPressed: () {
+                _syncPendingInvoices(unsyncedInvoices);
+              },
+            ),
+            duration: const Duration(seconds: 10),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error checking for unsynced invoices: $e');
+    }
+  }
+
+  // Add a method to sync pending invoices
+  Future<void> _syncPendingInvoices(
+    List<Map<String, dynamic>> unsyncedInvoices,
+  ) async {
+    if (!mounted) return;
+
+    final apiService = GetIt.I<ApiService>();
+    final authRepository = GetIt.I<AuthRepository>();
+    final invoiceTable = GetIt.I<InvoiceTable>();
+    final user = await authRepository.getCurrentUser();
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User not logged in'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Show loading dialog
+    Dialogs.showLoadingDialog(context, 'Syncing invoices...');
+
+    int successCount = 0;
+    int failCount = 0;
+
+    // Process each unsynced invoice
+    for (final invoice in unsyncedInvoices) {
+      try {
+        final invoiceId = invoice['id'] as int;
+        final invoiceNumber = invoice['invoiceNumber'] as String;
+        final isReturn = invoice['isReturn'] == 1;
+        final customerId = invoice['customerId'] as String;
+
+        // Get customer details
+        final customerTable = GetIt.I<CustomerTable>();
+        final customer = await customerTable.getCustomerByCode(customerId);
+
+        if (customer == null) {
+          debugPrint('Customer not found for invoice: $invoiceNumber');
+          failCount++;
+          continue;
+        }
+
+        // Get invoice items
+        final items = await invoiceTable.getInvoiceItems(invoiceId);
+
+        // Format items for API
+        final formattedItems =
+            items.map((item) {
+              final quantity = (item['quantity'] as int).toDouble();
+              final price = item['unitPrice'] as double;
+
+              // Handle possible null values for tax fields to prevent errors
+              double taxAmount = 0.0;
+              double taxPercentage = 0.0;
+
+              try {
+                taxAmount = item['tax_amt'] as double? ?? 0.0;
+                taxPercentage = item['tax_pc'] as double? ?? 0.0;
+              } catch (e) {
+                debugPrint('Error parsing tax values: ${e.toString()}');
+              }
+
+              return {
+                'sItem_cd': item['itemCode'],
+                'sDescription': item['description'],
+                'sSellUnit_cd': item['sellUnitCode'] ?? '',
+                'qty': quantity,
+                'mSellUnitPrice_amt': price,
+                'sTax_cd': item['taxCode'] ?? '',
+                'taxAmount': taxAmount,
+                'taxPercentage': taxPercentage,
+              };
+            }).toList();
+
+        // Get formatted invoice reference
+        final formattedInvoiceReference = getFormattedInvoiceNumber(
+          invoiceNumber,
+        );
+
+        // Upload the invoice
+        String serverInvoiceNumber;
+        if (isReturn) {
+          // Use the uploadCM API for return invoices
+          serverInvoiceNumber = await apiService.uploadCM(
+            userid: user.userid,
+            workspace: user.workspace,
+            password: user.password,
+            customerCode: customer.customerCode,
+            customerName: customer.customerName,
+            customerAddress: customer.address ?? '',
+            invoiceReference: formattedInvoiceReference,
+            comments: invoice['comment'] as String? ?? '',
+            items: formattedItems,
+          );
+        } else {
+          // Use the uploadInvoice API for regular invoices
+          serverInvoiceNumber = await apiService.uploadInvoice(
+            userid: user.userid,
+            workspace: user.workspace,
+            password: user.password,
+            customerCode: customer.customerCode,
+            customerName: customer.customerName,
+            customerAddress: customer.address ?? '',
+            invoiceReference: formattedInvoiceReference,
+            comments: invoice['comment'] as String? ?? '',
+            items: formattedItems,
+          );
+        }
+
+        // Mark invoice as synced
+        await invoiceTable.markInvoicesAsSynced([invoiceId]);
+        debugPrint(
+          'Successfully synced ${isReturn ? "return " : ""}invoice: $invoiceNumber',
+        );
+        successCount++;
+      } catch (e) {
+        debugPrint('Failed to sync invoice ${invoice['invoiceNumber']}: $e');
+        failCount++;
+      }
+    }
+
+    // Close loading dialog and show results
+    if (mounted) {
+      Navigator.of(context, rootNavigator: true).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Syncing complete: $successCount succeeded, $failCount failed',
+          ),
+          backgroundColor: failCount == 0 ? Colors.green : Colors.orange,
+        ),
+      );
+
+      // Refresh the invoice list
+      context.read<InvoiceBloc>().add(const SyncInvoice());
+    }
   }
 }
