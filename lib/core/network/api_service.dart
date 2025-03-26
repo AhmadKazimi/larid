@@ -538,4 +538,39 @@ class ApiService {
       return {'success': false, 'error': e.toString()};
     }
   }
+
+  Future<Map<String, dynamic>> uploadPic({
+    required String userid,
+    required String workspace,
+    required String password,
+    required String filename,
+  }) async {
+    try {
+      final response = await _dioClient.get(
+        ApiEndpoints.buildUrl(ApiEndpoints.uploadPicInfo),
+        options: Options(
+          headers: {
+            ApiParameters.userid: userid,
+            ApiParameters.workspace: workspace,
+            ApiParameters.password: password,
+            'filename': filename,
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        if (response.data is List && response.data.isNotEmpty) {
+          final data = response.data[0];
+          if (data.containsKey('ERROR')) {
+            return {'success': false, 'error': data['ERROR']};
+          }
+          return {'success': true};
+        }
+      }
+
+      return {'success': false, 'error': 'Unknown error'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 }
