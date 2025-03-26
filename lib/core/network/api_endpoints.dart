@@ -12,6 +12,7 @@ class ApiEndpoints {
   static const String getCompanyInfo = '/GetCompanyInfo';
   static const String uploadInvoice = '/UploadInvoice';
   static const String uploadCM = '/UploadCM';
+  static const String uploadPicInfo = '/UploadPic';
   static const String uploadSalesrepPic =
       'https://cloud.larid.net/UploadSalesrepPic.ashx';
 
