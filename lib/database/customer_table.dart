@@ -13,7 +13,8 @@ class CustomerTable {
       contactPhone TEXT,
       mapCoords TEXT,
       visitStartTime TEXT,
-      visitEndTime TEXT
+      visitEndTime TEXT,
+      balance REAL
     )
   ''';
 
@@ -25,7 +26,8 @@ class CustomerTable {
       contactPhone TEXT,
       mapCoords TEXT,
       visitStartTime TEXT,
-      visitEndTime TEXT
+      visitEndTime TEXT,
+      balance REAL
     )
   ''';
 
@@ -45,6 +47,7 @@ class CustomerTable {
         'mapCoords': customer.mapCoords,
         'visitStartTime': customer.visitStartTime,
         'visitEndTime': customer.visitEndTime,
+        'balance': customer.balance,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
 
@@ -65,6 +68,7 @@ class CustomerTable {
         'mapCoords': customer.mapCoords,
         'visitStartTime': customer.visitStartTime,
         'visitEndTime': customer.visitEndTime,
+        'balance': customer.balance,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
     }
 
@@ -130,6 +134,7 @@ class CustomerTable {
             'sMapCoords': map['mapCoords'],
             'visitStartTime': map['visitStartTime'],
             'visitEndTime': map['visitEndTime'],
+            'mBalance_amt': map['balance'],
           }),
         )
         .toList();
@@ -171,6 +176,7 @@ class CustomerTable {
         'sMapCoords': maps[0]['mapCoords'],
         'visitStartTime': maps[0]['visitStartTime'],
         'visitEndTime': maps[0]['visitEndTime'],
+        'mBalance_amt': maps[0]['balance'],
       });
     } catch (e) {
       print('Error getting customer with active visit session: $e');
@@ -309,6 +315,7 @@ class CustomerTable {
         'sMapCoords': maps[0]['mapCoords'],
         'visitStartTime': maps[0]['visitStartTime'],
         'visitEndTime': maps[0]['visitEndTime'],
+        'mBalance_amt': maps[0]['balance'],
       });
     } catch (e) {
       return null;

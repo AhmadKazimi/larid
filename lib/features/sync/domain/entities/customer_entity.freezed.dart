@@ -28,6 +28,7 @@ mixin _$CustomerEntity {
   String? get mapCoords => throw _privateConstructorUsedError;
   String? get visitStartTime => throw _privateConstructorUsedError;
   String? get visitEndTime => throw _privateConstructorUsedError;
+  double? get balance => throw _privateConstructorUsedError;
 
   /// Serializes this CustomerEntity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -54,6 +55,7 @@ abstract class $CustomerEntityCopyWith<$Res> {
     String? mapCoords,
     String? visitStartTime,
     String? visitEndTime,
+    double? balance,
   });
 }
 
@@ -79,6 +81,7 @@ class _$CustomerEntityCopyWithImpl<$Res, $Val extends CustomerEntity>
     Object? mapCoords = freezed,
     Object? visitStartTime = freezed,
     Object? visitEndTime = freezed,
+    Object? balance = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -117,6 +120,11 @@ class _$CustomerEntityCopyWithImpl<$Res, $Val extends CustomerEntity>
                     ? _value.visitEndTime
                     : visitEndTime // ignore: cast_nullable_to_non_nullable
                         as String?,
+            balance:
+                freezed == balance
+                    ? _value.balance
+                    : balance // ignore: cast_nullable_to_non_nullable
+                        as double?,
           )
           as $Val,
     );
@@ -140,6 +148,7 @@ abstract class _$$CustomerEntityImplCopyWith<$Res>
     String? mapCoords,
     String? visitStartTime,
     String? visitEndTime,
+    double? balance,
   });
 }
 
@@ -164,6 +173,7 @@ class __$$CustomerEntityImplCopyWithImpl<$Res>
     Object? mapCoords = freezed,
     Object? visitStartTime = freezed,
     Object? visitEndTime = freezed,
+    Object? balance = freezed,
   }) {
     return _then(
       _$CustomerEntityImpl(
@@ -202,6 +212,11 @@ class __$$CustomerEntityImplCopyWithImpl<$Res>
                 ? _value.visitEndTime
                 : visitEndTime // ignore: cast_nullable_to_non_nullable
                     as String?,
+        balance:
+            freezed == balance
+                ? _value.balance
+                : balance // ignore: cast_nullable_to_non_nullable
+                    as double?,
       ),
     );
   }
@@ -218,6 +233,7 @@ class _$CustomerEntityImpl implements _CustomerEntity {
     this.mapCoords,
     this.visitStartTime,
     this.visitEndTime,
+    this.balance,
   });
 
   factory _$CustomerEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -237,10 +253,12 @@ class _$CustomerEntityImpl implements _CustomerEntity {
   final String? visitStartTime;
   @override
   final String? visitEndTime;
+  @override
+  final double? balance;
 
   @override
   String toString() {
-    return 'CustomerEntity(customerCode: $customerCode, customerName: $customerName, address: $address, contactPhone: $contactPhone, mapCoords: $mapCoords, visitStartTime: $visitStartTime, visitEndTime: $visitEndTime)';
+    return 'CustomerEntity(customerCode: $customerCode, customerName: $customerName, address: $address, contactPhone: $contactPhone, mapCoords: $mapCoords, visitStartTime: $visitStartTime, visitEndTime: $visitEndTime, balance: $balance)';
   }
 
   @override
@@ -260,7 +278,8 @@ class _$CustomerEntityImpl implements _CustomerEntity {
             (identical(other.visitStartTime, visitStartTime) ||
                 other.visitStartTime == visitStartTime) &&
             (identical(other.visitEndTime, visitEndTime) ||
-                other.visitEndTime == visitEndTime));
+                other.visitEndTime == visitEndTime) &&
+            (identical(other.balance, balance) || other.balance == balance));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -274,6 +293,7 @@ class _$CustomerEntityImpl implements _CustomerEntity {
     mapCoords,
     visitStartTime,
     visitEndTime,
+    balance,
   );
 
   /// Create a copy of CustomerEntity
@@ -302,6 +322,7 @@ abstract class _CustomerEntity implements CustomerEntity {
     final String? mapCoords,
     final String? visitStartTime,
     final String? visitEndTime,
+    final double? balance,
   }) = _$CustomerEntityImpl;
 
   factory _CustomerEntity.fromJson(Map<String, dynamic> json) =
@@ -321,6 +342,8 @@ abstract class _CustomerEntity implements CustomerEntity {
   String? get visitStartTime;
   @override
   String? get visitEndTime;
+  @override
+  double? get balance;
 
   /// Create a copy of CustomerEntity
   /// with the given fields replaced by the non-null parameter values.

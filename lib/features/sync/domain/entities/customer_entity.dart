@@ -13,9 +13,11 @@ class CustomerEntity with _$CustomerEntity {
     String? mapCoords,
     String? visitStartTime,
     String? visitEndTime,
+    double? balance,
   }) = _CustomerEntity;
 
-  factory CustomerEntity.fromJson(Map<String, dynamic> json) => _$CustomerEntityFromJson({
+  factory CustomerEntity.fromJson(Map<String, dynamic> json) =>
+      _$CustomerEntityFromJson({
         'customerCode': json['sCustomer_cd'] as String? ?? '',
         'customerName': json['sCustomer_nm'] as String? ?? '',
         'address': json['sAddress1'] as String?,
@@ -23,5 +25,9 @@ class CustomerEntity with _$CustomerEntity {
         'mapCoords': json['sMapCoords'] as String?,
         'visitStartTime': json['visitStartTime'] as String?,
         'visitEndTime': json['visitEndTime'] as String?,
+        'balance':
+            json['mBalance_amt'] != null
+                ? double.tryParse(json['mBalance_amt'].toString())
+                : null,
       });
 }

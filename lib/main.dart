@@ -25,14 +25,15 @@ import 'package:larid/core/utils/network_connectivity.dart';
 
 // This is a singleton that handles app restart
 class AppRestartController {
-  static final AppRestartController _instance = AppRestartController._internal();
-  
+  static final AppRestartController _instance =
+      AppRestartController._internal();
+
   factory AppRestartController() => _instance;
-  
+
   AppRestartController._internal();
-  
+
   final restartNotifier = ValueNotifier<bool>(false);
-  
+
   void restartApp() {
     restartNotifier.value = !restartNotifier.value;
   }
@@ -45,7 +46,7 @@ void main() async {
 
   // Initialize permission handler
   await Permission.camera.status;
-  
+
   // Initialize network connectivity monitoring
   NetworkConnectivity().initialize();
 
@@ -55,12 +56,12 @@ void main() async {
 // Widget that can restart the app
 class RestartWidget extends StatefulWidget {
   final Widget child;
-  
+
   const RestartWidget({Key? key, required this.child}) : super(key: key);
 
   @override
   RestartWidgetState createState() => RestartWidgetState();
-  
+
   static void restartApp(BuildContext context) {
     context.findAncestorStateOfType<RestartWidgetState>()?.restartApp();
   }
@@ -77,10 +78,7 @@ class RestartWidgetState extends State<RestartWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyedSubtree(
-      key: _childKey,
-      child: widget.child,
-    );
+    return KeyedSubtree(key: _childKey, child: widget.child);
   }
 }
 
@@ -92,10 +90,11 @@ class AppRoot extends StatelessWidget {
     // Get saved language from SharedPrefs
     final String languageCode = SharedPrefs.getLanguage() ?? 'ar';
     final Locale locale = Locale(languageCode);
-    
+
     // Determine text direction based on language
-    final TextDirection textDirection = languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr;
-    
+    final TextDirection textDirection =
+        languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr;
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>(create: (context) => getIt<AuthBloc>()),
@@ -135,10 +134,7 @@ class AppRoot extends StatelessWidget {
         ],
         routerConfig: AppRouter.router,
         builder: (context, child) {
-          return Directionality(
-            textDirection: textDirection,
-            child: child!,
-          );
+          return Directionality(textDirection: textDirection, child: child!);
         },
       ),
     );

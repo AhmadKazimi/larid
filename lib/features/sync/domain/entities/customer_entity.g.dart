@@ -15,6 +15,7 @@ _$CustomerEntityImpl _$$CustomerEntityImplFromJson(Map<String, dynamic> json) =>
       mapCoords: json['mapCoords'] as String?,
       visitStartTime: json['visitStartTime'] as String?,
       visitEndTime: json['visitEndTime'] as String?,
+      balance: (json['balance'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$$CustomerEntityImplToJson(
@@ -27,4 +28,5 @@ Map<String, dynamic> _$$CustomerEntityImplToJson(
   'mapCoords': instance.mapCoords,
   'visitStartTime': instance.visitStartTime,
   'visitEndTime': instance.visitEndTime,
+  'balance': instance.balance,
 };
