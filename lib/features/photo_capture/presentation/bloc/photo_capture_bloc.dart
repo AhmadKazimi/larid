@@ -39,6 +39,7 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
     on<LoadSavedPhotos>(_onLoadSavedPhotos);
     on<ClearError>(_onClearError);
     on<UpdateFromSyncStatus>(_onUpdateFromSyncStatus);
+    on<UpdateComment>(_onUpdateComment);
 
     // Initialize photo sync service
     _photoSyncService = PhotoSyncService(
@@ -250,6 +251,7 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
             imagePath: state.beforeImagePath!,
             customerCode: event.customerCode,
             isBefore: true,
+            comment: state.comment,
           ),
         );
 
@@ -259,6 +261,7 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
             imagePath: state.afterImagePath!,
             customerCode: event.customerCode,
             isBefore: false,
+            comment: state.comment,
           ),
         );
       } else {
@@ -575,6 +578,10 @@ class PhotoCaptureBloc extends Bloc<PhotoCaptureEvent, PhotoCaptureState> {
 
   void _onClearError(ClearError event, Emitter<PhotoCaptureState> emit) {
     emit(state.copyWith(error: null));
+  }
+
+  void _onUpdateComment(UpdateComment event, Emitter<PhotoCaptureState> emit) {
+    emit(state.copyWith(comment: event.comment));
   }
 
   @override

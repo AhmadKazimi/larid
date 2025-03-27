@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import 'api_client.dart';
 import 'api_endpoints.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'dart:convert';
 
 class ApiService {
   final DioClient _dioClient;
@@ -497,21 +500,68 @@ class ApiService {
     required String workspace,
     required String password,
     required String customerCode,
-    required String imageBase64,
+    required String imageBase64, // This is actually a file path
   }) async {
     try {
-      final response = await _dioClient.post(
-        ApiEndpoints.uploadSalesrepPic,
-        queryParameters: {
+      print('Starting image upload process...');
+
+      // Use the file path directly
+      final imageFile = File(imageBase64);
+      if (!await imageFile.exists()) {
+        print('Error: Image file does not exist at path: $imageBase64');
+        return {'success': false, 'error': 'Image file not found'};
+      }
+
+      print('File exists at: ${imageFile.path}');
+      print('File size: ${await imageFile.length()} bytes');
+
+      // Create multipart form data with the file
+      print('Creating multipart form data...');
+      final formData = FormData.fromMap({
+        'postedFile': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: 'image.jpg',
+        ),
+      });
+
+      // Create custom options with headers
+      print('Setting up request headers...');
+      final options = Options(
+        headers: {
           ApiParameters.userid: userid,
           ApiParameters.workspace: workspace,
           ApiParameters.password: password,
-          'customer_cd': customerCode,
-          'pic': imageBase64,
+          'Content-Type': 'multipart/form-data',
         },
       );
-      return {'success': true, 'data': response.data};
-    } catch (e) {
+
+      // Use Dio directly since this is an external URL
+      print('Making API request to: ${ApiEndpoints.uploadSalesrepPic}');
+      final dio = Dio();
+      final response = await dio.post(
+        ApiEndpoints.uploadSalesrepPic,
+        data: formData,
+        options: options,
+      );
+
+      print('Response status code: ${response.statusCode}');
+      print('Response data: ${response.data}');
+
+      if (response.statusCode == 200) {
+        if (response.data is Map && response.data.containsKey('filename')) {
+          print('Upload successful! Filename: ${response.data['filename']}');
+          return {'success': true, 'filename': response.data['filename']};
+        } else if (response.data is Map && response.data.containsKey('ERROR')) {
+          print('Upload failed with error: ${response.data['ERROR']}');
+          return {'success': false, 'error': response.data['ERROR']};
+        }
+      }
+
+      print('Unknown error occurred. Status code: ${response.statusCode}');
+      return {'success': false, 'error': 'Unknown error'};
+    } catch (e, stackTrace) {
+      print('Exception during upload: $e');
+      print('Stack trace: $stackTrace');
       return {'success': false, 'error': e.toString()};
     }
   }
@@ -558,9 +608,13 @@ class ApiService {
     required String workspace,
     required String password,
     required String filename,
+    required String customerCode,
+    required String visitDt,
+    required int index,
+    String? comments,
   }) async {
     try {
-      final response = await _dioClient.get(
+      final response = await _dioClient.post(
         ApiEndpoints.buildUrl(ApiEndpoints.uploadPicInfo),
         options: Options(
           headers: {
@@ -568,6 +622,10 @@ class ApiService {
             ApiParameters.workspace: workspace,
             ApiParameters.password: password,
             'filename': filename,
+            'customer_cd': customerCode,
+            'visit_dt': visitDt,
+            'index': index.toString(),
+            'comments': comments ?? '',
           },
         ),
       );

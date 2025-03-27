@@ -9,6 +9,7 @@ class PhotoCaptureState extends Equatable {
   final bool afterImageUploaded;
   final String? beforeImageFilename;
   final String? afterImageFilename;
+  final String? comment;
 
   const PhotoCaptureState({
     this.beforeImagePath,
@@ -19,6 +20,7 @@ class PhotoCaptureState extends Equatable {
     this.afterImageUploaded = false,
     this.beforeImageFilename,
     this.afterImageFilename,
+    this.comment,
   });
 
   bool get isComplete => beforeImagePath != null && afterImagePath != null;
@@ -33,6 +35,7 @@ class PhotoCaptureState extends Equatable {
     bool? afterImageUploaded,
     String? beforeImageFilename,
     String? afterImageFilename,
+    String? comment,
   }) {
     return PhotoCaptureState(
       beforeImagePath: beforeImagePath ?? this.beforeImagePath,
@@ -43,6 +46,7 @@ class PhotoCaptureState extends Equatable {
       afterImageUploaded: afterImageUploaded ?? this.afterImageUploaded,
       beforeImageFilename: beforeImageFilename ?? this.beforeImageFilename,
       afterImageFilename: afterImageFilename ?? this.afterImageFilename,
+      comment: comment ?? this.comment,
     );
   }
 
@@ -56,5 +60,6 @@ class PhotoCaptureState extends Equatable {
     afterImageUploaded,
     beforeImageFilename,
     afterImageFilename,
+    comment,
   ];
 }

@@ -45,6 +45,7 @@ class PhotoCaptureRepositoryImpl implements PhotoCaptureRepository {
     String imagePath, {
     required String customerCode,
     required bool isBefore,
+    String? comment,
   }) async {
     // Get authentication details from auth repository
     final user = await _authRepository.getCurrentUser();
@@ -54,12 +55,40 @@ class PhotoCaptureRepositoryImpl implements PhotoCaptureRepository {
     }
 
     // Upload the image to the server
-    return await _apiService.uploadSalesrepPic(
+    final uploadResult = await _apiService.uploadSalesrepPic(
       userid: user.userid,
       workspace: user.workspace,
       password: user.password,
       customerCode: customerCode,
       imageBase64: imagePath,
     );
+
+    if (uploadResult['success'] == true && uploadResult['filename'] != null) {
+      // After successful image upload, call the uploadPic API
+      final visitDt = DateTime.now().toIso8601String();
+      final index = isBefore ? 1 : 2; // 1 for before, 2 for after
+
+      final picResult = await _apiService.uploadPic(
+        userid: user.userid,
+        workspace: user.workspace,
+        password: user.password,
+        filename: uploadResult['filename'],
+        customerCode: customerCode,
+        visitDt: visitDt,
+        index: index,
+        comments: comment,
+      );
+
+      if (picResult['success'] == true) {
+        return uploadResult;
+      } else {
+        return {
+          'success': false,
+          'error': picResult['error'] ?? 'Failed to update picture info',
+        };
+      }
+    }
+
+    return uploadResult;
   }
 }

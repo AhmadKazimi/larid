@@ -39,15 +39,17 @@ class UploadImage extends PhotoCaptureEvent {
   final String imagePath;
   final String customerCode;
   final bool isBefore;
+  final String? comment;
 
   const UploadImage({
     required this.imagePath,
     required this.customerCode,
     required this.isBefore,
+    this.comment,
   });
 
   @override
-  List<Object?> get props => [imagePath, customerCode, isBefore];
+  List<Object?> get props => [imagePath, customerCode, isBefore, comment];
 }
 
 class LoadSavedPhotos extends PhotoCaptureEvent {
@@ -69,3 +71,12 @@ class UpdateFromSyncStatus extends PhotoCaptureEvent {
 }
 
 class ClearError extends PhotoCaptureEvent {}
+
+class UpdateComment extends PhotoCaptureEvent {
+  final String comment;
+
+  const UpdateComment(this.comment);
+
+  @override
+  List<Object?> get props => [comment];
+}

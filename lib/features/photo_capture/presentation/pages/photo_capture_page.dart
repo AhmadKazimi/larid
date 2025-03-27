@@ -187,6 +187,24 @@ class PhotoCapturePage extends StatelessWidget {
                                     ),
                                   ),
                             ),
+                            const SizedBox(height: 24),
+                            // Comment Section
+                            TextField(
+                              maxLines: 3,
+                              decoration: InputDecoration(
+                                labelText: 'Comments',
+                                hintText: 'Enter any comments about the photos',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                contentPadding: const EdgeInsets.all(16),
+                              ),
+                              onChanged: (value) {
+                                context.read<PhotoCaptureBloc>().add(
+                                  UpdateComment(value),
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),

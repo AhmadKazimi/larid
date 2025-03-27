@@ -9,11 +9,13 @@ class UploadImageUseCase {
     required String imagePath,
     required String customerCode,
     required bool isBefore,
+    String? comment,
   }) async {
     return await repository.uploadImage(
       imagePath,
       customerCode: customerCode,
       isBefore: isBefore,
+      comment: comment,
     );
   }
 }

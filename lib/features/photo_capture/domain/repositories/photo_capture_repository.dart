@@ -6,5 +6,6 @@ abstract class PhotoCaptureRepository {
     String imagePath, {
     required String customerCode,
     required bool isBefore,
+    String? comment,
   });
 }
