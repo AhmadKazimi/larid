@@ -152,6 +152,8 @@ Future<void> setupServiceLocator() async {
     () => WorkingSessionRepositoryImpl(
       getIt<WorkingSessionTable>(),
       getIt<UserTable>(),
+      getIt<CustomerTable>(),
+      getIt<ApiService>(),
     ),
   );
   getIt.registerLazySingleton(

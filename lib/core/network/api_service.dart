@@ -496,44 +496,58 @@ class ApiService {
     required String userid,
     required String workspace,
     required String password,
-    required String imagePath,
+    required String customerCode,
+    required String imageBase64,
   }) async {
     try {
-      // Create multipart form data
-      final formData = FormData.fromMap({
-        'postedFile': await MultipartFile.fromFile(
-          imagePath,
-          filename: imagePath.split('/').last,
-        ),
-      });
+      final response = await _dioClient.post(
+        ApiEndpoints.uploadSalesrepPic,
+        queryParameters: {
+          ApiParameters.userid: userid,
+          ApiParameters.workspace: workspace,
+          ApiParameters.password: password,
+          'customer_cd': customerCode,
+          'pic': imageBase64,
+        },
+      );
+      return {'success': true, 'data': response.data};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 
-      // Create custom options with headers
-      final options = Options(
-        headers: {
-          'workspace': workspace,
-          'userid': userid,
-          'password': password,
-          'Content-Type': 'multipart/form-data',
+  /// Uploads a sales rep visit to the server
+  /// Returns success status and response data or error message
+  Future<Map<String, dynamic>> addSalesrepVisit({
+    required String workspace,
+    required String userid,
+    required String password,
+    required String customerCode,
+    required int visitDate,
+    required String startTime,
+    required String endTime,
+    String? comments,
+  }) async {
+    try {
+      final response = await _dioClient.get(
+        ApiEndpoints.buildUrl(ApiEndpoints.addSalesrepVisit),
+        queryParameters: {
+          ApiParameters.workspace: workspace,
+          ApiParameters.userid: userid,
+          ApiParameters.password: password,
+          'Customer_cd': customerCode,
+          'Visit_dt': visitDate,
+          'Start_Time': startTime,
+          'End_Time': endTime,
+          'Comments': comments ?? '',
         },
       );
 
-      // Use Dio directly since this is an external URL
-      final dio = Dio();
-      final response = await dio.post(
-        ApiEndpoints.uploadSalesrepPic,
-        data: formData,
-        options: options,
-      );
-
       if (response.statusCode == 200) {
-        if (response.data is Map && response.data.containsKey('filename')) {
-          return {'success': true, 'filename': response.data['filename']};
-        } else if (response.data is Map && response.data.containsKey('ERROR')) {
-          return {'success': false, 'error': response.data['ERROR']};
-        }
+        return {'success': true, 'data': response.data};
+      } else {
+        return {'success': false, 'error': 'Failed to upload visit data'};
       }
-
-      return {'success': false, 'error': 'Unknown error'};
     } catch (e) {
       return {'success': false, 'error': e.toString()};
     }

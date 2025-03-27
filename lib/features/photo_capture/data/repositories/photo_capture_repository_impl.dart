@@ -58,7 +58,8 @@ class PhotoCaptureRepositoryImpl implements PhotoCaptureRepository {
       userid: user.userid,
       workspace: user.workspace,
       password: user.password,
-      imagePath: imagePath,
+      customerCode: customerCode,
+      imageBase64: imagePath,
     );
   }
 }
