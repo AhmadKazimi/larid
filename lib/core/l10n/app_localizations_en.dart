@@ -753,10 +753,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String balance(String amount, String currency) {
+    return 'Balance: $amount $currency';
+  }
+
+  @override
+  String get errorSavingInvoice => 'Error! saving invoice';
+
+  @override
   String get dateFormat => 'Date Format: dd/MM/yyyy HH:mm';
 
   @override
   String formattedDate(String day, String month, String year, String hour, String minute) {
     return '$day/$month/$year $hour:$minute';
   }
+
+  @override
+  String get submitInvoiceConfirmation => 'Are you sure want to save invoice ?';
 }

@@ -9,7 +9,7 @@
     "pleaseEnterValidEmail": "الرجاء إدخال بريد إلكتروني صحيح",
     "pleaseEnterPassword": "الرجاء إدخال كلمة المرور",
     "passwordMustBe6Chars": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
-
+    "errorSavingInvoice": "خطأ في حفظ الفاتورة",
     "apiConfiguration": "رابط الدومين الخاص بالعمل",
     "enterApiBaseUrl": "ادخل الرابط",
     "baseUrl": "الرابط",
@@ -468,5 +468,19 @@
                 "example": "10"
             }
         }
-    }
+    },
+    "balance": "الرصيد: {amount} {currency}",
+    "@balance": {
+        "description": "Customer balance display",
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "currency": {
+                "type": "String"
+            }
+        }
+    },
+    "dateFormat": "تنسيق التاريخ: dd/MM/yyyy HH:mm",
+    "submitInvoiceConfirmation": "هل انت متأكد من حفظ الفاتورة ؟"
 }

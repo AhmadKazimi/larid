@@ -66,12 +66,9 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
         setState(() {
           _currency = currentUser.currency;
         });
-        debugPrint('Currency loaded: $_currency');
-      } else {
-        debugPrint('No currency found in user table');
       }
     } catch (e) {
-      debugPrint('Error getting currency: $e');
+      // Handle error silently
     }
   }
 
@@ -97,10 +94,6 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
 
     return WillPopScope(
       onWillPop: () async {
-        debugPrint(
-          'Back button pressed in CustomerActivityPage, active session: $_hasActiveSession',
-        );
-
         // Notify session state change before popping
         visitSessionState.markSessionChanged();
 
@@ -326,42 +319,41 @@ class _CustomerActivityPageState extends State<CustomerActivityPage> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     if (widget.customer.balance != null)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                      Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.5),
+                            width: 1,
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.5),
-                              width: 1,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.account_balance_wallet,
+                              color: Colors.white,
+                              size: 14,
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.account_balance_wallet,
+                            const SizedBox(width: 4),
+                            Text(
+                              l10n.balance(
+                                widget.customer.balance!.toStringAsFixed(2),
+                                _currency ?? "",
+                              ),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
                                 color: Colors.white,
-                                size: 12,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${widget.customer.balance!.toStringAsFixed(2)} ${_currency ?? ""}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                   ],

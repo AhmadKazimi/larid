@@ -1475,6 +1475,18 @@ abstract class AppLocalizations {
   /// **'{synced} of {total} items synced'**
   String itemsSynced(int synced, int total);
 
+  /// Customer balance display
+  ///
+  /// In en, this message translates to:
+  /// **'Balance: {amount} {currency}'**
+  String balance(String amount, String currency);
+
+  /// No description provided for @errorSavingInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Error! saving invoice'**
+  String get errorSavingInvoice;
+
   /// No description provided for @dateFormat.
   ///
   /// In en, this message translates to:
@@ -1486,6 +1498,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{day}/{month}/{year} {hour}:{minute}'**
   String formattedDate(String day, String month, String year, String hour, String minute);
+
+  /// No description provided for @submitInvoiceConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure want to save invoice ?'**
+  String get submitInvoiceConfirmation;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

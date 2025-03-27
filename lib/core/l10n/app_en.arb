@@ -475,6 +475,19 @@
             }
         }
     },
+    "balance": "Balance: {amount} {currency}",
+    "@balance": {
+        "description": "Customer balance display",
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            },
+            "currency": {
+                "type": "String"
+            }
+        }
+    },
+    "errorSavingInvoice": "Error! saving invoice",
     "dateFormat": "Date Format: dd/MM/yyyy HH:mm",
     "formattedDate": "{day}/{month}/{year} {hour}:{minute}",
     "@formattedDate": {
@@ -496,5 +509,6 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "submitInvoiceConfirmation": "Are you sure want to save invoice ?"
 }

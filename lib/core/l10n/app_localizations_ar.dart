@@ -753,10 +753,21 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get dateFormat => 'Date Format: dd/MM/yyyy HH:mm';
+  String balance(String amount, String currency) {
+    return 'الرصيد: $amount $currency';
+  }
+
+  @override
+  String get errorSavingInvoice => 'خطأ في حفظ الفاتورة';
+
+  @override
+  String get dateFormat => 'تنسيق التاريخ: dd/MM/yyyy HH:mm';
 
   @override
   String formattedDate(String day, String month, String year, String hour, String minute) {
     return '$day/$month/$year $hour:$minute';
   }
+
+  @override
+  String get submitInvoiceConfirmation => 'هل انت متأكد من حفظ الفاتورة ؟';
 }
