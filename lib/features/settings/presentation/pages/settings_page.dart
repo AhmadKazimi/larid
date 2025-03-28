@@ -13,6 +13,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../features/auth/domain/repositories/auth_repository.dart';
 import '../../../../database/user_table.dart';
 import '../../../../core/di/service_locator.dart';
+import '../../../../database/customer_table.dart';
+import '../../../../features/map/domain/repositories/working_session_repository.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -129,10 +131,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (mounted) {
         // Show success message with the appropriate language name
-        final String languageName = languageCode == 'ar' ? 'العربية' : 'English';
+        final String languageName =
+            languageCode == 'ar' ? 'العربية' : 'English';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${AppLocalizations.of(context)!.languageChanged} ($languageName)'),
+            content: Text(
+              '${AppLocalizations.of(context)!.languageChanged} ($languageName)',
+            ),
             backgroundColor: AppColors.primary,
             duration: const Duration(seconds: 1),
           ),
@@ -167,28 +172,31 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _logout() async {
     final localizations = AppLocalizations.of(context)!;
-    
+
     // Show confirmation dialog
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(localizations.logout),
-        content: Text(localizations.logoutConfirmation),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(localizations.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(
-              localizations.logout,
-              style: TextStyle(color: Colors.red[700]),
-            ),
-          ),
-        ],
-      ),
-    ) ?? false;
+    final shouldLogout =
+        await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text(localizations.logout),
+                content: Text(localizations.logoutConfirmation),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(localizations.cancel),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(
+                      localizations.logout,
+                      style: TextStyle(color: Colors.red[700]),
+                    ),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
 
     if (!shouldLogout) return;
 
@@ -197,10 +205,27 @@ class _SettingsPageState extends State<SettingsPage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
+
+      // First, check and end any active customer visit session
+      final customerTable = GetIt.I<CustomerTable>();
+      final hasActiveVisit = await customerTable.hasActiveVisitSession();
+      if (hasActiveVisit) {
+        final customerWithVisit =
+            await customerTable.getCustomerWithActiveVisitSession();
+        if (customerWithVisit != null) {
+          await customerTable.endVisitSession(customerWithVisit.customerCode);
+        }
+      }
+
+      // Then, check and end any active work session
+      final workingSessionRepository = GetIt.I<WorkingSessionRepository>();
+      final hasActiveSession =
+          await workingSessionRepository.hasActiveSession();
+      if (hasActiveSession) {
+        await workingSessionRepository.endCurrentSession();
+      }
 
       // Reset sync status to ensure user goes through sync flow on next login
       try {
@@ -208,18 +233,18 @@ class _SettingsPageState extends State<SettingsPage> {
       } catch (e) {
         debugPrint('Error resetting sync status: $e');
       }
-      
+
       // Mark the user as logged out in SharedPreferences
       try {
-        final authRepository = getIt<AuthRepository>();
+        final authRepository = GetIt.I<AuthRepository>();
         await authRepository.logout();
       } catch (e) {
         debugPrint('Error in auth logout: $e');
       }
-      
+
       // Close loading dialog
       if (mounted) Navigator.of(context).pop();
-      
+
       // Navigate to API config page
       if (mounted) {
         context.go(RouteConstants.apiConfig);
@@ -227,7 +252,7 @@ class _SettingsPageState extends State<SettingsPage> {
     } catch (e) {
       // Close loading dialog
       if (mounted) Navigator.of(context).pop();
-      
+
       // Show error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

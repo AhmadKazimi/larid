@@ -186,15 +186,14 @@ class CustomerTable {
 
   // Start a visit session for a customer
   Future<void> startVisitSession(String customerCode) async {
-    // Generate timestamp in HH:MM:SS format
+    // Generate timestamp in ISO 8601 format with date and time
     final now = DateTime.now();
-    final formattedTime =
-        '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+    final formattedDateTime = now.toIso8601String();
 
     // First, check if this update is successful
     int updatedRows = await db.update(
       salesrepCustomerTableName,
-      {'visitStartTime': formattedTime, 'visitEndTime': null},
+      {'visitStartTime': formattedDateTime, 'visitEndTime': null},
       where: 'customerCode = ?',
       whereArgs: [customerCode],
     );
@@ -209,7 +208,7 @@ class CustomerTable {
         try {
           await db.rawUpdate(
             'UPDATE $salesrepCustomerTableName SET visitStartTime = ?, visitEndTime = NULL WHERE customerCode = ?',
-            [formattedTime, customerCode],
+            [formattedDateTime, customerCode],
           );
         } catch (e) {
           print('Error in raw update: $e');
