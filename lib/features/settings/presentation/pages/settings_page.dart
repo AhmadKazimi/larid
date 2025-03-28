@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sqflite/sqflite.dart';
 import '../../../../features/auth/domain/repositories/auth_repository.dart';
 import '../../../../database/user_table.dart';
 import '../../../../core/di/service_locator.dart';
@@ -227,11 +228,38 @@ class _SettingsPageState extends State<SettingsPage> {
         await workingSessionRepository.endCurrentSession();
       }
 
-      // Reset sync status to ensure user goes through sync flow on next login
+      // Reset all sync-related states and clear database tables
       try {
+        // Reset sync status to ensure user goes through sync flow on next login
         await SharedPrefs.setSynced(false);
+
+        // Clear all photo sync states
+        final allCustomers = await customerTable.getAllCustomers();
+        for (var customer in allCustomers) {
+          await SharedPrefs.clearPhotoData(customer.customerCode);
+        }
+
+        // Clear all database tables that store synced data
+        final db = GetIt.I<Database>();
+        await db.transaction((txn) async {
+          // Clear all tables that store synced data
+          await txn.delete('customers');
+          await txn.delete('sales_rep_customer');
+          await txn.delete('prices');
+          await txn.delete('inventory_items');
+          await txn.delete('inventory_units');
+          await txn.delete('sales_taxes');
+          await txn.delete('warehouse');
+          await txn.delete('company_info');
+          await txn.delete('invoices');
+          await txn.delete('invoice_items');
+          await txn.delete('receipt_vouchers');
+        });
+
+        // Clear any other sync-related data
+        await SharedPrefs.clearUserData();
       } catch (e) {
-        debugPrint('Error resetting sync status: $e');
+        debugPrint('Error resetting sync states: $e');
       }
 
       // Mark the user as logged out in SharedPreferences
